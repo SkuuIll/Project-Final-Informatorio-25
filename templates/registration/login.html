@@ -1,30 +1,35 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Iniciar Sesión - {{ block.super }}{% endblock title %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center">Iniciar Sesión</h2>
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
+                
                 {% if form.errors %}
-                    <div class="alert alert-danger">
-                        Tu nombre de usuario y contraseña no coinciden. Por favor, inténtalo de nuevo.
+                    <div class="alert alert-danger" role="alert">
+                        Tu usuario y contraseña no coinciden. Por favor, inténtalo de nuevo.
                     </div>
                 {% endif %}
-                <form method="post">
+
+                <form method="post" novalidate>
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Usuario</label>
-                        <input type="text" name="username" id="id_username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_password" class="form-label">Contraseña</label>
-                        <input type="password" name="password" id="id_password" class="form-control" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                    <input type="hidden" name="next" value="{{ next }}">
+                    
+                    {{ form|crispy }}
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Iniciar Sesión</button>
                     </div>
                 </form>
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="mb-0">¿No tienes una cuenta? <a href="{% url 'register' %}">Regístrate aquí</a>.</p>
+                </div>
             </div>
         </div>
     </div>
