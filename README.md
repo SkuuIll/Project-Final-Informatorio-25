@@ -42,7 +42,7 @@ Para ejecutar este proyecto en tu máquina local, sigue estos pasos:
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [https://github.com/SkuuIll/Project-Final-Informatorio-25.git](https://github.com/SkuuIll/Project-Final-Informatorio-25.git)
+    git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
     ```
 
 2.  **Navegar a la carpeta del proyecto:**
