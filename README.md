@@ -2,7 +2,7 @@
 
 Este repositorio contiene el proyecto final desarrollado para el curso de Desarrollo Web de Informatorio Chaco. Se trata de una aplicación web de blog completamente funcional, construida desde cero utilizando Python y el framework Django.
 
-![Imagen de la página de inicio del blog]()
+![Imagen de la página de inicio del blog](https://raw.githubusercontent.com/SkuuIll/Project-Final-Informatorio-25/refs/heads/main/screen/Grabaci%C3%B3n.gif)
 
 ---
 
