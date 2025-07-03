@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %} 
+
+{% block content %}
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">
+                {% if form.instance.pk %}
+                    Editar Post
+                {% else %}
+                    Crear Nuevo Post
+                {% endif %}
+            </h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {{ form|crispy }}
+                
+                <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                <a href="{{ post.get_absolute_url|default:'/' }}" class="btn btn-secondary mt-3">Cancelar</a>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
