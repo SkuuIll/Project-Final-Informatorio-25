@@ -93,14 +93,16 @@ El proyecto sigue la estructura recomendada en el curso, separando la lógica en
 
 
 
-mi_proyecto/
-├── apps/                 # Directorio para las aplicaciones de Django (posts, usuarios, etc.)
-├── media/                # Archivos subidos por los usuarios (ej: imágenes de posts)
-├── static/               # Archivos estáticos (CSS, JS, imágenes de la plantilla)
-├── templates/            # Plantillas HTML globales
-└── mi_proyecto/
-├── configuraciones/  # Carpeta para los archivos de settings
-└── ...
+    mi_proyecto/
+    ├── apps/                 # Directorio para tus aplicaciones de Django
+    ├── media/                # Para archivos subidos por los usuarios
+    ├── static/               # Directorio para las aplicaciones de Django (posts, usuarios, etc.)
+    ├── media/                # Archivos subidos por los usuarios (ej: imágenes de posts)
+    ├── static/               # Archivos estáticos (CSS, JS, imágenes de la plantilla)
+    ├── templates/            # Plantillas HTML globales
+    └── mi_proyecto/
+    ├── configuraciones/      # Carpeta para los archivos de settings
+    └── ...
 
 
 ---
