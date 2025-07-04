@@ -1,9 +1,9 @@
 @echo off
 echo ==========================================================
-echo      Instalador del Proyecto - Python
+echo      Instalador del Proyecto - Python/Django
 echo ==========================================================
-echo Este script creara un entorno virtual e instalara
-echo todas las dependencias necesarias.
+echo Este script creara un entorno virtual, instalara las
+echo dependencias y preparara la base de datos.
 echo.
 
 REM Verifica si Python esta disponible
@@ -28,15 +28,21 @@ call "entorno\Scripts\activate.bat"
 
 REM Instala las dependencias desde requirements.txt
 echo.
-echo Instalando dependencias...
+echo Instalando dependencias desde requirements.txt...
 pip install -r requirements.txt
+
+REM Ejecuta las migraciones de la base de datos
+echo.
+echo Preparando la base de datos (migraciones)...
+python manage.py makemigrations
+python manage.py migrate
 
 echo.
 echo ==========================================================
 echo        Instalacion completada con exito!
 echo ==========================================================
-echo Para ejecutar el programa, activa el entorno con:
-echo entorno\Scripts\activate
+echo Para iniciar el servidor, usa el comando:
+echo python manage.py runserver
 echo.
 
 pause
