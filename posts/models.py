@@ -26,3 +26,12 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name="Post")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Autor")
+    content = models.TextField(verbose_name="Contenido")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+
+    def __str__(self):
+        return f'Comentario de {self.author.username} en {self.post.title}'
