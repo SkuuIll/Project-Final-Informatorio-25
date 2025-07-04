@@ -1,50 +1,29 @@
-# Entorno virtual de Python
-# Reemplaza "entorno/" con el nombre de tu carpeta de entorno si es diferente.
+# Entorno Virtual
+# No incluyas el entorno virtual en el repositorio. 
+# Cada desarrollador creará el suyo a partir de requirements.txt.
 /entorno/
-venv/
-env/
-.venv/
 
-# Archivos de cache y compilados de Python
+# Archivos de Python
+# Ignora el bytecode y otros archivos generados por Python.
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
+*.pyd
 
-# Archivos generados por instaladores de Python
-*.egg-info/
-pip-wheel-metadata/
-
-# Archivos de distribución y construcción
-build/
-dist/
-
-# Archivos específicos de Django
-# ---------------------------------
-
-# Archivos de registro
-*.log
-
-# Base de datos local (SQLite)
+# Base de datos
+# Ignora la base de datos de desarrollo.
 db.sqlite3
-db.sqlite3-journal
 
-# Archivo de configuración local que no debe ser versionado
-# Es una buena práctica tener un settings.py principal y un local_settings.py
-# que lo sobreescriba con datos sensibles (SECRET_KEY, contraseñas de BD, etc.)
-local_settings.py
-
-# Archivos de medios subidos por los usuarios
+# Archivos estáticos y de medios
+# Ignora los archivos subidos por los usuarios y los archivos estáticos recopilados.
 /media/
-
-# Archivos estáticos recolectados por collectstatic
 /staticfiles/
-/static_root/
 
-# Archivos de internacionalización (i18n) compilados
-*.mo
+# Archivos de entorno
+# ¡MUY IMPORTANTE! Nunca subas archivos con secretos (API keys, contraseñas de BD).
+.env
+*.env
 
-# Configuraciones de IDEs y editores
-.vscode/
+# Archivos de configuración del editor/IDE
 .idea/
-*.swp
-*~
+.vscode/
