@@ -27,3 +27,6 @@ db.sqlite3
 # Archivos de configuración del editor/IDE
 .idea/
 .vscode/
+
+# Bat
+instalar_proyecto.bat
