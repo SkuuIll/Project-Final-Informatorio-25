@@ -1,134 +1,117 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Blog Final{% endblock title %}</title>
+    <title>{% block title %}DevBlog - Tu Blog de Tecnología{% endblock %}</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
-    {% block extra_head %}{% endblock %}
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    </style>
 
     <script>
-        const getPreferredTheme = () => {
-            const storedTheme = localStorage.getItem('theme');
-            if (storedTheme) return storedTheme;
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        };
-        const setTheme = theme => document.documentElement.setAttribute('data-bs-theme', theme);
-        setTheme(getPreferredTheme());
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
-
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        .post-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 0.5rem;
-        }
-        .card-img-top {
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-        }
-    </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 flex flex-col min-h-screen">
 
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'post_list' %}">
-                <i class="bi bi-journal-richtext"></i> Blog Final
+    <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+            <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white">
+                <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <i data-feather="code" class="w-5 h-5 text-white"></i>
+                </div>
+                <span>DevBlog</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="main-nav">
-                <ul class="navbar-nav ms-auto align-items-center">
+            
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-4">
+                    <a href="{% url 'posts:post_list' %}" class="font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400">Artículos</a>
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="btn btn-primary btn-sm" href="{% url 'post_create' %}">
-                                <i class="bi bi-plus-circle"></i> Nuevo Post
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown ms-2">
-                            <a class="nav-link dropdown-toggle" href="#" id="user-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> Hola, {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu">
-                                <li>
-                                    <form class="d-inline" method="post" action="{% url 'logout' %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'register' %}">Registrarse</a>
-                        </li>
+                        <a href="{% url 'posts:dashboard' %}" class="font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400">Dashboard</a>
                     {% endif %}
-                    <li class="nav-item ms-lg-2">
-                        <button class="btn nav-link" id="theme-toggler" type="button">
-                            <i class="bi bi-sun-fill" id="theme-icon-sun"></i>
-                            <i class="bi bi-moon-stars-fill d-none" id="theme-icon-moon"></i>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+                </div>
 
-    <main class="container my-4 my-lg-5 flex-grow-1">
-        {% block content %}{% endblock content %}
+                <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+
+                {% if user.is_authenticated %}
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+                            <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {{ user.username|first|upper }}
+                            </div>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg">Cerrar Sesión</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="hidden sm:block font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400">Login</a>
+                    <a href="{% url 'posts:register' %}" class="hidden sm:block bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Registrarse</a>
+                {% endif %}
+
+                <button id="theme-toggle" type="button" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i id="theme-toggle-dark-icon" class="hidden w-5 h-5" data-feather="moon"></i>
+                    <i id="theme-toggle-light-icon" class="hidden w-5 h-5" data-feather="sun"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {% block content %}{% endblock %}
     </main>
 
-    <footer class="footer mt-auto py-3 bg-body-tertiary border-top">
-        <div class="container text-center">
-            <span class="text-muted">Blog Final &copy; {% now "Y" %}. Creado con Django y Bootstrap.</span>
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 mt-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-slate-500 dark:text-slate-400">
+            <p>&copy; {% now "Y" %} DevBlog. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    {% block extra_scripts %}{% endblock %}
-
     <script>
-        const themeToggler = document.getElementById('theme-toggler');
-        const sunIcon = document.getElementById('theme-icon-sun');
-        const moonIcon = document.getElementById('theme-icon-moon');
+        feather.replace();
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
 
-        const updateIcon = (theme) => {
-            if (theme === 'dark') {
-                sunIcon.classList.remove('d-none');
-                moonIcon.classList.add('d-none');
+        function updateIcon() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
             } else {
-                sunIcon.classList.add('d-none');
-                moonIcon.classList.remove('d-none');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
             }
-        };
-        
-        updateIcon(getPreferredTheme());
-
-        themeToggler.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            setTheme(newTheme);
-            updateIcon(newTheme);
+        }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            updateIcon();
         });
     </script>
 </body>

@@ -1,29 +1,33 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}Registrarse - {{ block.super }}{% endblock title %}
+{% block title %}Crear Cuenta - DevBlog{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4 p-lg-5">
-                <h2 class="card-title text-center mb-4">Crear una Cuenta</h2>
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {{ form|crispy }}
-                    
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Registrarse</button>
-                    </div>
-                </form>
-                <hr class="my-4">
-                <div class="text-center">
-                    <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión</a>.</p>
-                </div>
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div class="p-8 sm:p-10">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Crea tu Cuenta</h2>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">Únete a la comunidad de DevBlog.</p>
             </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {{ form.as_p }}
+
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 font-semibold transition-transform transform hover:scale-105">
+                    Registrarse
+                </button>
+            </form>
+
+            <p class="text-center mt-8 text-sm text-gray-600 dark:text-gray-400">
+                ¿Ya tienes una cuenta? 
+                <a href="{% url 'login' %}" class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                    Inicia sesión
+                </a>
+            </p>
         </div>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}

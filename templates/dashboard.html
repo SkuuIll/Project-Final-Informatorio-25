@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - DevBlog{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-300">Bienvenido de nuevo, {{ user.username }}.</p>
+    </div>
+    <a href="{% url 'posts:post_create' %}" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+        <i data-feather="plus" class="w-4 h-4"></i>
+        <span>Nuevo Post</span>
+    </a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Tus Posts</h2>
+    <div class="space-y-4">
+        {% for post in user_posts %}
+        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+                <a href="{% url 'posts:post_detail' post.slug %}" class="font-semibold text-gray-800 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400">{{ post.title }}</a>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Publicado: {{ post.created_at|date:"d M, Y" }}</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'posts:post_update' post.slug %}" class="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
+                    <i data-feather="edit" class="w-4 h-4"></i>
+                </a>
+                <a href="{% url 'posts:post_delete' post.slug %}" class="text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
+                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-gray-600 dark:text-gray-400 py-5">Aún no has escrito ningún post.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

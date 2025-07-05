@@ -1,90 +1,135 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %} 
 
-{% block title %}
-    {% if form.instance.pk %}Editar Post{% else %}Crear Post{% endif %} - {{ block.super }}
-{% endblock title %}
-
-{% block extra_head %}
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-    <style>
-        /* Ajustes para que el editor se vea bien en tema oscuro y claro */
-        .note-editor.note-frame {
-            border-color: var(--bs-border-color);
-        }
-        .note-editor .note-toolbar {
-            background-color: var(--bs-secondary-bg);
-            border-bottom-color: var(--bs-border-color);
-        }
-        .note-editor .note-editable {
-            background-color: var(--bs-body-bg);
-            color: var(--bs-body-color);
-        }
-        .note-editor .note-statusbar {
-            background-color: var(--bs-secondary-bg);
-            border-top-color: var(--bs-border-color);
-        }
-        .note-popover .popover-content, .note-modal-content {
-             background-color: var(--bs-body-bg);
-        }
-        .note-modal-title {
-            color: var(--bs-body-color);
-        }
-    </style>
-{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar Post{% else %}Crear Nuevo Post{% endif %}{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4 p-lg-5">
-                    <h2 class="card-title text-center mb-4">
-                        {% if form.instance.pk %}
-                            <i class="bi bi-pencil-square"></i> Editar Post
-                        {% else %}
-                            <i class="bi bi-plus-circle"></i> Crear Nuevo Post
-                        {% endif %}
-                    </h2>
-                    <form method="post" enctype="multipart/form-data" novalidate>
-                        {% csrf_token %}
-                        
-                        {{ form|crispy }}
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <a href="{{ post.get_absolute_url|default:'/' }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Guardar Cambios
-                            </button>
-                        </div>
-                    </form>
+<form method="post" enctype="multipart/form-data" class="space-y-8">
+    {% csrf_token %}
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {% if form.instance.pk %}
+                    Editando Post
+                {% else %}
+                    Crea un Nuevo Post
+                {% endif %}
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Da vida a tus ideas.</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="{{ object.get_absolute_url|default_if_none:'/' }}" class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-5 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+                <i data-feather="save" class="w-4 h-4"></i>
+                <span>{% if form.instance.pk %}Guardar Cambios{% else %}Publicar Post{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Título</label>
+                {{ form.title }}
+                <p class="text-xs text-gray-500 mt-2">Un buen título es clave para atraer lectores.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contenido</label>
+                <div class="prose dark:prose-invert max-w-none">
+                    {{ form.content }}
                 </div>
             </div>
         </div>
+
+        <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Imagen Destacada</h3>
+                
+                <div id="image-uploader" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <div id="image-preview-container" class="relative">
+                            {% if form.instance.header_image %}
+                                <img id="image-preview" src="{{ form.instance.header_image.url }}" class="mx-auto h-48 w-auto rounded-md object-cover">
+                            {% else %}
+                                <img id="image-preview" src="" class="mx-auto h-48 w-auto rounded-md object-cover hidden">
+                            {% endif %}
+                            <div id="image-placeholder">
+                                <i data-feather="image" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"></i>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <span class="font-medium text-indigo-600 dark:text-indigo-400">Sube un archivo</span> o arrástralo aquí
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                            </div>
+                        </div>
+                        
+                        <div class="hidden">
+                            {{ form.header_image }}
+                        </div>
+                    </div>
+                </div>
+                 <button type="button" id="change-image-btn" class="mt-4 w-full text-sm text-indigo-600 dark:text-indigo-400 hover:underline">Cambiar imagen</button>
+            </div>
+        </div>
     </div>
-{% endblock content %}
+</form>
 
-{% block extra_scripts %}
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-es-ES.min.js"></script>
+{{ form.media }}
 
-    <script>
-        $(document).ready(function() {
-            $('#id_content').summernote({
-                placeholder: 'Escribe aquí el contenido de tu post...',
-                tabsize: 2,
-                height: 300,
-                lang: 'es-ES',
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploader = document.getElementById('image-uploader');
+        const fileInput = document.querySelector('input[name="header_image"]');
+        const preview = document.getElementById('image-preview');
+        const placeholder = document.getElementById('image-placeholder');
+        const changeBtn = document.getElementById('change-image-btn');
+
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (preview.src && !preview.src.endsWith('/')) {
+             placeholder.classList.add('hidden');
+        }
+
+        uploader.addEventListener('click', () => fileInput.click());
+        changeBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                showPreview(file);
+            }
         });
-    </script>
+
+        // Manejar drag and drop
+        uploader.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploader.classList.add('border-indigo-500', 'bg-gray-50', 'dark:bg-gray-700/50');
+        });
+
+        uploader.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploader.classList.remove('border-indigo-500', 'bg-gray-50', 'dark:bg-gray-700/50');
+        });
+
+        uploader.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploader.classList.remove('border-indigo-500', 'bg-gray-50', 'dark:bg-gray-700/50');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                showPreview(file);
+            }
+        });
+    });
+</script>
 {% endblock %}

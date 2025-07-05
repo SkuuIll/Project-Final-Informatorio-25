@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Mis Aplicaciones
-    'posts.apps.PostsConfig',
+    'posts',
     'ckeditor', 
     'crispy_forms', 
     'crispy_bootstrap5', 
