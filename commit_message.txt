@@ -1,1 +1,1 @@
-Add .gitignore
+Fix: Corregir dependencias y limpiar el repositorio
