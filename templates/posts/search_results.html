@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resultados para "{{ query }}" - DevBlog{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    
+    <section class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">
+            Resultados de Búsqueda
+        </h1>
+        <p class="text-lg text-slate-600 dark:text-slate-400">
+            Mostrando resultados para: "<span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ query }}</span>"
+        </p>
+    </section>
+
+    {% if posts %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for post in posts %}
+                {% include 'posts/post_card.html' with post=post %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="col-span-full text-center py-16">
+            <div class="glass-effect rounded-3xl p-12 max-w-md mx-auto">
+                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <i data-feather="search" class="w-10 h-10 text-gray-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">No se encontraron resultados</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-8">
+                    No pudimos encontrar nada que coincida con tu búsqueda. Intenta con otros términos.
+                </p>
+                <a href="{% url 'posts:post_list' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
+                    <i data-feather="arrow-left" class="w-5 h-5"></i>
+                    <span>Volver a los artículos</span>
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

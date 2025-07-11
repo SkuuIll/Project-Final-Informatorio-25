@@ -1,0 +1,30 @@
+# Entorno Virtual
+# No incluyas el entorno virtual en el repositorio. 
+# Cada desarrollador creará el suyo a partir de requirements.txt.
+/entorno/
+
+# Archivos de Python
+# Ignora el bytecode y otros archivos generados por Python.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Base de datos
+# Ignora la base de datos de desarrollo.
+db.sqlite3
+
+# Archivos estáticos y de medios
+# Ignora los archivos subidos por los usuarios y los archivos estáticos recopilados.
+/media/
+/staticfiles/
+
+# Archivos de entorno
+# ¡MUY IMPORTANTE! Nunca subas archivos con secretos (API keys, contraseñas de BD).
+.env
+*.env
+blog/configuraciones/secret.txt
+
+# Archivos de configuración del editor/IDE
+.idea/
+.vscode/

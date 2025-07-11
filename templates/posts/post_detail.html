@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - DevBlog{% endblock %}
+
+{% block content %}
+<main>
+    <article class="max-w-5xl mx-auto pb-24">
+        {% if post.header_image %}
+        <header class="relative mb-12 rounded-3xl overflow-hidden shadow-2xl group">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 z-10" aria-hidden="true"></div>
+            <img class="w-full h-96 md:h-[500px] object-cover" 
+                 src="{{ post.header_image.url }}" 
+                 alt="Imagen de cabecera para {{ post.title }}"
+                 id="header-image">
+            
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20">
+                <div class="glass-effect rounded-2xl p-6 border border-white/20">
+                    <div class="flex items-center space-x-4 mb-4">
+                        {% if post.author.profile.avatar and post.author.profile.avatar.url %}
+                            <img src="{{ post.author.profile.avatar.url }}" alt="Avatar de {{ post.author.username }}" class="w-12 h-12 rounded-full object-cover shadow-lg">
+                        {% else %}
+                            <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg" aria-hidden="true">
+                                {{ post.author.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-white font-semibold text-lg">{{ post.author.get_full_name|default:post.author.username }}</p>
+                            <p class="text-white/80 text-sm">{{ post.created_at|date:"d F, Y" }}</p>
+                        </div>
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-black text-white leading-tight">{{ post.title }}</h1>
+                </div>
+            </div>
+        </header>
+        {% else %}
+        <header class="text-center mb-12">
+            <div class="glass-effect rounded-3xl p-8 md:p-12 border border-white/20 dark:border-slate-700/50 shadow-2xl">
+                <h1 class="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">{{ post.title }}</h1>
+                <div class="flex items-center justify-center space-x-6 text-slate-500 dark:text-slate-400">
+                    <span class="flex items-center space-x-2"><i data-feather="user" class="w-4 h-4"></i><span>Por {{ post.author.username }}</span></span>
+                    <span class="flex items-center space-x-2"><i data-feather="calendar" class="w-4 h-4"></i><span>{{ post.created_at|date:"d M, Y" }}</span></span>
+                    {% comment %} NOTA: El tiempo de lectura debería calcularse en el backend (modelo o vista) y pasarse en el contexto. {% endcomment %}
+                    {% if post.reading_time %}
+                    <span class="flex items-center space-x-2"><i data-feather="clock" class="w-4 h-4"></i><span>{{ post.reading_time }} min de lectura</span></span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+        {% endif %}
+
+        <div class="glass-effect rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20 dark:border-slate-700/50">
+            {% comment %} La clase `prose` de Tailwind aplica un estilo de tipografía hermoso al contenido del post. {% endcomment %}
+            <div class="prose prose-lg dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed text-lg">
+                {{ post.content|safe }}
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/20 dark:border-slate-700/50">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="font-semibold text-slate-600 dark:text-slate-400">Etiquetas:</h3>
+                    {% for tag in post.tags.all %}
+                        <a href="{% url 'posts:post_list_by_tag' tag.slug %}" class="px-4 py-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full text-sm font-medium hover:bg-indigo-200 dark:hover:bg-indigo-800/60 transition-colors duration-300">
+                            {{ tag.name }}
+                        </a>
+                    {% empty %}
+                        <span class="text-slate-500 dark:text-slate-400 text-sm">Este post no tiene etiquetas.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <section class="max-w-5xl mx-auto mt-16" aria-labelledby="comments-heading">
+        <h2 id="comments-heading" class="text-3xl font-bold text-slate-900 dark:text-white mb-8 flex items-center space-x-3">
+            <i data-feather="message-square" class="w-7 h-7 text-indigo-500"></i>
+            <span>Comentarios ({{ post.comments.count }})</span>
+        </h2>
+        
+        <div class="space-y-6">
+            {% for comment in post.comments.all %}
+            <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 flex items-start space-x-4 animate-fade-in">
+                {% if comment.author.profile.avatar and comment.author.profile.avatar.url %}
+                    <img src="{{ comment.author.profile.avatar.url }}" alt="Avatar de {{ comment.author.username }}" class="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md">
+                {% else %}
+                    <div class="w-12 h-12 gradient-bg rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-md" aria-hidden="true">
+                        {{ comment.author.username|first|upper }}
+                    </div>
+                {% endif %}
+                <div class="flex-grow">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-semibold text-slate-800 dark:text-slate-100">{{ comment.author.username }}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ comment.created_at|date:"d M, Y" }}</span>
+                            {% if user == comment.author or user == post.author %}
+                                <a href="{% url 'posts:comment_delete' comment.pk %}" class="text-xs text-red-500 hover:text-red-700">Eliminar</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-slate-700 dark:text-slate-300">{{ comment.content }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-16 glass-effect rounded-3xl">
+                <div class="w-20 h-20 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-feather="message-circle" class="w-10 h-10 text-indigo-600 dark:text-indigo-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Aún no hay comentarios</h3>
+                <p class="text-slate-600 dark:text-slate-400">¡Sé el primero en compartir tu opinión!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto mt-12 glass-effect rounded-3xl p-8 border border-white/20 dark:border-slate-700/50" aria-labelledby="comment-form-heading">
+        {% if user.is_authenticated %}
+        <h3 id="comment-form-heading" class="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-3">
+            <i data-feather="edit-3" class="w-6 h-6 text-purple-500"></i>
+            <span>Deja tu Comentario</span>
+        </h3>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="{{ comment_form.content.id_for_label }}" class="sr-only">Contenido del comentario</label>
+                <textarea name="{{ comment_form.content.name }}" id="{{ comment_form.content.id_for_label }}" rows="4" 
+                          class="w-full px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border-2 border-slate-300/70 dark:border-slate-700/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                          placeholder="Escribe tu comentario aquí..." required></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="group flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i data-feather="send" class="w-4 h-4 group-hover:rotate-45 transition-transform"></i>
+                    <span class="font-semibold">Comentar</span>
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="text-center">
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Únete a la conversación</h3>
+            <p class="text-slate-600 dark:text-slate-400 mb-6">Para dejar un comentario, necesitas iniciar sesión.</p>
+            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 transform">
+                Iniciar Sesión
+            </a>
+        </div>
+        {% endif %}
+    </section>
+</main>
+
+<div class="fixed bottom-4 right-4 z-50">
+    <div class="glass-effect rounded-full p-2 border border-white/20 dark:border-slate-700/50 shadow-2xl flex items-center space-x-2" role="toolbar" aria-label="Acciones del post">
+        <a href="{% url 'posts:post_list' %}" class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="Volver a la lista de artículos">
+            <i data-feather="arrow-left" class="w-6 h-6"></i>
+        </a>
+        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600" aria-hidden="true"></div>
+        <a href="{% url 'posts:like_post' post.slug %}" class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all" aria-label="Dar me gusta a este post">
+            <i data-feather="heart" class="w-6 h-6 {% if user in post.likes.all %}text-red-500 fill-current{% endif %}"></i>
+        </a>
+        <span class="font-bold text-slate-700 dark:text-slate-200 px-1" aria-label="{{ post.likes.count }} me gusta">{{ post.likes.count }}</span>
+        <button class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all" aria-label="Compartir este post">
+            <i data-feather="share-2" class="w-6 h-6"></i>
+        </button>
+        <a href="{% url 'posts:favorite_post' post.slug %}" class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all" aria-label="Añadir a favoritos">
+            <i data-feather="bookmark" class="w-6 h-6"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headerImage = document.getElementById('header-image');
+    if (headerImage) {
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallax = scrolled * 0.25;
+            headerImage.style.transform = `translateY(${parallax}px)`;
+        }, { passive: true });
+    }
+
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(to right, #6366f1, #a855f7); transform: scaleX(0); transform-origin: left; transition: transform 0.15s ease-out; z-index: 999;';
+    document.body.appendChild(progressBar);
+
+    window.addEventListener('scroll', function() {
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) : 0;
+        progressBar.style.transform = `scaleX(${progress})`;
+    }, { passive: true });
+});
+</script>
+{% endblock %}

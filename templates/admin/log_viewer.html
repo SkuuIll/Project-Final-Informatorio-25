@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Estilos para el contenedor del visor de logs */
+    #log-container {
+        background-color: #1d1f21; /* Fondo oscuro para mejor contraste */
+        color: #c5c8c6; /* Texto gris claro */
+        padding: 1em;
+        border-radius: 8px;
+        font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre;
+        overflow-x: auto;
+        counter-reset: line-number; /* Inicializa el contador de líneas */
+    }
+
+    /* Estilo para cada línea de log */
+    .log-line {
+        display: block;
+        position: relative;
+        padding-left: 50px; /* Espacio para los números de línea */
+    }
+
+    /* Pseudoelemento para mostrar los números de línea */
+    .log-line::before {
+        counter-increment: line-number;
+        content: counter(line-number);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 40px;
+        text-align: right;
+        color: #555; /* Color tenue para los números */
+        user-select: none; /* Evita que se puedan seleccionar */
+    }
+
+    /* Colores para los diferentes niveles de log */
+    .log-line.info { color: #81a2be; }      /* Azul para INFO */
+    .log-line.debug { color: #b294bb; }     /* Morado para DEBUG */
+    .log-line.warning { color: #f0c674; }   /* Amarillo para WARNING */
+    .log-line.error { color: #cc6666; }     /* Rojo para ERROR */
+    .log-line.critical {
+        color: #e48a8a;
+        font-weight: bold;
+        background-color: rgba(204, 102, 102, 0.1); /* Fondo rojo claro para CRITICAL */
+    }
+
+    /* Estilos para la cabecera y los botones de acción */
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Visor de Logs del Administrador{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">Inicio</a> &rsaquo;
+Visor de Logs
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="log-header">
+        <h1>Visor de Logs del Sistema</h1>
+        <div>
+            <button onclick="window.location.reload();" class="button">Refrescar</button>
+            <button id="copy-button" class="button">Copiar al portapapeles</button>
+        </div>
+    </div>
+    
+    <div id="log-container-wrapper">
+        <div id="log-container">
+            {# El contenido del log se inserta aquí y será procesado por JavaScript. #}
+            {{ log_content }}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logContainer = document.getElementById('log-container');
+    const rawLogContent = logContainer.textContent.trim();
+    
+    // Limpiamos el contenedor para reconstruirlo con las líneas estilizadas.
+    logContainer.innerHTML = '';
+
+    const lines = rawLogContent.split('\n');
+    
+    lines.forEach(line => {
+        const lineElement = document.createElement('span');
+        lineElement.className = 'log-line';
+        
+        // Determinamos el nivel del log y aplicamos la clase CSS correspondiente.
+        const lowerLine = line.toLowerCase();
+        if (lowerLine.includes('critical')) {
+            lineElement.classList.add('critical');
+        } else if (lowerLine.includes('error')) {
+            lineElement.classList.add('error');
+        } else if (lowerLine.includes('warning')) {
+            lineElement.classList.add('warning');
+        } else if (lowerLine.includes('info')) {
+            lineElement.classList.add('info');
+        } else if (lowerLine.includes('debug')) {
+            lineElement.classList.add('debug');
+        }
+        
+        lineElement.textContent = line;
+        logContainer.appendChild(lineElement);
+    });
+
+    // Funcionalidad para el botón de copiar.
+    const copyButton = document.getElementById('copy-button');
+    copyButton.addEventListener('click', function() {
+        // Usamos el contenido original sin formato para copiar.
+        navigator.clipboard.writeText(rawLogContent).then(function() {
+            copyButton.textContent = '¡Copiado!';
+            setTimeout(() => {
+                copyButton.textContent = 'Copiar al portapapeles';
+            }, 2000);
+        }, function(err) {
+            console.error('Error al copiar el texto: ', err);
+            copyButton.textContent = 'Error al copiar';
+        });
+    });
+});
+</script>
+{% endblock %}

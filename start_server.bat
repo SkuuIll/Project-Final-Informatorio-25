@@ -1,0 +1,3 @@
+@echo off
+echo Activando entorno y ejecutando servidor...
+.\entorno\Scripts\activate && python manage.py runserver

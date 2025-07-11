@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Página no encontrada - Error 404{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="text-center">
+                <!-- Icono 404 -->
+                <div class="mb-4">
+                    <h1 class="display-1 text-primary fw-bold" style="font-size: 8rem;">404</h1>
+                </div>
+                
+                <!-- Mensaje principal -->
+                <div class="mb-4">
+                    <h2 class="h3 text-dark mb-3">¡Oops! Página no encontrada</h2>
+                    <p class="text-muted lead mb-4">
+                        Lo sentimos, la página que estás buscando no existe o ha sido movida.
+                    </p>
+                </div>
+
+                <!-- Ilustración o emoji -->
+                <div class="mb-4">
+                    <span style="font-size: 4rem;">🔍</span>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="{% url 'posts:post_list' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>
+                        Volver al inicio
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Página anterior
+                    </button>
+                </div>
+
+                <!-- Sugerencias adicionales -->
+                <div class="mt-5 pt-4 border-top">
+                    <h4 class="h5 mb-3">¿Qué puedes hacer?</h4>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Verificar la URL en la barra de direcciones
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Usar el menú de navegación
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Buscar en nuestro contenido
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Contactar con soporte
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de búsqueda opcional -->
+                <div class="mt-4">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" placeholder="Buscar en el sitio...">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+    .container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .display-1 {
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 576px) {
+        .display-1 {
+            font-size: 5rem !important;
+        }
+    }
+</style>
+
+<!-- JavaScript adicional -->
+<script>
+    // Efecto de animación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('.container > .row > .col-md-8 > .text-center > *');
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Perfil - DevBlog{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="text-center mb-10">
+        <h1 class="text-5xl font-black bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+            Editar Perfil
+        </h1>
+        <p class="text-lg text-slate-600 dark:text-slate-400 mt-2">
+            Actualiza tu información personal para que la comunidad te conozca.
+        </p>
+    </div>
+
+    <div class="glass-effect rounded-3xl p-8 md:p-10 border border-white/20 dark:border-slate-700/50 shadow-2xl">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors or profile_form.non_field_errors %}
+            <div class="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-4 rounded-lg mb-6" role="alert">
+                {{ form.non_field_errors }}
+                {{ profile_form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="{{ profile_form.avatar.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Avatar</label>
+                <div class="flex items-center gap-4">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="Avatar actual" class="w-20 h-20 rounded-full object-cover">
+                    {% endif %}
+                    {% comment %} MEJORA: Renderizado manual para mejor control de estilos. {% endcomment %}
+                    <input type="file" 
+                           name="{{ profile_form.avatar.name }}" 
+                           id="{{ profile_form.avatar.id_for_label }}"
+                           class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-slate-700 dark:file:text-slate-300 dark:hover:file:bg-slate-600 transition-colors duration-200">
+                </div>
+                {% for error in profile_form.avatar.errors %}
+                    <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label for="{{ profile_form.bio.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Biografía</label>
+                <textarea name="{{ profile_form.bio.name }}" 
+                          id="{{ profile_form.bio.id_for_label }}"
+                          rows="3"
+                          class="w-full px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-300/70 dark:border-slate-700/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                          placeholder="Cuéntanos un poco sobre ti...">{{ profile_form.bio.value|default:'' }}</textarea>
+                {% for error in profile_form.bio.errors %}
+                    <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+            
+            <hr class="border-slate-200/50 dark:border-slate-700/50">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ user_form.first_name.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nombre</label>
+                    <input type="text" name="{{ user_form.first_name.name }}" id="{{ user_form.first_name.id_for_label }}" value="{{ user_form.first_name.value|default:'' }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-300/70 dark:border-slate-700/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                           placeholder="Tu nombre">
+                    {% for error in user_form.first_name.errors %}
+                        <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label for="{{ user_form.last_name.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Apellido</label>
+                    <input type="text" name="{{ user_form.last_name.name }}" id="{{ user_form.last_name.id_for_label }}" value="{{ user_form.last_name.value|default:'' }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-300/70 dark:border-slate-700/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                           placeholder="Tu apellido">
+                    {% for error in user_form.last_name.errors %}
+                        <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <label for="{{ user_form.email.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
+                <input type="email" name="{{ user_form.email.name }}" id="{{ user_form.email.id_for_label }}" value="{{ user_form.email.value|default:'' }}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-300/70 dark:border-slate-700/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                       placeholder="tu@email.com">
+                {% for error in user_form.email.errors %}
+                    <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label for="{{ user_form.username.id_for_label }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nombre de usuario</label>
+                <input type="text" id="{{ user_form.username.id_for_label }}" value="{{ user_form.username.value|default:'' }}"
+                       class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-700/70 outline-none cursor-not-allowed"
+                       disabled>
+                <p class="text-xs text-slate-500 mt-2">El nombre de usuario no se puede cambiar.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row-reverse items-center gap-4 pt-4">
+                <button type="submit" class="w-full sm:w-auto flex justify-center items-center space-x-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 transform">
+                    <i data-feather="check-circle" class="w-5 h-5"></i>
+                    <span>Guardar Cambios</span>
+                </button>
+                <a href="{% url 'accounts:profile' %}" class="w-full sm:w-auto text-center px-8 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all duration-300 font-medium">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% comment %}
+    CORRECCIÓN: Se eliminó el bloque <style>.
+    La clase 'glass-effect' ya está definida globalmente en base.html.
+{% endcomment %}
+{% endblock %}
