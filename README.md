@@ -131,10 +131,6 @@ Project-Final/
 └── requirements.txt      # Dependencias de Python
 ```
 
----
-
-## 👤 Autor
-```
 
 
 ## 👤 Autor
