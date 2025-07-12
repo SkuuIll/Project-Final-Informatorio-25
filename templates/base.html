@@ -36,6 +36,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{% load static %}{% static 'img/apple-touch-icon.png' %}">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
@@ -223,6 +224,13 @@
                                 <a href="{% url 'accounts:profile' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
                                     <i data-feather="user" class="w-4 h-4"></i>
                                     <span>Mi Perfil</span>
+                                </a>
+                                <a href="{% url 'accounts:notification_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                    <i data-feather="bell" class="w-4 h-4"></i>
+                                    <span>Notificaciones</span>
+                                    {% if unread_notifications_count > 0 %}
+                                        <span class="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ unread_notifications_count }}</span>
+                                    {% endif %}
                                 </a>
                                 <a href="{% url 'posts:favorite_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
                                     <i data-feather="bookmark" class="w-4 h-4"></i>

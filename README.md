@@ -44,9 +44,9 @@ Este repositorio contiene un proyecto de blog funcional construido con Python y 
 
 ---
 
-## ⚙️ Guía de Instalación
+## 🐳 Ejecutar con Docker
 
-Sigue estos pasos para poner en marcha el proyecto en tu máquina local.
+La forma más sencilla de poner en marcha este proyecto es usando Docker y Docker Compose.
 
 ### 1. Clonar el Repositorio
 
@@ -55,63 +55,19 @@ git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
 cd Project-Final-Informatorio-25
 ```
 
-### 2. Crear y Activar Entorno Virtual
+### 2. Iniciar los Contenedores
 
 ```bash
-# Crear el entorno
-python -m venv entorno
-
-# Activar en Windows
-.\entorno\Scripts\activate
-
-# Activar en macOS/Linux
-source entorno/bin/activate
+docker-compose up -d --build
 ```
 
-### 3. Configurar las Variables de Entorno
+¡Listo! Abre tu navegador y visita **`http://localhost:8000`**. Para gestionar el contenido, accede a **`http://localhost:8000/admin`**.
 
-Este proyecto utiliza un archivo `.env` para gestionar las claves secretas y la configuración.
-
-1.  **Crea un archivo `.env`** en la raíz del proyecto (al mismo nivel que `manage.py`).
-2.  **Copia y pega el siguiente contenido** en el archivo `.env`, reemplazando los valores de ejemplo si es necesario:
-
-    ```dotenv
-    # Django
-    SECRET_KEY=tu_clave_secreta_aqui # Cambia esto por una clave segura y aleatoria
-    DEBUG=True
-    ALLOWED_HOSTS=localhost,127.0.0.1
-    # Cloudflare Turnstile (si lo usas)
-    TURNSTILE_SITE_KEY=tu_site_key
-    TURNSTILE_SECRET_KEY=tu_secret_key
-    ```
-    > **Importante:** El archivo `.env` ya está incluido en el `.gitignore` para evitar que se suba al repositorio.
-### 4. Instalar Dependencias
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Aplicar Migraciones
+Para detener los contenedores, ejecuta:
 
 ```bash
-python manage.py migrate
+docker-compose down
 ```
-
-### 6. Crear un Superusuario
-
-Necesitarás un superusuario para acceder al panel de administración.
-
-```bash
-python manage.py createsuperuser
-```
-Sigue las instrucciones para crear tu usuario y contraseña.
-
-### 7. Iniciar el Servidor
-
-```bash
-python manage.py runserver
-```
-
-¡Listo! Abre tu navegador y visita **`http://127.0.0.1:8000`**. Para gestionar el contenido, accede a **`http://127.0.0.1:8000/admin`**.
 
 ---
 

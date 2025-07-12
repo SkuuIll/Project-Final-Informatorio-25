@@ -20,18 +20,27 @@
                     Última conexión: <span class="font-medium">{{ user.last_login|naturaltime }}</span>
                 </span>
                 <div class="relative">
-                    <i data-feather="bell" class="w-5 h-5 text-slate-500 dark:text-slate-400 cursor-pointer hover:text-indigo-600 transition-colors"></i>
-                    {% if notification_count > 0 %}
-                    <div class="notification-badge">{{ notification_count }}</div>
-                    {% endif %}
+                    <a href="{% url 'accounts:notification_list' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-colors">
+                        <i data-feather="bell" class="w-5 h-5"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <div class="notification-badge">{{ unread_notifications_count }}</div>
+                        {% endif %}
+                    </a>
                 </div>
             </div>
         </div>
         <div class="flex gap-3">
-            <a href="{% url 'posts:post_create' %}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
-                <i data-feather="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"></i>
-                <span class="font-semibold">Crear Nuevo Post</span>
-            </a>
+            {% if user.profile.can_post %}
+                <a href="{% url 'posts:post_create' %}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
+                    <i data-feather="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"></i>
+                    <span class="font-semibold">Crear Nuevo Post</span>
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:request_post_permission' %}" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
+                    <i data-feather="send" class="w-5 h-5"></i>
+                    <span class="font-semibold">Solicitar Permiso para Postear</span>
+                </a>
+            {% endif %}
         </div>
     </section>
 

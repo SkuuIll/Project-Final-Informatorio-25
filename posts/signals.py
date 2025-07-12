@@ -4,11 +4,13 @@ from .models import Post, Comment
 from accounts.models import Notification
 import os
 
+
 @receiver(post_delete, sender=Post)
 def delete_post_header_image(sender, instance, **kwargs):
     if instance.header_image:
         if os.path.isfile(instance.header_image.path):
             os.remove(instance.header_image.path)
+
 
 @receiver(post_save, sender=Comment)
 def create_comment_notification(sender, instance, created, **kwargs):
@@ -21,5 +23,5 @@ def create_comment_notification(sender, instance, created, **kwargs):
                 recipient=post_author,
                 sender=comment_author,
                 message=f'{comment_author.username} ha comentado en tu post "{instance.post.title}".',
-                link=instance.post.get_absolute_url()
+                link=instance.post.get_absolute_url(),
             )
