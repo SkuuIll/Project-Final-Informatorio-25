@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Copiar el archivo de requerimientos e instalar las dependencias de Python
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install Cython && pip install -r requirements.txt
 
 # Copiar el resto del código de la aplicación
 COPY . .
