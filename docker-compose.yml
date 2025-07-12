@@ -3,12 +3,10 @@ services:
     image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - ./.env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,10 +21,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
-      - SECRET_KEY=a-temporary-secret-key-for-development
-      - DEBUG=True
+    env_file:
+      - ./.env
 
 volumes:
   postgres_data:
