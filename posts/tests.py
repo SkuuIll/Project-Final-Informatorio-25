@@ -71,6 +71,8 @@ class PostViewTest(TestCase):
     def test_post_create_view_logged_in(self):
         """Prueba que un usuario logueado puede acceder a la página de creación."""
         self.client.login(username="testuser", password="password")
+        self.user.profile.can_post = True
+        self.user.profile.save()
         response = self.client.get(reverse("posts:post_create"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "posts/post_form.html")
@@ -105,7 +107,10 @@ class PostViewTest(TestCase):
         response = self.client.post(
             reverse("posts:like_post", kwargs={"slug": self.published_post.slug})
         )
-        self.assertEqual(response.status_code, 302)  # Redirección
+        self.assertEqual(response.status_code, 200)
+        json_response = response.json()
+        self.assertTrue(json_response['liked'])
+        self.assertEqual(json_response['likes_count'], 1)
         self.published_post.refresh_from_db()
         self.assertTrue(self.user in self.published_post.likes.all())
 

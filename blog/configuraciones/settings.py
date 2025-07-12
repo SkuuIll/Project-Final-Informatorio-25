@@ -94,13 +94,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "blog.wsgi.application"
 
 
-import dj_database_url
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
 
@@ -165,31 +166,31 @@ AUTHENTICATION_BACKENDS = (
 DATA_UPLOAD_MAX_MEMORY_SIZE = 8388608  # 8 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608  # 8 MB
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "file": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "logs", "admin.log"),
-            "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "django.request": {
-            "handlers": ["file"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": os.path.join(BASE_DIR, "logs", "admin.log"),
+#             "formatter": "verbose",
+#         },
+#     },
+#     "loggers": {
+#         "django.request": {
+#             "handlers": ["file"],
+#             "level": "INFO",
+#             "propagate": True,
+#         },
+#     },
+# }
 
 JAZZMIN_SETTINGS = {
     # Títulos e Iconos

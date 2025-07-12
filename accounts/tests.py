@@ -48,7 +48,7 @@ class AccountsViewTest(TestCase):
         response = self.client.post(reverse("accounts:register"), new_user_data)
         self.assertEqual(response.status_code, 200) # Debería volver a mostrar el formulario
         # El mensaje de error exacto puede depender de tu formulario.
-        self.assertContains(response, "Las dos contraseñas no coinciden.")
+        self.assertContains(response, "Los dos campos de contraseñas no coinciden entre si.")
         self.assertFalse(User.objects.filter(username="userwithbadpass").exists())
 
     def test_profile_view_logged_in(self):
