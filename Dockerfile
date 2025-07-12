@@ -7,7 +7,8 @@ ENV PYTHONUNBUFFERED 1
 
 # Instalar dependencias del sistema operativo necesarias para algunas librerías de Python
 # Por ejemplo, libpq-dev es necesaria para psycopg2 (PostgreSQL)
-RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev default-jdk && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME /usr/lib/jvm/default-java
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
