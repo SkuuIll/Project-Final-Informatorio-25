@@ -19,3 +19,4 @@ jobs:
 
     - name: Run Django Tests
       run: docker run django-app python manage.py test
+
