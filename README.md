@@ -2,8 +2,6 @@
 
 Este repositorio contiene un proyecto de blog funcional construido con Python y Django. Fue desarrollado como proyecto final para el curso de Desarrollo Web de Informatorio Chaco.
 
-![GIF](https://i.imgur.com/0IVpaQf.gif)
-
 ---
 
 ## 🚀 Live Demo
