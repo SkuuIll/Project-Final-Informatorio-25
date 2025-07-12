@@ -1,3 +1,5 @@
 @echo off
+echo Creando directorio de logs...
+mkdir logs
 echo Activando entorno y ejecutando servidor...
-.\entorno\Scripts\activate && python manage.py runserver
+.\venv\Scripts\activate && python manage.py runserver
