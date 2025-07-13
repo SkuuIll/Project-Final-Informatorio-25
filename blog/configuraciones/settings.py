@@ -336,6 +336,9 @@ if not TESTING:
         # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
         # SECURE_HSTS_PRELOAD = True
 
+        # Confiar en la cabecera X-Forwarded-Proto de Nginx
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
         # Static files
         MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
         STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
