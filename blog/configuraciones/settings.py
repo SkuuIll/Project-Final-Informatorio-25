@@ -37,6 +37,9 @@ if ALLOWED_HOSTS_FROM_ENV:
 else:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+# Confiar en el origen para peticiones seguras a través del proxy
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]]
+
 
 # Application definition
 
