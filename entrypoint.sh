@@ -9,5 +9,5 @@ done
 # Ejecutar las migraciones de la base de datos
 python manage.py migrate
 
-# Iniciar el servidor
-python manage.py runserver 0.0.0.0:8000
+# Iniciar el servidor de producción con Gunicorn
+exec gunicorn blog.wsgi:application --bind 0.0.0.0:8000 --workers 3

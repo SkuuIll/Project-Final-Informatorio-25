@@ -10,6 +10,7 @@ django-jazzmin==3.0.1
 django-taggit==6.1.0
 django-turnstile==0.1.2
 djangorestframework==3.16.0
+gunicorn==22.0.0
 pillow==11.3.0
 python-dotenv==1.1.1
 ruff==0.12.3
