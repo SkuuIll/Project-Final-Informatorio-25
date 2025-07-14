@@ -8,7 +8,7 @@
     <div class="relative glass-effect rounded-3xl p-8 md:p-12 text-center">
         <div class="animate-bounce-gentle mb-6">
             <div class="inline-flex items-center justify-center w-20 h-20 gradient-bg rounded-2xl shadow-2xl">
-                <i data-feather="code" class="w-10 h-10 text-white"></i>
+                <i data-feather="book-open" class="w-10 h-10 text-white"></i>
             </div>
         </div>
         <h1 id="hero-heading" class="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 mb-4">
@@ -162,23 +162,23 @@
     <nav class="mt-12 flex justify-center" aria-label="Paginación">
         <div class="flex items-center gap-2">
             {% if page_obj.has_previous %}
-                <a href="?page=1" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Primera página">
+                <a href="?page=1" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la primera página">
                     <i data-feather="chevrons-left" class="w-4 h-4"></i>
                 </a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Página anterior">
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la página anterior, página {{ page_obj.previous_page_number }}">
                     <i data-feather="chevron-left" class="w-4 h-4"></i>
                 </a>
             {% endif %}
             
-            <span class="px-4 py-2 glass-effect rounded-lg font-medium">
+            <span class="px-4 py-2 glass-effect rounded-lg font-medium" aria-current="page">
                 Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
             </span>
             
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Página siguiente">
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la página siguiente, página {{ page_obj.next_page_number }}">
                     <i data-feather="chevron-right" class="w-4 h-4"></i>
                 </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Última página">
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la última página, página {{ page_obj.paginator.num_pages }}">
                     <i data-feather="chevrons-right" class="w-4 h-4"></i>
                 </a>
             {% endif %}

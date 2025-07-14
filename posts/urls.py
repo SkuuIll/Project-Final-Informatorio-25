@@ -24,7 +24,7 @@ router.register(r"posts", PostViewSet, basename="post-api")
 
 urlpatterns = [
     path("", PostListView.as_view(), name="post_list"),
-    path("tag/<slug:tag_slug>/", PostListByTagView.as_view(), name="post_list_by_tag"),
+    path("tag/<str:tag_slug>/", PostListByTagView.as_view(), name="post_list_by_tag"),
     path("api/", include(router.urls)),
     path("dashboard/", dashboard_view, name="dashboard"),
     path("favoritos/", favorite_list, name="favorite_list"),

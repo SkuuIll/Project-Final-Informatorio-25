@@ -202,11 +202,14 @@ def dashboard_view(request):
         "data": chart_data_points,
     }
 
+    # Obtener el recuento real de notificaciones no leídas
+    unread_notifications_count = Notification.objects.filter(recipient=user, is_read=False).count()
+
     context = {
         "user_posts": user_posts.order_by("-created_at"),
         "stats": stats,
         "top_posts": top_posts,
-        "notification_count": 3,  # Ejemplo, puedes hacerlo dinámico
+        "notification_count": unread_notifications_count,  # Usar el recuento dinámico
         "chart_data": json.dumps(chart_data),
     }
     return render(request, "posts/dashboard.html", context)

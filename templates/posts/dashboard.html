@@ -22,8 +22,8 @@
                 <div class="relative">
                     <a href="{% url 'accounts:notification_list' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-colors">
                         <i data-feather="bell" class="w-5 h-5"></i>
-                        {% if unread_notifications_count > 0 %}
-                        <div class="notification-badge">{{ unread_notifications_count }}</div>
+                        {% if notification_count > 0 %}
+                        <div class="notification-badge">{{ notification_count }}</div>
                         {% endif %}
                     </a>
                 </div>

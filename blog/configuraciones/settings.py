@@ -52,11 +52,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    # Apps de Channels
+    "channels",
     # Apps de terceros
     "django_ckeditor_5",
     "taggit",
     "rest_framework",
     "turnstile",
+    "crispy_forms",
+    "crispy_bootstrap5",
     # Mis apps
     "posts",
     "accounts",
@@ -147,7 +151,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-MEDIA_URL = "/media/"
+MEDIA_URL = "/medias/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
@@ -246,6 +250,7 @@ JAZZMIN_SETTINGS = {
     "show_ui_builder": False,
     "changeform_format": "horizontal_tabs",
     "related_modal_active": True,
+    "custom_css": "css/custom_admin.css",
 }
 
 # Configuración de la interfaz de usuario de Jazzmin (modo oscuro)
@@ -350,3 +355,11 @@ if not TESTING:
         # EMAIL_USE_TLS = True
         # EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
         # EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASS')
+
+# Channels
+ASGI_APPLICATION = "blog.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

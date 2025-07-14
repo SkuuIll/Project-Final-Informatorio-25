@@ -1,0 +1,4 @@
+/* Fix for CKEditor text color in Django Jazzmin dark mode */
+.ck-editor__editable {
+    color: #333 !important; /* O un color oscuro que prefieras */
+}

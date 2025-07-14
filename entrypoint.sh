@@ -13,4 +13,4 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 
 # Iniciar el servidor de producción con Gunicorn
-exec gunicorn blog.wsgi:application --bind 0.0.0.0:8000 --workers 3
+exec daphne -b 0.0.0.0 -p 8000 blog.asgi:application

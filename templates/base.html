@@ -32,7 +32,7 @@
     <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{% load static %}{% static 'img/favicon.ico' %}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <link rel="apple-touch-icon" sizes="180x180" href="{% load static %}{% static 'img/apple-touch-icon.png' %}">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -159,7 +159,7 @@
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" aria-label="Navegación Principal">
             <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white group focus-ring" aria-label="Página de inicio de DevBlog">
                 <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 shadow-lg group-hover:shadow-glow">
-                    <i data-feather="code" class="w-6 h-6 text-white"></i>
+                    <i data-feather="book-open" class="w-6 h-6 text-white"></i>
                 </div>
                 <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl font-black">DevBlog</span>
             </a>
@@ -221,7 +221,7 @@
                                 <p class="text-sm text-slate-600 dark:text-slate-400 truncate" role="none">{{ user.email }}</p>
                             </div>
                             <div class="p-2" role="none">
-                                <a href="{% url 'accounts:profile' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <a href="{% url 'accounts:profile' pk=request.user.pk %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
                                     <i data-feather="user" class="w-4 h-4"></i>
                                     <span>Mi Perfil</span>
                                 </a>
@@ -236,8 +236,7 @@
                                     <i data-feather="bookmark" class="w-4 h-4"></i>
                                     <span>Mis Favoritos</span>
                                 </a>
-                                <!-- SUGERENCIA: Crea una vista y una URL para la página de configuración y enlázala aquí. -->
-                                <a href="{% url 'accounts:password_change' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <a href="{% url 'accounts:settings' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
                                     <i data-feather="settings" class="w-4 h-4"></i>
                                     <span>Configuración</span>
                                 </a>
@@ -302,7 +301,7 @@
                     <a href="{% url 'posts:dashboard' %}" class="block font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50">
                         Dashboard
                     </a>
-                    <a href="{% url 'accounts:profile' %}" class="block font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50">
+                    <a href="{% url 'accounts:profile' pk=request.user.pk %}" class="block font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50">
                         Mi Perfil
                     </a>
                     <form method="post" action="{% url 'accounts:logout' %}" class="block">
@@ -341,7 +340,7 @@
             <div class="text-center">
                 <div class="flex items-center justify-center space-x-3 mb-6">
                     <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg">
-                        <i data-feather="code" class="w-5 h-5 text-white"></i>
+                        <i data-feather="book-open" class="w-5 h-5 text-white"></i>
                     </div>
                     <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">DevBlog</span>
                 </div>
@@ -770,6 +769,40 @@
     }
     </script>
 
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    {% if user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const notificationSocket = new WebSocket(
+                'ws://'
+                + window.location.host
+                + '/ws/notifications/'
+            );
+
+            notificationSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                window.showToast(data.message, 'info');
+                // Opcional: Actualizar el contador de notificaciones dinámicamente
+                const notificationBadge = document.querySelector('.notification-badge');
+                if (notificationBadge) {
+                    const currentCount = parseInt(notificationBadge.textContent) || 0;
+                    notificationBadge.textContent = currentCount + 1;
+                    notificationBadge.classList.remove('hidden');
+                }
+                const unreadCountSpan = document.querySelector('#user-menu a[href="{% url 'accounts:notification_list' %}"] span.ml-auto');
+                if(unreadCountSpan){
+                    const currentUnreadCount = parseInt(unreadCountSpan.textContent) || 0;
+                    unreadCountSpan.textContent = currentUnreadCount + 1;
+                    unreadCountSpan.classList.remove('hidden');
+                }
+            };
+
+            notificationSocket.onclose = function(e) {
+                console.error('Notification socket closed unexpectedly');
+            };
+        });
+    </script>
+    {% endif %}
+{% endblock %}
 </body>
 </html>
