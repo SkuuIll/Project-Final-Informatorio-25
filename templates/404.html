@@ -3,128 +3,64 @@
 {% block title %}Página no encontrada - Error 404{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="text-center">
-                <!-- Icono 404 -->
-                <div class="mb-4">
-                    <h1 class="display-1 text-primary fw-bold" style="font-size: 8rem;">404</h1>
-                </div>
-                
-                <!-- Mensaje principal -->
-                <div class="mb-4">
-                    <h2 class="h3 text-dark mb-3">¡Oops! Página no encontrada</h2>
-                    <p class="text-muted lead mb-4">
-                        Lo sentimos, la página que estás buscando no existe o ha sido movida.
-                    </p>
-                </div>
+<div class="flex flex-col items-center justify-center text-center py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        
+        <!-- Animación del número 404 -->
+        <div class="relative mb-8">
+            <h1 class="text-9xl font-black text-slate-300 dark:text-slate-700 transition-colors duration-500 animate-pulse-slow">
+                404
+            </h1>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-48 h-48 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full opacity-20 blur-3xl animate-spin-slow"></div>
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i data-feather="compass" class="w-24 h-24 text-indigo-500 animate-bounce-gentle"></i>
+            </div>
+        </div>
 
-                <!-- Ilustración o emoji -->
-                <div class="mb-4">
-                    <span style="font-size: 4rem;">🔍</span>
-                </div>
+        <!-- Mensaje principal -->
+        <div class="animate-fade-in-up">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl mb-4">
+                ¡Vaya! Parece que te has perdido.
+            </h2>
+            <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
+                La página que buscas no se encuentra en nuestro universo. Pero no te preocupes, podemos guiarte de vuelta a casa.
+            </p>
+        </div>
 
-                <!-- Botones de acción -->
-                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a href="{% url 'posts:post_list' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-home me-2"></i>
-                        Volver al inicio
-                    </a>
-                    <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
-                        <i class="fas fa-arrow-left me-2"></i>
-                        Página anterior
-                    </button>
-                </div>
+        <!-- Botón de acción -->
+        <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <a href="{% url 'posts:post_list' %}" 
+               class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transform transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i data-feather="home" class="w-5 h-5 mr-3"></i>
+                Volver al Inicio
+            </a>
+        </div>
 
-                <!-- Sugerencias adicionales -->
-                <div class="mt-5 pt-4 border-top">
-                    <h4 class="h5 mb-3">¿Qué puedes hacer?</h4>
-                    <div class="row text-start">
-                        <div class="col-md-6">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success me-2"></i>
-                                    Verificar la URL en la barra de direcciones
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success me-2"></i>
-                                    Usar el menú de navegación
-                                </li>
-                            </ul>
+        <!-- Ilustración adicional -->
+        <div class="mt-16 animate-fade-in-up" style="animation-delay: 0.4s;">
+            <div class="w-full max-w-xs mx-auto">
+                <div class="aspect-w-1 aspect-h-1">
+                    <div class="w-full h-full flex items-center justify-center">
+                        <div class="w-64 h-64 relative">
+                            <div class="absolute top-0 left-1/4 w-16 h-16 bg-blue-300 rounded-full opacity-50 animate-bounce-gentle" style="animation-delay: 0s;"></div>
+                            <div class="absolute bottom-0 right-1/4 w-12 h-12 bg-pink-300 rounded-full opacity-50 animate-bounce-gentle" style="animation-delay: 0.5s;"></div>
+                            <div class="absolute top-1/4 right-0 w-8 h-8 bg-yellow-300 rounded-full opacity-50 animate-bounce-gentle" style="animation-delay: 1s;"></div>
                         </div>
-                        <div class="col-md-6">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success me-2"></i>
-                                    Buscar en nuestro contenido
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success me-2"></i>
-                                    Contactar con soporte
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Barra de búsqueda opcional -->
-                <div class="mt-4">
-                    <div class="input-group input-group-lg">
-                        <input type="text" class="form-control" placeholder="Buscar en el sitio...">
-                        <button class="btn btn-primary" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Estilos adicionales -->
-<style>
-    .container {
-        min-height: 60vh;
-        display: flex;
-        align-items: center;
-    }
-    
-    .display-1 {
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .btn {
-        transition: all 0.3s ease;
-    }
-    
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    
-    @media (max-width: 576px) {
-        .display-1 {
-            font-size: 5rem !important;
-        }
-    }
-</style>
-
-<!-- JavaScript adicional -->
+{% block extra_js %}
 <script>
-    // Efecto de animación al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        const elements = document.querySelectorAll('.container > .row > .col-md-8 > .text-center > *');
-        elements.forEach((element, index) => {
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(20px)';
-            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            
-            setTimeout(() => {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, index * 200);
-        });
+    // Re-initialize Feather Icons if they are not rendered automatically
+    document.addEventListener('DOMContentLoaded', () => {
+        feather.replace();
     });
 </script>
 {% endblock %}

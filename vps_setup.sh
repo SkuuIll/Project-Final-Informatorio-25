@@ -60,7 +60,6 @@ info "Dependencias instaladas correctamente."
 
 # --- 4. Clonar el proyecto y configurar el entorno ---
 info "Cambiando al directorio del nuevo usuario para clonar el proyecto..."
-# Usamos 'echo' en lugar de 'info' porque la función no está disponible en el sub-shell de 'su'
 su - $NEW_USER -c "
     set -e; 
     cd /home/$NEW_USER; 
@@ -112,7 +111,6 @@ nginx -t
 
 # --- 6. Obtener certificado SSL con Certbot ---
 info "Obteniendo certificado SSL para $DOMAIN..."
-# Añadimos --expand para manejar certificados existentes de forma no interactiva
 certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos -m $EMAIL --redirect --expand
 
 info "Certificado SSL obtenido e instalado."
