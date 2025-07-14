@@ -104,3 +104,6 @@ cython_debug/
 logs/
 
 sync_config.jsonc.env 
+
+# Media files
+/media/ 
