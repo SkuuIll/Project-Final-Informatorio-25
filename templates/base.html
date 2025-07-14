@@ -675,6 +675,46 @@
 
             window.addEventListener('scroll', optimizedScroll);
 
+            // ===== LIKE AND FAVORITE BUTTONS =====
+            document.querySelectorAll('.like-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const slug = this.dataset.slug;
+                    const url = `/post/${slug}/like/`;
+                    const likesCountSpan = this.nextElementSibling;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            likesCountSpan.textContent = data.likes_count;
+                            const icon = this.querySelector('i');
+                            if (data.liked) {
+                                icon.classList.add('text-red-500', 'fill-current');
+                            } else {
+                                icon.classList.remove('text-red-500', 'fill-current');
+                            }
+                        });
+                });
+            });
+
+            const favoriteButton = document.getElementById('favorite-button');
+
+            if (favoriteButton) {
+                favoriteButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    fetch(this.dataset.url)
+                        .then(response => response.json())
+                        .then(data => {
+                            const icon = this.querySelector('i');
+                            if (data.favorited) {
+                                icon.classList.add('text-amber-500', 'fill-current');
+                            } else {
+                                icon.classList.remove('text-amber-500', 'fill-current');
+                            }
+                        });
+                });
+            }
+
             // ===== INICIALIZACIÓN FINAL =====
             console.log('DevBlog initialized successfully! 🚀');
             
