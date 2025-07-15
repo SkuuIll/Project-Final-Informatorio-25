@@ -13,7 +13,7 @@ from django.views.generic import (
 )
 from django.views.generic.dates import ArchiveIndexView
 from .models import Post, Comment
-from .forms import CommentForm
+from .forms import CommentForm, PostForm
 from taggit.models import Tag
 from accounts.models import Notification
 
@@ -123,8 +123,8 @@ class PostDetailView(DetailView):
 
 class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Post
+    form_class = PostForm
     template_name = "posts/post_form.html"
-    fields = ["title", "content", "header_image", "tags", "status"]
 
     def test_func(self):
         return self.request.user.profile.can_post
@@ -136,8 +136,8 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
+    form_class = PostForm
     template_name = "posts/post_form.html"
-    fields = ["title", "content", "header_image", "tags", "status"]
 
     def test_func(self):
         post = self.get_object()

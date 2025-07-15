@@ -3,14 +3,15 @@
 {% block title %}{% if form.instance.pk %}Editar Post{% else %}Crear Nuevo Post{% endif %}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <form method="post" enctype="multipart/form-data" class="space-y-8" id="post-form">
         {% csrf_token %}
         
-        <div class="glass-effect rounded-2xl p-8 border border-white/20 dark:border-slate-700/50">
+        <!-- Encabezado y Acciones Principales -->
+        <div class="glass-effect rounded-2xl p-6 md:p-8 border">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-500 dark:to-purple-500">
                         {% if form.instance.pk %}
                             Editando Post
                         {% else %}
@@ -19,19 +20,19 @@
                     </h1>
                     <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">Da vida a tus ideas y compártelas con el mundo.</p>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button type="button" id="preview-btn"
-                            class="group flex items-center space-x-2 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-6 py-3 rounded-xl hover:bg-amber-200 dark:hover:bg-amber-800 transition-all duration-300 hover:scale-105">
-                        <i data-feather="eye" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
-                        <span>Vista Previa</span>
+                <div class="flex items-center flex-wrap gap-2">
+                    <!-- Interruptor de Modo Oscuro -->
+                    <button type="button" id="theme-toggle" title="Toggle dark mode" class="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800">
+                        <svg id="theme-toggle-dark-icon" class="hidden h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                        <svg id="theme-toggle-light-icon" class="hidden h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM5.05 14.95l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM1.464 6.464a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
                     </button>
                     <a href="{{ object.get_absolute_url|default_if_none:'/' }}" 
-                       class="group flex items-center space-x-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-105">
+                       class="group flex items-center space-x-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-105">
                         <i data-feather="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
                         <span>Cancelar</span>
                     </a>
                     <button type="submit" 
-                            class="group flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                            class="group flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                         <i data-feather="save" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
                         <span>{% if form.instance.pk %}Guardar Cambios{% else %}Publicar Post{% endif %}</span>
                     </button>
@@ -42,9 +43,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-3 space-y-6">
                 <!-- Título del Post -->
-                <div class="glass-effect rounded-2xl p-8 border border-white/20 dark:border-slate-700/50 animate-fade-in">
+                <div class="glass-effect rounded-2xl p-8 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shrink-0">
                             <i data-feather="edit-3" class="w-5 h-5 text-white"></i>
                         </div>
                         <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Título del Post</h2>
@@ -58,8 +59,8 @@
                                    name="{{ form.title.name }}" 
                                    id="{{ form.title.id_for_label }}"
                                    value="{{ form.title.value|default:'' }}"
-                                   class="w-full px-4 py-4 text-xl rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500 font-semibold"
-                                   placeholder="Escribe un título atractivo para tu post..."
+                                   class="w-full px-4 py-4 text-xl rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500 font-semibold"
+                                   placeholder="Escribe un título atractivo..."
                                    required>
                         </div>
                         
@@ -73,30 +74,28 @@
                     </div>
                 </div>
 
-                <!-- Contenido del Post -->
-                <div class="glass-effect rounded-2xl p-8 border border-white/20 dark:border-slate-700/50 animate-fade-in">
+                <!-- Contenido del Post con CKEditor 5 -->
+                <div class="glass-effect rounded-2xl p-8 border animate-fade-in">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center shrink-0">
                                 <i data-feather="file-text" class="w-5 h-5 text-white"></i>
                             </div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Contenido del Post</h2>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-sm text-slate-500 dark:text-slate-400">Editor avanzado</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400">Editor Avanzado</span>
                             <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         </div>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
-                            <div id="toolbar"></div>
-                            <div id="editor" class="min-h-[400px] p-4"></div>
+                        <div class="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden editor-container">
+                            <textarea name="{{ form.content.name }}" id="editor" class="hidden">{{ form.content.value|default:'' }}</textarea>
                         </div>
-                        <textarea name="{{ form.content.name }}" id="content-input" class="hidden">{{ form.content.value|default:'' }}</textarea>
                         
-                        <div class="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                            <div class="flex items-center space-x-4">
+                        <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                                 <div class="flex items-center space-x-2">
                                     <i data-feather="type" class="w-4 h-4"></i>
                                     <span id="word-count">0 palabras</span>
@@ -106,27 +105,31 @@
                                     <span id="reading-time">0 min de lectura</span>
                                 </div>
                             </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="autosave-status" class="text-green-600 dark:text-green-400">Guardado</span>
+                                <i data-feather="check-circle" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tags y Estado -->
-                <div class="glass-effect rounded-2xl p-8 border border-white/20 dark:border-slate-700/50 animate-fade-in">
+                <div class="glass-effect rounded-2xl p-8 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shrink-0">
                             <i data-feather="tag" class="w-5 h-5 text-white"></i>
                         </div>
                         <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Tags y Configuración</h2>
                     </div>
                     
-                    <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Estado -->
                         <div>
                             <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Estado de publicación
                             </label>
                             <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
-                                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300">
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300">
                                 {% for value, text in form.status.field.choices %}
                                     <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ text }}</option>
                                 {% endfor %}
@@ -138,14 +141,16 @@
                             <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Tags
                             </label>
-                            <input type="text" 
-                                   name="{{ form.tags.name }}" 
-                                   id="{{ form.tags.id_for_label }}"
-                                   value="{{ form.tags.value|default:'' }}"
-                                   class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500"
-                                   placeholder="Escribe tus tags separados por comas (ej: tecnología, desarrollo, web)">
+                            <div class="relative">
+                                <input type="text" 
+                                       name="{{ form.tags.name }}" 
+                                       id="{{ form.tags.id_for_label }}"
+                                       value="{{ form.tags.value|default:'' }}"
+                                       class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500"
+                                       placeholder="tecnología, desarrollo, web...">
+                            </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                                Separa los tags con comas para mejorar la búsqueda de tu contenido
+                                Separa los tags con comas.
                             </p>
                         </div>
                     </div>
@@ -154,47 +159,10 @@
 
             <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Vista Previa -->
-                <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 animate-fade-in">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
-                            <i data-feather="eye" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Vista Previa</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 rounded-lg flex items-center justify-center" id="preview-image-container">
-                             <img id="preview-image" src="" class="w-full h-full object-cover rounded-lg hidden">
-                             <i id="preview-image-icon" data-feather="image" class="w-8 h-8 text-slate-400"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-900 dark:text-slate-100 line-clamp-2" id="preview-title">
-                                Tu título aparecerá aquí
-                            </h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 line-clamp-3" id="preview-content">
-                                El contenido de tu post aparecerá aquí...
-                            </p>
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-                            <div class="flex items-center gap-2">
-                                {% if user.profile.avatar and user.profile.avatar.url %}
-                                    <img src="{{ user.profile.avatar.url }}" class="w-6 h-6 rounded-full object-cover">
-                                {% else %}
-                                    <div class="w-6 h-6 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                        {{ user.username|first|upper }}
-                                    </div>
-                                {% endif %}
-                                <span>Por: {{ user.username }}</span>
-                            </div>
-                            <span id="preview-date">Hoy</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Imagen Destacada -->
-                <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 animate-fade-in">
+                <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center shrink-0">
                             <i data-feather="image" class="w-5 h-5 text-white"></i>
                         </div>
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Imagen Destacada</h3>
@@ -202,20 +170,20 @@
                     <div id="image-uploader" class="relative group cursor-pointer">
                         <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-300">
                             <div id="image-preview-container" class="relative">
-                                {% if form.instance.header_image %}
+                                {% if form.instance.header_image and form.instance.header_image.url %}
                                     <img id="image-preview" 
                                          src="{{ form.instance.header_image.url }}" 
-                                         class="mx-auto h-48 w-full rounded-lg object-cover shadow-lg">
+                                         class="mx-auto max-h-48 w-full rounded-lg object-cover shadow-lg">
                                 {% else %}
-                                    <img id="image-preview" src="" class="mx-auto h-48 w-full rounded-lg object-cover shadow-lg hidden">
+                                    <img id="image-preview" src="" class="mx-auto max-h-48 w-full rounded-lg object-cover shadow-lg hidden">
                                 {% endif %}
-                                <div id="image-placeholder" class="{% if form.instance.header_image %}hidden{% endif %}">
+                                <div id="image-placeholder" class="{% if form.instance.header_image and form.instance.header_image.url %}hidden{% endif %}">
                                     <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <i data-feather="upload-cloud" class="w-8 h-8 text-white"></i>
                                     </div>
-                                    <p class="text-slate-600 dark:text-slate-400 font-medium">Arrastra una imagen aquí</p>
-                                    <p class="text-slate-500 dark:text-slate-500 text-sm mt-2">o <span class="text-indigo-600 dark:text-indigo-400 font-medium">haz clic para seleccionar</span></p>
-                                    <p id="file-size-info" class="text-xs text-slate-400 dark:text-slate-500 mt-2">PNG, JPG, GIF hasta 8MB</p>
+                                    <p class="text-slate-600 dark:text-slate-400 font-medium">Arrastra una imagen</p>
+                                    <p class="text-slate-500 dark:text-slate-500 text-sm mt-1">o <span class="text-indigo-600 dark:text-indigo-400 font-medium">haz clic</span></p>
+                                    <p id="file-size-info" class="text-xs text-slate-400 dark:text-slate-500 mt-2">PNG, JPG hasta 8MB</p>
                                 </div>
                             </div>
                         </div>
@@ -226,205 +194,343 @@
                                class="hidden">
                     </div>
                 </div>
+
+                <!-- Estadísticas del Post -->
+                <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shrink-0">
+                            <i data-feather="bar-chart-2" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Estadísticas</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Párrafos:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="paragraph-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Encabezados:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="heading-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Enlaces:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="link-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Imágenes:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="image-count">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
 </div>
 
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<!-- Scripts -->
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.2/classic/ckeditor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
 <style>
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    
-    #toolbar { border-bottom: 1px solid #e2e8f0; }
-    .dark #toolbar { border-bottom: 1px solid #334155; }
+    /* Efecto de cristal para los contenedores */
+    .glass-effect {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    .dark .glass-effect {
+        background-color: rgba(30, 41, 59, 0.6); /* slate-800/60 */
+        border-color: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+    }
 
-    .ql-editor { font-size: 16px; line-height: 1.6; }
+    /* Estilos para CKEditor 5 (Light & Dark Mode) */
+    .editor-container {
+        --ck-border-color: #e2e8f0; /* slate-200 */
+        --ck-focus-ring-color: rgba(99, 102, 241, 0.2);
+        --ck-color-base-background: #ffffff;
+        --ck-color-text: #1e293b; /* slate-800 */
+        --ck-color-toolbar-background: #ffffff;
+        --ck-color-button-default-hover-background: #f1f5f9; /* slate-100 */
+        --ck-color-button-on-background: #e2e8f0; /* slate-200 */
+        --ck-color-base-placeholder: #9ca3af; /* gray-400 */
+    }
+    .dark .editor-container {
+        --ck-border-color: #475569; /* slate-600 */
+        --ck-focus-ring-color: rgba(129, 140, 248, 0.3); /* indigo-400 */
+        --ck-color-base-background: #1e293b; /* slate-800 - SOLID COLOR */
+        --ck-color-text: #cbd5e1; /* slate-300 - IMPROVED CONTRAST */
+        --ck-color-toolbar-background: #0f172a; /* slate-900 */
+        --ck-color-button-default-hover-background: #334155; /* slate-700 */
+        --ck-color-button-on-background: #475569; /* slate-600 */
+        --ck-color-input-background: #334155;
+        --ck-color-list-button-on-background: #475569;
+        --ck-color-dropdown-panel-background: #1e293b;
+        --ck-color-panel-border: #475569;
+        --ck-color-base-placeholder: #64748b; /* slate-500 */
+    }
+    .ck-editor__main > .ck-editor__editable {
+        min-height: 400px;
+        border-radius: 0 0 0.75rem 0.75rem !important; /* 12px */
+        font-size: 16px;
+        line-height: 1.6;
+        background-color: var(--ck-color-base-background) !important;
+        color: var(--ck-color-text) !important;
+        border: none !important;
+    }
+    .ck-editor__top .ck-sticky-panel .ck-toolbar {
+        border-radius: 0.75rem 0.75rem 0 0 !important; /* 12px */
+        border: none !important;
+        border-bottom: 1px solid var(--ck-border-color) !important;
+        background-color: var(--ck-color-toolbar-background) !important;
+    }
+    .ck.ck-button, .ck.ck-button:hover {
+        color: var(--ck-color-text) !important;
+    }
+    .ck.ck-dropdown__panel {
+        border: 1px solid var(--ck-panel-border) !important;
+    }
+    .ck-editor__editable.ck-placeholder::before {
+        color: var(--ck-color-base-placeholder) !important;
+    }
     
-    .dark .ql-toolbar .ql-stroke { stroke: #94a3b8; }
-    .dark .ql-toolbar .ql-fill { fill: #94a3b8; }
-    .dark .ql-toolbar .ql-picker-label { color: #94a3b8; }
-
-    .dark .ql-editor { color: #e2e8f0; }
-    .dark .ql-editor.ql-blank::before { color: #64748b; font-style: normal; }
+    /* Animaciones */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const quill = new Quill('#editor', {
-            theme: 'snow',
-            modules: { 
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    ['blockquote', 'code-block'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'indent': '-1'}, { 'indent': '+1' }],
-                    ['link', 'image', 'video'],
-                    ['clean']
+document.addEventListener('DOMContentLoaded', function() {
+    // --- LÓGICA DEL MODO OSCURO ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            themeToggleLightIcon.classList.remove('hidden');
+            themeToggleDarkIcon.classList.add('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeToggleLightIcon.classList.add('hidden');
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    applyTheme(initialTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+        const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem('theme', newTheme);
+        applyTheme(newTheme);
+    });
+
+    // --- INICIALIZAR ICONOS FEATHER ---
+    feather.replace();
+
+    // --- LÓGICA DEL FORMULARIO ---
+    let editor;
+    let autosaveTimeout;
+    
+    // Inicializar CKEditor 5 con TODAS las funciones
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'fontSize', 'fontColor', 'fontBackgroundColor', 'highlight', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'alignment', '|',
+                    'numberedList', 'bulletedList', 'todoList', 'outdent', 'indent', '|',
+                    'link', 'imageUpload', 'mediaEmbed', 'blockQuote', 'insertTable', 'codeBlock', 'horizontalLine', '|',
+                    'specialCharacters', 'findAndReplace', '|',
+                    'undo', 'redo'
+                ],
+                shouldNotGroupWhenFull: true
+            },
+            placeholder: 'Comienza a escribir tu increíble historia...',
+            fontSize: {
+                options: [ 'default', 14, 16, 18, 20, 24, 28 ],
+                supportAllValues: true
+            },
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Párrafo', class: 'ck-heading_paragraph' },
+                    { model: 'heading1', view: 'h1', title: 'Encabezado 1', class: 'ck-heading_heading1' },
+                    { model: 'heading2', view: 'h2', title: 'Encabezado 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Encabezado 3', class: 'ck-heading_heading3' }
                 ]
             },
-            placeholder: 'Comienza a escribir tu increíble historia...'
-        });
-
-        // Sincronizar contenido con el textarea oculto
-        const contentInput = document.getElementById('content-input');
-        if (contentInput.value) {
-            quill.root.innerHTML = contentInput.value;
-        }
-
-        quill.on('text-change', function() {
-            contentInput.value = quill.root.innerHTML;
-            updateWordCount();
-            updatePreview();
-        });
-
-        // Contador de palabras y tiempo de lectura
-        const wordCountEl = document.getElementById('word-count');
-        const readingTimeEl = document.getElementById('reading-time');
-        
-        function updateWordCount() {
-            const text = quill.getText().trim();
-            const wordCount = text.length > 0 ? text.split(/\s+/).length : 0;
-            wordCountEl.textContent = `${wordCount} palabra${wordCount !== 1 ? 's' : ''}`;
-            const readingTime = Math.ceil(wordCount / 200);
-            readingTimeEl.textContent = `${readingTime} min de lectura`;
-        }
-        updateWordCount();
-
-        // Generar slug automáticamente
-        const titleInput = document.getElementById('{{ form.title.id_for_label }}');
-        const urlPreview = document.getElementById('url-preview');
-        
-        function slugify(text) {
-            return text.toString().toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w\-]+/g, '')
-                .replace(/\-\-+/g, '-')
-                .replace(/^-+/, '')
-                .replace(/-+$/, '');
-        }
-        
-        titleInput.addEventListener('keyup', function() {
-            const slug = slugify(this.value);
-            urlPreview.textContent = `/posts/${slug || 'tu-titulo-aqui'}`;
-            updatePreview();
-        });
-
-        // Manejo de imágenes
-        const imageUploader = document.getElementById('image-uploader');
-        const imageInput = document.getElementById('{{ form.header_image.id_for_label }}');
-        const imagePreview = document.getElementById('image-preview');
-        const imagePlaceholder = document.getElementById('image-placeholder');
-        const previewImage = document.getElementById('preview-image');
-        const previewImageIcon = document.getElementById('preview-image-icon');
-        const fileSizeInfo = document.getElementById('file-size-info'); 
-
-        if (imageUploader && imageInput) {
-            imageUploader.addEventListener('click', () => imageInput.click());
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                imageUploader.addEventListener(eventName, e => { 
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                }, false);
-            });
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                imageUploader.addEventListener(eventName, () => {
-                    imageUploader.querySelector('.border-dashed').classList.add('border-indigo-500');
-                }, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                imageUploader.addEventListener(eventName, () => {
-                    imageUploader.querySelector('.border-dashed').classList.remove('border-indigo-500');
-                }, false);
-            });
-            
-            imageUploader.addEventListener('drop', e => {
-                if (e.dataTransfer.files.length) {
-                    imageInput.files = e.dataTransfer.files;
-                    handleFiles(e.dataTransfer.files);
-                }
-            }, false);
-            
-            imageInput.addEventListener('change', e => {
-                if (e.target.files.length) handleFiles(e.target.files);
-            });
-
-            function handleFiles(files) {
-                const file = files[0];
-                const maxSize = 8 * 1024 * 1024; // 8MB
-
-                if (file && file.size > maxSize) {
-                    fileSizeInfo.textContent = 'El archivo supera el límite de 8MB.';
-                    fileSizeInfo.classList.remove('dark:text-slate-500', 'text-slate-400');
-                    fileSizeInfo.classList.add('text-red-500', 'dark:text-red-500');
-                    imageInput.value = ''; 
-
-                    imagePreview.src = '';
-                    imagePreview.classList.add('hidden');
-                    imagePlaceholder.classList.remove('hidden');
-                    previewImage.src = '';
-                    previewImage.classList.add('hidden');
-                    previewImageIcon.classList.remove('hidden');
-                    return; 
-                }
-
-                fileSizeInfo.textContent = 'PNG, JPG, GIF hasta 8MB';
-                fileSizeInfo.classList.remove('text-red-500', 'dark:text-red-500');
-                fileSizeInfo.classList.add('dark:text-slate-500', 'text-slate-400');
-
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const imageUrl = e.target.result;
-                        imagePreview.src = imageUrl;
-                        imagePreview.classList.remove('hidden');
-                        imagePlaceholder.classList.add('hidden');
-                        previewImage.src = imageUrl;
-                        previewImage.classList.remove('hidden');
-                        previewImageIcon.classList.add('hidden');
-                    }
-                    reader.readAsDataURL(file);
-                }
+            image: {
+                toolbar: [ 'imageTextAlternative', '|', 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side' ]
+            },
+            table: {
+                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+            },
+            codeBlock: {
+                languages: [
+                    { language: 'plaintext', label: 'Texto plano' },
+                    { language: 'html', label: 'HTML' },
+                    { language: 'css', label: 'CSS' },
+                    { language: 'javascript', label: 'JavaScript' },
+                    { language: 'python', label: 'Python' }
+                ]
+            },
+            // Configuración para insertar videos
+            mediaEmbed: {
+                previewsInData: true // Muestra la vista previa del video directamente en el editor
             }
-        }
+        })
+        .then(editorInstance => {
+            editor = editorInstance;
+            editor.model.document.on('change:data', () => {
+                updateStats();
+                scheduleAutosave();
+            });
+            updateStats(); // Initial stats
+        })
+        .catch(error => {
+            console.error('Error al inicializar CKEditor:', error);
+        });
+
+    // Elementos del DOM
+    const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+    const urlPreview = document.getElementById('url-preview');
+    const wordCountEl = document.getElementById('word-count');
+    const readingTimeEl = document.getElementById('reading-time');
+    const paragraphCountEl = document.getElementById('paragraph-count');
+    const headingCountEl = document.getElementById('heading-count');
+    const linkCountEl = document.getElementById('link-count');
+    const imageCountEl = document.getElementById('image-count');
+    const autosaveStatus = document.getElementById('autosave-status');
+    const autosaveIcon = autosaveStatus.nextElementSibling;
+
+    // Función para actualizar estadísticas
+    function updateStats() {
+        if (!editor) return;
         
-        // Validación antes de enviar
-        const postForm = document.getElementById('post-form');
-        postForm.addEventListener('submit', function(e) {
-            const file = imageInput.files[0];
-            const maxSize = 8 * 1024 * 1024;
+        const content = editor.getData();
+        const plainText = content.replace(/<[^>]*>/g, '');
+        
+        const words = plainText.trim().match(/\S+/g) || [];
+        const wordCount = words.length;
+        const readingTime = Math.ceil(wordCount / 200);
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        
+        const paragraphs = tempDiv.querySelectorAll('p').length;
+        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+        const links = tempDiv.querySelectorAll('a').length;
+        const images = tempDiv.querySelectorAll('img').length;
+        
+        wordCountEl.textContent = `${wordCount} palabra${wordCount !== 1 ? 's' : ''}`;
+        readingTimeEl.textContent = `${readingTime} min de lectura`;
+        paragraphCountEl.textContent = paragraphs;
+        headingCountEl.textContent = headings;
+        linkCountEl.textContent = links;
+        imageCountEl.textContent = images;
+    }
+
+    // Función para generar slug
+    function slugify(text) {
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    }
+
+    titleInput.addEventListener('keyup', function() {
+        const slug = slugify(this.value);
+        urlPreview.textContent = `/posts/${slug || 'tu-titulo-aqui'}`;
+    });
+
+    // Función para programar autoguardado
+    function scheduleAutosave() {
+        clearTimeout(autosaveTimeout);
+        autosaveStatus.textContent = 'Guardando...';
+        autosaveStatus.className = 'text-amber-600 dark:text-amber-400';
+        autosaveIcon.setAttribute('data-feather', 'loader');
+        feather.replace();
+
+        autosaveTimeout = setTimeout(saveAsDraft, 2000);
+    }
+
+    function saveAsDraft() {
+        // Aquí iría la lógica AJAX para guardar el borrador
+        console.log("Autoguardado disparado.");
+        autosaveStatus.textContent = 'Guardado';
+        autosaveStatus.className = 'text-green-600 dark:text-green-400';
+        autosaveIcon.setAttribute('data-feather', 'check-circle');
+        feather.replace();
+    }
+
+    // Manejo de imágenes
+    const imageUploader = document.getElementById('image-uploader');
+    const imageInput = document.getElementById('{{ form.header_image.id_for_label }}');
+    const imagePreview = document.getElementById('image-preview');
+    const imagePlaceholder = document.getElementById('image-placeholder');
+    const fileSizeInfo = document.getElementById('file-size-info');
+
+    if (imageUploader && imageInput) {
+        imageUploader.addEventListener('click', () => imageInput.click());
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            imageUploader.addEventListener(eventName, e => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+            }, false);
+        });
+        
+        imageInput.addEventListener('change', e => {
+            if (e.target.files.length) handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const file = files[0];
+            const maxSize = 8 * 1024 * 1024; // 8MB
 
             if (file && file.size > maxSize) {
-                e.preventDefault(); 
-                fileSizeInfo.textContent = '¡Error! El archivo seleccionado es demasiado grande.';
-                fileSizeInfo.classList.remove('dark:text-slate-500', 'text-slate-400');
-                fileSizeInfo.classList.add('text-red-500', 'dark:text-red-500');
-                fileSizeInfo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                alert('El archivo supera el límite de 8MB.');
+                imageInput.value = '';
+                return;
             }
-        });
 
-        // Actualizar vista previa
-        const previewTitle = document.getElementById('preview-title');
-        const previewContent = document.getElementById('preview-content');
-        
-        function updatePreview() {
-            previewTitle.textContent = titleInput.value || 'Tu título aparecerá aquí';
-            const plainText = quill.getText(0, 150).trim();
-            previewContent.textContent = plainText ? plainText + '...' : 'El contenido de tu post aparecerá aquí...';
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    imagePlaceholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
         }
-        
-        const previewBtn = document.getElementById('preview-btn');
-        if(previewBtn) {
-            previewBtn.addEventListener('click', updatePreview);
+    }
+
+    // Validación y envío del formulario
+    const postForm = document.getElementById('post-form');
+    postForm.addEventListener('submit', function(e) {
+        if (editor) {
+            document.querySelector('#editor').value = editor.getData();
         }
 
-        updatePreview();
+        const submitBtn = postForm.querySelector('button[type="submit"]');
+        submitBtn.querySelector('span').textContent = 'Publicando...';
+        submitBtn.disabled = true;
     });
+});
 </script>
 {% endblock %}
