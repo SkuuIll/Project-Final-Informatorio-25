@@ -54,16 +54,17 @@ class AccountsViewTest(TestCase):
     def test_profile_view_logged_in(self):
         """Prueba que un usuario logueado puede ver su perfil."""
         self.client.login(username="testuser", password="password")
-        response = self.client.get(reverse("accounts:profile"))
+        response = self.client.get(reverse("accounts:profile", kwargs={"pk": self.user.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "accounts/profile.html")
         self.assertContains(response, self.user.username)
 
     def test_profile_view_logged_out(self):
         """Prueba que un usuario anónimo es redirigido desde la vista de perfil."""
-        response = self.client.get(reverse("accounts:profile"))
+        profile_url = reverse("accounts:profile", kwargs={"pk": self.user.pk})
+        response = self.client.get(profile_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f"{reverse('accounts:login')}?next={reverse('accounts:profile')}")
+        self.assertRedirects(response, f"{reverse('accounts:login')}?next={profile_url}")
 
 
     def test_profile_edit_view(self):
@@ -81,7 +82,7 @@ class AccountsViewTest(TestCase):
         }
         response = self.client.post(reverse("accounts:profile_edit"), updated_data)
         self.assertEqual(response.status_code, 302)  # Redirección al perfil
-        self.assertRedirects(response, reverse("accounts:profile"))
+        self.assertRedirects(response, reverse("accounts:profile", kwargs={"pk": self.user.pk}))
 
         # Refrescar datos desde la BD
         self.user.refresh_from_db()

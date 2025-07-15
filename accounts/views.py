@@ -4,16 +4,16 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
-from .models import Profile, Notification
+from .models import Notification
 from django.contrib.auth.views import LoginView
-from django.views.generic import CreateView, DetailView, TemplateView
+from django.views.generic import CreateView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.admin.views.decorators import staff_member_required
 from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, LoginForm
 import os
 from django.conf import settings
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class CustomLoginView(LoginView):
@@ -50,15 +50,15 @@ def follow_user(request, pk):
             recipient=user_to_follow,
             sender=request.user,
             message=f'{request.user.username} ha comenzado a seguirte.',
-            link=reverse('accounts:profile_by_pk', kwargs={'pk': request.user.pk})
+            link=reverse('accounts:profile', kwargs={'pk': request.user.pk})
         )
-    return redirect("accounts:profile_by_pk", pk=pk)
+    return redirect("accounts:profile", pk=pk)
 
 @login_required
 def unfollow_user(request, pk):
     user_to_unfollow = get_object_or_404(User, pk=pk)
     request.user.profile.follows.remove(user_to_unfollow.profile)
-    return redirect("accounts:profile_by_pk", pk=pk)
+    return redirect("accounts:profile", pk=pk)
 
 @login_required
 def notification_list(request):
@@ -67,7 +67,7 @@ def notification_list(request):
     return render(request, 'accounts/notification_list.html', {'notifications': notifications})
 
 
-class ProfileView(DetailView):
+class ProfileView(LoginRequiredMixin, DetailView):
     model = User
     template_name = "accounts/profile.html"
     context_object_name = "profile_user" # Renombrar para evitar conflicto con el 'user' de la request
@@ -87,13 +87,10 @@ def profile_edit(request):
             user_form.save()
             profile_form.save()
             messages.success(request, "¡Tu perfil ha sido actualizado exitosamente!")
-            return redirect("accounts:profile")
+            return redirect("accounts:profile", pk=request.user.pk)
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)
-
-    context = {"user_form": user_form, "profile_form": profile_form}
-    return render(request, "accounts/profile_edit.html", context)
 
     context = {"user_form": user_form, "profile_form": profile_form}
     return render(request, "accounts/profile_edit.html", context)
@@ -136,7 +133,7 @@ def settings_view(request):
                 update_session_auth_hash(request, user)
                 return JsonResponse({'success': True, 'message': '¡Contraseña cambiada con éxito!'})
             else:
-                return JsonResponse({'success': False, 'errors': password_form.errors})
+                return JsonResponse({'success': False, 'errors': password_form.errors}, status=400)
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)

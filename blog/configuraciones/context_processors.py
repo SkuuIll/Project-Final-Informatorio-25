@@ -1,4 +1,3 @@
-from accounts.models import Notification
 
 def notifications_context(request):
     if request.user.is_authenticated:

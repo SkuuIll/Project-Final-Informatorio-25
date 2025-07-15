@@ -2,6 +2,18 @@
 
 {% block title %}{{ post.title }} - DevBlog{% endblock %}
 
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.content|striptags|truncatewords:30 }}{% endblock %}
+{% if post.header_image %}
+{% block og_image %}{{ request.build_absolute_uri(post.header_image.url) }}{% endblock %}
+{% endif %}
+
+{% block twitter_title %}{{ post.title }}{% endblock %}
+{% block twitter_description %}{{ post.content|striptags|truncatewords:30 }}{% endblock %}
+{% if post.header_image %}
+{% block twitter_image %}{{ request.build_absolute_uri(post.header_image.url) }}{% endblock %}
+{% endif %}
+
 {% block content %}
 <main>
     <article class="max-w-5xl mx-auto pb-24">

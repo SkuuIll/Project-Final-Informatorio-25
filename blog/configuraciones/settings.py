@@ -25,17 +25,17 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-fallback-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "t")
 
-ALLOWED_HOSTS_FROM_ENV = os.environ.get("ALLOWED_HOSTS")
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+# Obtener hosts adicionales desde variables de entorno y agregarlos
+ALLOWED_HOSTS_FROM_ENV = os.environ.get("ALLOWED_HOSTS")
 if ALLOWED_HOSTS_FROM_ENV:
-    ALLOWED_HOSTS = ALLOWED_HOSTS_FROM_ENV.split(",")
-else:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+    ALLOWED_HOSTS.extend(ALLOWED_HOSTS_FROM_ENV.split(","))
 
 # Confiar en el origen para peticiones seguras a través del proxy
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]]

@@ -1,7 +1,5 @@
 asgiref==3.9.1
-coverage==7.9.2
 crispy-bootstrap5==2025.6
-Cython==3.1.2
 Django==5.2.4
 django-ckeditor-5==0.2.18
 django-crispy-forms==2.4
@@ -13,9 +11,8 @@ djangorestframework==3.16.0
 gunicorn==22.0.0
 pillow==11.3.0
 python-dotenv==1.1.1
-ruff==0.12.3
 sqlparse==0.5.3
 tzdata==2025.2
-whitenoise
+whitenoise==6.9.0
 channels==4.0.0
 daphne==4.1.0
