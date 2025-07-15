@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import view_log
+from .views import about, contact, collaborate, privacy, terms, cookies
 
 urlpatterns = [
     path("admin/view_log/", view_log, name="view_log"),
@@ -12,6 +13,12 @@ urlpatterns = [
     ),
     path("", include("posts.urls")),
     path("accounts/", include("accounts.urls")),
+    path("about/", about, name="about"),
+    path("contact/", contact, name="contact"),
+    path("collaborate/", collaborate, name="collaborate"),
+    path("privacy/", privacy, name="privacy"),
+    path("terms/", terms, name="terms"),
+    path("cookies/", cookies, name="cookies"),
 ]
 
 if settings.DEBUG:

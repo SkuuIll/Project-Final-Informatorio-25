@@ -253,7 +253,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar Quill Editor
         const quill = new Quill('#editor', {
             theme: 'snow',
             modules: { 
@@ -326,7 +325,6 @@
         if (imageUploader && imageInput) {
             imageUploader.addEventListener('click', () => imageInput.click());
             
-            // Drag and drop events
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 imageUploader.addEventListener(eventName, e => { 
                     e.preventDefault(); 
@@ -367,7 +365,6 @@
                     fileSizeInfo.classList.add('text-red-500', 'dark:text-red-500');
                     imageInput.value = ''; 
 
-                    // Reset preview
                     imagePreview.src = '';
                     imagePreview.classList.add('hidden');
                     imagePlaceholder.classList.remove('hidden');
@@ -377,7 +374,6 @@
                     return; 
                 }
 
-                // Reset error message
                 fileSizeInfo.textContent = 'PNG, JPG, GIF hasta 8MB';
                 fileSizeInfo.classList.remove('text-red-500', 'dark:text-red-500');
                 fileSizeInfo.classList.add('dark:text-slate-500', 'text-slate-400');
@@ -428,7 +424,6 @@
             previewBtn.addEventListener('click', updatePreview);
         }
 
-        // Inicializar vista previa
         updatePreview();
     });
 </script>

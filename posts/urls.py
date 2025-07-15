@@ -15,6 +15,8 @@ from .views import (
     PostViewSet,
     CommentDeleteView,
     PostListByTagView,
+    TagListView,
+    PostArchiveView,
 )
 
 app_name = "posts"
@@ -24,6 +26,7 @@ router.register(r"posts", PostViewSet, basename="post-api")
 
 urlpatterns = [
     path("", PostListView.as_view(), name="post_list"),
+    path("tags/", TagListView.as_view(), name="tag_list"),
     path("tag/<str:tag_slug>/", PostListByTagView.as_view(), name="post_list_by_tag"),
     path("api/", include(router.urls)),
     path("dashboard/", dashboard_view, name="dashboard"),
@@ -39,4 +42,5 @@ urlpatterns = [
     ),
     path("search/", SearchResultsView.as_view(), name="search_results"),
     path("feed/", LatestPostsFeed(), name="post_feed"),
+    path("archive/", PostArchiveView.as_view(), name="archive_list"),
 ]

@@ -11,6 +11,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.views.generic.dates import ArchiveIndexView
 from .models import Post, Comment
 from .forms import CommentForm
 from taggit.models import Tag
@@ -31,12 +32,21 @@ class PostListByTagView(ListView):
     context_object_name = "object_list"
     paginate_by = 6
 
+
+class TagListView(ListView):
+    model = Tag
+    template_name = "posts/tag_list.html"
+    context_object_name = "tags"
+    paginate_by = 20
+
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        return Post.objects.filter(tags__in=[tag], status="published").order_by(
-            "-created_at"
-        )
+        if tag_slug:
+            tag = get_object_or_404(Tag, slug=tag_slug)
+            return Post.objects.filter(tags__in=[tag], status="published").order_by(
+                "-created_at"
+            )
+        return Post.objects.filter(status="published").order_by("-created_at")
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -286,3 +296,13 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             self.request.user == comment.author
             or self.request.user == comment.post.author
         )
+
+class PostArchiveView(ArchiveIndexView):
+    model = Post
+    date_field = "created_at"
+    template_name = "posts/post_archive.html"
+    context_object_name = "archives"
+    allow_future = False
+
+    def get_queryset(self):
+        return Post.objects.filter(status="published").order_by("-created_at")

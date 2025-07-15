@@ -1,0 +1,132 @@
+<header class="glass-effect sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/50">
+    <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" aria-label="Navegación Principal">
+        <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white group focus-ring" aria-label="Página de inicio de DevBlog">
+            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 shadow-lg group-hover:shadow-glow">
+                <i data-feather="book-open" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl font-black">DevBlog</span>
+        </a>
+        
+        <div class="flex items-center space-x-6">
+            <div class="hidden md:flex items-center space-x-8">
+                {% include "partials/_nav_links.html" %}
+            </div>
+
+            <!-- Búsqueda mejorada -->
+            <div class="hidden md:block ml-4 relative">
+                <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search">
+                    <label for="desktop-search" class="sr-only">Buscar posts</label>
+                    <input 
+                        type="search" 
+                        name="q" 
+                        id="desktop-search" 
+                        placeholder="Buscar posts..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-full bg-white/10 dark:bg-slate-800/50 border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-300 text-sm backdrop-blur-sm"
+                        autocomplete="off"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
+                        <i data-feather="search" class="w-5 h-5 text-slate-400"></i>
+                    </div>
+                </form>
+                <!-- Container para sugerencias de búsqueda -->
+                <div id="search-suggestions" class="search-suggestions hidden"></div>
+            </div>
+
+            <div class="w-px h-8 bg-gradient-to-b from-transparent via-slate-300 to-transparent dark:via-slate-600 hidden md:block" aria-hidden="true"></div>
+
+            {% if user.is_authenticated %}
+                <div class="relative group" id="user-menu-dropdown">
+                    <button id="user-menu-button" type="button" class="flex items-center space-x-3 p-2 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring" aria-expanded="false" aria-haspopup="true" aria-controls="user-menu">
+                        {% if user.profile.avatar and user.profile.avatar.url %}
+                            <img src="{{ user.profile.avatar.url }}" alt="Avatar de {{ user.username }}" class="w-10 h-10 rounded-full object-cover shadow-lg group-hover:scale-110 transition-transform duration-300 ring-2 ring-white/20">
+                        {% else %}
+                            <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform duration-300 ring-2 ring-white/20" aria-hidden="true">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="sr-only">Abrir menú de usuario</span>
+                        <i data-feather="chevron-down" class="w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform duration-300 group-hover:rotate-180"></i>
+                    </button>
+                    <div id="user-menu" class="absolute hidden right-0 mt-3 w-56 glass-effect rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 origin-top-right transition-all duration-300 animate-fade-in-up" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                        <div class="p-4 border-b border-white/20 dark:border-slate-700/50">
+                            <p class="font-semibold text-slate-900 dark:text-white truncate" role="none">{{ user.username }}</p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 truncate" role="none">{{ user.email }}</p>
+                        </div>
+                        <div class="p-2" role="none">
+                            <a href="{% url 'accounts:profile' pk=request.user.pk %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <i data-feather="user" class="w-4 h-4"></i>
+                                <span>Mi Perfil</span>
+                            </a>
+                            <a href="{% url 'accounts:notification_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <i data-feather="bell" class="w-4 h-4"></i>
+                                <span>Notificaciones</span>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'posts:favorite_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <i data-feather="bookmark" class="w-4 h-4"></i>
+                                <span>Mis Favoritos</span>
+                            </a>
+                            <a href="{% url 'accounts:settings' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <i data-feather="settings" class="w-4 h-4"></i>
+                                <span>Configuración</span>
+                            </a>
+                        </div>
+                        <div class="border-t border-white/20 dark:border-slate-700/50" role="none"></div>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="p-2" role="none">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all duration-300 flex items-center space-x-2 hover:scale-105" role="menuitem">
+                                <i data-feather="log-out" class="w-4 h-4"></i>
+                                <span>Cerrar Sesión</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="hidden sm:flex items-center space-x-4">
+                    <a href="{% url 'accounts:login' %}" class="nav-link font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-6 py-2 rounded-lg transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 focus-ring">
+                        Login
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 transform focus-ring">
+                        Registrarse
+                    </a>
+                </div>
+            {% endif %}
+
+            <button id="theme-toggle" type="button" class="p-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 focus-ring" aria-label="Cambiar tema">
+                <i id="theme-toggle-dark-icon" class="hidden w-5 h-5" data-feather="moon"></i>
+                <i id="theme-toggle-light-icon" class="hidden w-5 h-5" data-feather="sun"></i>
+            </button>
+
+            <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring" aria-controls="mobile-menu" aria-expanded="false">
+                <span class="sr-only">Abrir menú principal</span>
+                <i data-feather="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Menú móvil mejorado -->
+    <div id="mobile-menu" class="hidden md:hidden glass-effect border-t border-white/20 dark:border-slate-700/50 animate-slide-down">
+        <div class="px-4 py-6 space-y-4">
+            <!-- Búsqueda móvil -->
+            <div class="mb-4">
+                <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search">
+                    <label for="mobile-search" class="sr-only">Buscar posts</label>
+                    <input 
+                        type="search" 
+                        name="q" 
+                        id="mobile-search" 
+                        placeholder="Buscar posts..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-full bg-white/10 dark:bg-slate-800/50 border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-300 text-sm"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
+                        <i data-feather="search" class="w-5 h-5 text-slate-400"></i>
+                    </div>
+                </form>
+            </div>
+            
+            {% include "partials/_nav_links.html" %}
+        </div>
+    </div>
+</header>

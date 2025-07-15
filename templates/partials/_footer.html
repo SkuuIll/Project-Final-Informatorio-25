@@ -1,0 +1,66 @@
+<footer class="glass-effect border-t border-white/20 dark:border-slate-700/50 mt-auto">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center">
+            <div class="flex items-center justify-center space-x-3 mb-6">
+                <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg">
+                    <i data-feather="book-open" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">DevBlog</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
+                Proyecto Final Blog con Django
+            </p>
+            
+            <!-- Enlaces rápidos -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Navegación</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'posts:post_list' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Artículos</a></li>
+                        <li><a href="{% url 'posts:tag_list' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Etiquetas</a></li>
+                        <li><a href="{% url 'posts:archive_list' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Archivo</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Comunidad</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'about' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Acerca de</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Contacto</a></li>
+                        <li><a href="{% url 'collaborate' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Colabora</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Legal</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'privacy' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Privacidad</a></li>
+                        <li><a href="{% url 'terms' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Términos</a></li>
+                        <li><a href="{% url 'cookies' %}" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Redes sociales -->
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 hover:scale-110 transform p-2 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50" aria-label="GitHub de DevBlog">
+                    <i data-feather="github" class="w-5 h-5">https://github.com/SkuuIll</i>
+                </a>
+                <a href="#" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 hover:scale-110 transform p-2 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50" aria-label="Twitter de DevBlog">
+                    <i data-feather="twitter" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 hover:scale-110 transform p-2 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50" aria-label="LinkedIn de DevBlog">
+                    <i data-feather="linkedin" class="w-5 h-5"></i>
+                </a>
+                <a href="{% url 'posts:post_feed' %}" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 hover:scale-110 transform p-2 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50" aria-label="RSS de DevBlog">
+                    <i data-feather="rss" class="w-5 h-5"></i>
+                </a>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-t border-white/20 dark:border-slate-700/50 pt-6">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    &copy; {% now "Y" %} DevBlog. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
