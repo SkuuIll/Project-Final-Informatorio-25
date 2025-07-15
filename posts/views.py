@@ -73,6 +73,13 @@ class PostDetailView(DetailView):
 
         # Obtener la URL absoluta del post para compartir en redes sociales
         context['post_url'] = self.request.build_absolute_uri(post.get_absolute_url())
+        
+        if post.header_image:
+            context['og_image_url'] = self.request.build_absolute_uri(post.header_image.url)
+        else:
+            # Opcional: proveer una imagen por defecto si no hay header_image
+            context['og_image_url'] = self.request.build_absolute_uri('/static/social_banner.png')
+
 
         post_tags_ids = post.tags.values_list("id", flat=True)
         similar_posts = Post.objects.filter(tags__in=post_tags_ids).exclude(id=post.id)
