@@ -30,6 +30,14 @@ read -p "Introduce tu nombre de dominio (ej. mi-proyecto.com): " DOMAIN
 read -p "Introduce tu email (para notificaciones de SSL): " EMAIL
 GIT_REPO="https://github.com/SkuuIll/Project-Final-Informatorio-25"
 read -p "Introduce el nombre para un nuevo usuario sudo (no-root): " NEW_USER
+info "Ahora, configuremos el superusuario para Django."
+read -p "Nombre de usuario para el admin de Django: " DJANGO_SUPERUSER
+read -s -p "Contraseña para el admin de Django (no se mostrará): " DJANGO_PASSWORD
+echo
+read -p "Email para el admin de Django: " DJANGO_EMAIL
+
+# Obtener la IP pública del servidor para agregarla a ALLOWED_HOSTS
+SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
 
 # --- 2. Crear un nuevo usuario sudo ---
 info "Creando un nuevo usuario '$NEW_USER' con privilegios sudo..."
@@ -39,8 +47,13 @@ info "Usuario '$NEW_USER' creado. Por favor, inicia sesión como este usuario pa
 
 # --- 3. Instalar dependencias del sistema ---
 info "Actualizando el sistema e instalando dependencias (Docker, Docker Compose, Nginx, Certbot)..."
+apt-get update && apt-get upgrade -y
+apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+
+info "Agregando el repositorio Universe..."
+add-apt-repository universe
 apt-get update
-apt-get install -y apt-transport-https ca-certificates curl software-properties-common nginx certbot python3-certbot-nginx
+apt-get install -y nginx certbot python3-certbot-nginx
 
 # Instalar Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
@@ -73,7 +86,7 @@ su - $NEW_USER -c "
     echo 'POSTGRES_PASSWORD=postgres' >> .env; 
     echo 'SECRET_KEY=\$(openssl rand -hex 32)' >> .env; 
     echo 'DEBUG=0' >> .env; 
-    echo 'ALLOWED_HOSTS=$DOMAIN,www.$DOMAIN,localhost' >> .env; 
+    echo "ALLOWED_HOSTS=$DOMAIN,localhost,$SERVER_IP" >> .env;
     echo '[INFO] .env creado con valores por defecto. ¡Recuerda cambiarlos si es necesario!'; 
 "
 
@@ -81,9 +94,9 @@ su - $NEW_USER -c "
 info "Configurando Nginx para el dominio $DOMAIN..."
 
 cat > /etc/nginx/sites-available/$DOMAIN << EOL
-server {
+server { 
     listen 80;
-    server_name $DOMAIN www.$DOMAIN;
+    server_name $DOMAIN;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -108,20 +121,47 @@ ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 
 # Probar la configuración de Nginx
 nginx -t
+if [ $? -ne 0 ]; then
+  warn "La configuración de Nginx tiene errores. Revisa el archivo /etc/nginx/sites-available/$DOMAIN."
+  exit 1
+fi
 
 # --- 6. Obtener certificado SSL con Certbot ---
 info "Obteniendo certificado SSL para $DOMAIN..."
-certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos -m $EMAIL --redirect --expand
+certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email $EMAIL --redirect
+if [ $? -ne 0 ]; then
+  warn "Certbot falló al obtener el certificado SSL. Revisa la configuración de Nginx y los registros de Certbot."
+  exit 1
+fi
 
 info "Certificado SSL obtenido e instalado."
 
 # --- 7. Iniciar la aplicación con Docker Compose ---
 info "Iniciando la aplicación con Docker Compose..."
+
 su - $NEW_USER -c "
     cd /home/$NEW_USER/project && 
     docker-compose up -d --build
 "
 
+# --- 8. Crear Superusuario de Django ---
+info "Creando un superusuario de Django ($DJANGO_SUPERUSER)..."
+info "Esperando a que la base de datos se inicie (15 segundos)..."
+sleep 15
+
+docker-compose -f /home/$NEW_USER/project/docker-compose.yml exec -T web python manage.py shell <<EOF
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+if not User.objects.filter(username='$DJANGO_SUPERUSER').exists():
+    User.objects.create_superuser('$DJANGO_SUPERUSER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')
+    print('Superusuario "$DJANGO_SUPERUSER" creado con éxito.')
+else:
+    print('El superusuario "$DJANGO_SUPERUSER" ya existe.')
+EOF
+
 info "¡Despliegue completado!"
 info "Tu sitio está disponible en https://$DOMAIN"
 info "A partir de ahora, gestiona tu aplicación desde el directorio /home/$NEW_USER/project como el usuario '$NEW_USER'."
+info "Puedes acceder al panel de admin con el usuario '$DJANGO_SUPERUSER'."
