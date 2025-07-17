@@ -112,10 +112,6 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    location /static/ {
-        alias /home/$NEW_USER/project/staticfiles/;
-    }
-
     location /medias/ {
         alias /home/$NEW_USER/project/media/;
     }
@@ -149,6 +145,18 @@ su - $NEW_USER -c "
     cd /home/$NEW_USER/project && 
     docker-compose up -d --build
 "
+
+# --- 8. Crear y ajustar permisos para el directorio de media ---
+info "Ajustando permisos para el directorio /media/ para que Nginx pueda servir los archivos subidos..."
+# Crear el directorio como el nuevo usuario
+su - $NEW_USER -c "mkdir -p /home/$NEW_USER/project/media"
+# Cambiar el propietario para que el grupo www-data (de Nginx) pueda leer/escribir
+chown -R $NEW_USER:www-data /home/$NEW_USER/project/media
+# Dar permisos de lectura/escritura al grupo y añadir el bit 'setgid'
+# El setgid bit ('g+s') asegura que los nuevos archivos creados dentro de /media 
+# hereden el grupo 'www-data', solucionando problemas de permisos para futuras subidas.
+chmod -R 775 /home/$NEW_USER/project/media
+chmod g+s /home/$NEW_USER/project/media
 
 # --- 8. Crear Superusuario de Django ---
 info "Creando un superusuario de Django ($DJANGO_SUPERUSER)..."
