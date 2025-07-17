@@ -6,7 +6,7 @@ Este repositorio contiene un proyecto de blog funcional construido con Python y 
 
 ## 🚀 Live Demo
 
-[Link a la demo en vivo](https://tu-demo-en-vivo.com)
+[Link a la demo en vivo](proyecto.skulll.site)
 
 ---
 
