@@ -23,7 +23,7 @@ class PostModelTest(TestCase):
         self.assertEqual(self.post.slug, slugify(self.post.title))
         self.assertEqual(str(self.post), "Un Título de Prueba")
 
-
+ 
 class PostViewTest(TestCase):
     def setUp(self):
         self.client = Client()

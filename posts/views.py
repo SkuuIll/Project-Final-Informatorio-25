@@ -24,7 +24,7 @@ from .serializers import PostSerializer
 # Imports for dashboard
 from datetime import date, timedelta
 import json
-
+   
 
 class PostListByTagView(ListView):
     model = Post
@@ -64,6 +64,11 @@ class PostListView(ListView):
 
     def get_queryset(self):
         return Post.objects.filter(status="published")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['all_tags'] = Tag.objects.all()
+        return context
 
 
 class PostDetailView(DetailView):

@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django_ckeditor_5.fields import CKEditor5Field
 from taggit.managers import TaggableManager
+import re
+from django.utils.html import strip_tags
 
 
 class Post(models.Model):
@@ -25,7 +27,9 @@ class Post(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Fecha de creación"
     )
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Autor")
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="Autor", related_name="posts"
+    )
 
     slug = models.SlugField(unique=True, max_length=200, editable=False)
     views = models.PositiveIntegerField(default=0, verbose_name="Vistas")
@@ -35,12 +39,21 @@ class Post(models.Model):
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="draft", verbose_name="Estado"
     )
+    reading_time = models.PositiveIntegerField(default=0, verbose_name="Tiempo de lectura")
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         return reverse("posts:post_detail", kwargs={"slug": self.slug})
+
+    def calculate_reading_time(self):
+        if self.content:
+            text = strip_tags(self.content)
+            word_count = len(re.findall(r'\w+', text))
+            reading_speed = 200  # Palabras por minuto
+            return max(1, round(word_count / reading_speed))
+        return 0
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -51,6 +64,9 @@ class Post(models.Model):
             while queryset.filter(slug=self.slug).exists():
                 self.slug = f'{original_slug}-{counter}'
                 counter += 1
+        
+        self.reading_time = self.calculate_reading_time()
+        
         super().save(*args, **kwargs)
 
     class Meta:
@@ -61,7 +77,9 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="comments", verbose_name="Post"
     )
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Autor")
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="Autor", related_name="comments_by_author"
+    )
     content = models.TextField(verbose_name="Contenido")
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Fecha de creación"
