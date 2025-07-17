@@ -90,6 +90,12 @@ su - $NEW_USER -c "
     echo '[INFO] .env creado con valores por defecto. ¡Recuerda cambiarlos si es necesario!'; 
 "
 
+# --- 5. Ajustar Permisos para Nginx ---
+info "Ajustando permisos de directorio para que Nginx pueda acceder a los archivos..."
+# Agrega el usuario de nginx (www-data) al grupo de tu nuevo usuario
+usermod -aG $NEW_USER www-data
+chmod 710 /home/$NEW_USER
+
 # --- 5. Configurar Nginx como proxy inverso ---
 info "Configurando Nginx para el dominio $DOMAIN..."
 
