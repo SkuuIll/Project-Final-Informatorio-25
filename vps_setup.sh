@@ -107,10 +107,10 @@ server {
     }
 
     location /static/ {
-        alias /home/$NEW_USER/project/static/;
+        alias /home/$NEW_USER/project/staticfiles/;
     }
 
-    location /media/ {
+    location /medias/ {
         alias /home/$NEW_USER/project/media/;
     }
 }
