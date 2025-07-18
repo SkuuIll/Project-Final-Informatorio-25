@@ -1,17 +1,26 @@
-{% extends 'base.html' %}
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans 'Notifications' %}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-8">
-    <h1 class="text-3xl font-bold mb-6">Notifications</h1>
-    <div class="space-y-4">
-        {% for notification in notifications %}
-        <div class="p-4 rounded-lg {% if not notification.is_read %}bg-blue-100{% else %}bg-white{% endif %}">
-            <p>{{ notification.message }}</p>
-            <p class="text-sm text-gray-500">{{ notification.created_at|timesince }} ago</p>
+<div id="content-main">
+    <h1>{% trans 'Notifications' %}</h1>
+    <div class="module">
+        <div class="list-group">
+            {% for notification in notifications %}
+            <a href="{{ notification.link }}" class="list-group-item list-group-item-action {% if not notification.is_read %}list-group-item-info{% endif %}">
+                <div class="d-flex w-100 justify-content-between">
+                    <p class="mb-1">{{ notification.message }}</p>
+                    <small>{{ notification.created_at|timesince }} ago</small>
+                </div>
+            </a>
+            {% empty %}
+            <div class="list-group-item">
+                <p class="mb-0">{% trans 'You have no notifications.' %}</p>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p>You have no notifications.</p>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}

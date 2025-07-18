@@ -115,7 +115,7 @@ server {
         alias /home/$NEW_USER/project/staticfiles/;
     }
 
-    location /medias/ {
+    location /media/ {
         alias /home/$NEW_USER/project/media/;
     }
 }

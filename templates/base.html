@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,21 +41,7 @@
     
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    <!-- Detección de tema mejorada -->
-    <script>
-        (function() {
-            const getTheme = () => {
-                const stored = localStorage.getItem('devblog-theme');
-                if (stored) return stored;
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            };
-            
-            const theme = getTheme();
-            document.documentElement.classList.toggle('dark', theme === 'dark');
-            
-            document.documentElement.style.colorScheme = theme;
-        })();
-    </script>
+    
     
     {% block extra_head %}{% endblock %}
 </head>
