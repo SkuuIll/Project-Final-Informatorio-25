@@ -64,7 +64,6 @@ class PostViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.published_post.title)
 
-        # Refrescar desde la BD para comprobar el contador de vistas
         self.published_post.refresh_from_db()
         self.assertEqual(self.published_post.views, initial_views + 1)
 
@@ -116,7 +115,6 @@ class PostViewTest(TestCase):
 
     def test_post_list_by_tag_view(self):
         """Prueba que la lista de posts por etiqueta funciona correctamente."""
-        # Crear otro post con una etiqueta diferente
         post_with_other_tag = Post.objects.create(
             author=self.user,
             title="Otro Post con Etiqueta",
@@ -126,7 +124,6 @@ class PostViewTest(TestCase):
         tag_python = Tag.objects.create(name="Python")
         post_with_other_tag.tags.add(tag_python)
 
-        # Acceder a la URL de la etiqueta 'django'
         response = self.client.get(
             reverse("posts:post_list_by_tag", kwargs={"tag_slug": self.tag_django.slug})
         )

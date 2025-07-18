@@ -78,7 +78,7 @@ class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 6
+    # paginate_by = 6
 
     def get_queryset(self):
         queryset = Post.objects.filter(status="published")
@@ -117,13 +117,11 @@ class PostDetailView(DetailView):
         post = self.object
         context["comment_form"] = CommentForm()
 
-        # Obtener la URL absoluta del post para compartir en redes sociales
         context['post_url'] = self.request.build_absolute_uri(post.get_absolute_url())
         
         if post.header_image:
             context['og_image_url'] = self.request.build_absolute_uri(post.header_image.url)
         else:
-            # Opcional: proveer una imagen por defecto si no hay header_image
             context['og_image_url'] = self.request.build_absolute_uri('/static/social_banner.png')
 
 
@@ -144,7 +142,6 @@ class PostDetailView(DetailView):
             comment.author = request.user
             comment.save()
 
-            # Crear notificación si el autor del comentario no es el autor del post
             if post_obj.author != request.user:
                 Notification.objects.create(
                     recipient=post_obj.author,
@@ -220,7 +217,6 @@ def dashboard_view(request):
     user = request.user
     user_posts = Post.objects.filter(author=user)
 
-    # Calcular estadísticas generales
     total_posts = user_posts.count()
     total_views = user_posts.aggregate(total=Sum("views"))["total"] or 0
     total_likes = user_posts.aggregate(total=Count("likes"))["total"] or 0
@@ -233,15 +229,11 @@ def dashboard_view(request):
         "total_comments": total_comments,
     }
 
-    # Obtener los posts más populares del usuario
     top_posts = user_posts.order_by("-views")[:3]
 
-    # --- Datos para el gráfico ---
-    # NOTA: Esta es una simulación. Para un gráfico real, necesitarías un modelo
-    # que registre cada vista con una marca de tiempo.
+
     today = date.today()
     labels = [(today - timedelta(days=i)).strftime("%d %b") for i in range(29, -1, -1)]
-    # Generamos datos de ejemplo. Reemplaza esto con tu lógica real.
     chart_data_points = [
         5,
         10,
@@ -280,14 +272,13 @@ def dashboard_view(request):
         "data": chart_data_points,
     }
 
-    # Obtener el recuento real de notificaciones no leídas
     unread_notifications_count = Notification.objects.filter(recipient=user, is_read=False).count()
 
     context = {
         "user_posts": user_posts.order_by("-created_at"),
         "stats": stats,
         "top_posts": top_posts,
-        "notification_count": unread_notifications_count,  # Usar el recuento dinámico
+        "notification_count": unread_notifications_count, 
         "chart_data": json.dumps(chart_data),
     }
     return render(request, "posts/dashboard.html", context)

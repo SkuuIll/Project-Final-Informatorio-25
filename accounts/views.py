@@ -70,7 +70,7 @@ def notification_list(request):
 class ProfileView(LoginRequiredMixin, DetailView):
     model = User
     template_name = "accounts/profile.html"
-    context_object_name = "profile_user" # Renombrar para evitar conflicto con el 'user' de la request
+    context_object_name = "profile_user" 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
