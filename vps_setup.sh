@@ -166,17 +166,7 @@ info "Creando un superusuario de Django ($DJANGO_SUPERUSER)..."
 info "Esperando a que la base de datos se inicie (15 segundos)..."
 sleep 15
 
-docker-compose -f /home/$NEW_USER/project/docker-compose.yml exec -T web python manage.py shell <<EOF
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-if not User.objects.filter(username='$DJANGO_SUPERUSER').exists():
-    User.objects.create_superuser('$DJANGO_SUPERUSER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')
-    print('Superusuario "$DJANGO_SUPERUSER" creado con éxito.')
-else:
-    print('El superusuario "$DJANGO_SUPERUSER" ya existe.')
-EOF
+docker-compose -f /home/$NEW_USER/project/docker-compose.yml exec -T web python create_superuser.py --username "$DJANGO_SUPERUSER" --password "$DJANGO_PASSWORD" --email "$DJANGO_EMAIL"
 
 info "¡Despliegue completado!"
 info "Tu sitio está disponible en https://$DOMAIN"
