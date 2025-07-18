@@ -184,6 +184,11 @@
     .animate-slide-in {
         animation: slideInUp 0.6s ease-out;
     }
+
+    select#sort-select option {
+        background: #1f2937; 
+        color: #f3f4f6;
+    }
 </style>
 
 <script src="https://unpkg.com/feather-icons"></script>
@@ -236,7 +241,7 @@
                 
                 const paginatedPosts = paginatePosts(state.visiblePosts, state.currentPage, state.postsPerPage);
 
-                postsGrid.innerHTML = ''; 
+                postsGrid.innerHTML = '';
                 if (paginatedPosts.length > 0) {
                     paginatedPosts.forEach(card => postsGrid.appendChild(card));
                     if (noResultsMessage) noResultsMessage.style.display = 'none';
@@ -246,7 +251,7 @@
                 
                 updateUICounts();
                 updatePaginationControls();
-                feather.replace(); 
+                feather.replace();
                 
                 hideLoading();
             }, 150);
