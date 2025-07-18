@@ -294,10 +294,28 @@ CKEDITOR_5_CONFIGS = {
             "|",
             "bold",
             "italic",
+            "underline",
+            "strikethrough",
             "link",
+            "|",
+            "fontFamily",
+            "fontSize",
+            "fontColor",
+            "fontBackgroundColor",
+            "|",
+            "alignment",
+            "|",
             "bulletedList",
             "numberedList",
+            "outdent",
+            "indent",
+            "|",
             "blockQuote",
+            "insertTable",
+            "mediaEmbed",
+            "codeBlock",
+            "horizontalLine",
+            "|",
             "imageUpload",
             "|",
             "undo",
@@ -306,9 +324,31 @@ CKEDITOR_5_CONFIGS = {
         "image": {
             "toolbar": [
                 "imageTextAlternative",
-                "imageStyle:full",
-                "imageStyle:side",
+                "imageStyle:alignLeft",
+                "imageStyle:alignCenter",
+                "imageStyle:alignRight",
+                "|",
+                "toggleImageCaption",
+                "|",
+                "linkImage"
             ],
+            "styles": [
+                "alignLeft",
+                "alignCenter",
+                "alignRight"
+            ]
+        },
+        "table": {
+            "contentToolbar": [
+                "tableColumn",
+                "tableRow",
+                "mergeTableCells",
+                "tableProperties",
+                "tableCellProperties"
+            ]
+        },
+        "imageUpload": {
+            "uploadUrl": "/ckeditor5/upload/",
         },
     }
 }

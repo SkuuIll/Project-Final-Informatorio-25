@@ -4,6 +4,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django_ckeditor_5 import views as ckeditor_views
 from django.views.generic import (
     ListView,
     DetailView,
@@ -24,6 +26,11 @@ from .serializers import PostSerializer
 # Imports for dashboard
 from datetime import date, timedelta
 import json
+
+@csrf_exempt
+@login_required
+def custom_upload_file(request):
+    return ckeditor_views.image_upload(request)
    
 
 class PostListByTagView(ListView):
@@ -90,7 +97,7 @@ class PostListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['all_tags'] = Tag.objects.all()
+        context['all_tags'] = Tag.objects.annotate(num_posts=Count('post')).order_by('-num_posts')[:4]
         context['sort_by'] = self.request.GET.get('sort_by', '-created_at')
         return context
 
@@ -123,6 +130,7 @@ class PostDetailView(DetailView):
         post_tags_ids = post.tags.values_list("id", flat=True)
         similar_posts = Post.objects.filter(tags__in=post_tags_ids).exclude(id=post.id)
         context["similar_posts"] = similar_posts.distinct().order_by("-created_at")[:4]
+        context["post_tags"] = post.tags.annotate(num_times=Count('taggit_taggeditem_items')).order_by('-num_times')[:4]
 
         return context
 
