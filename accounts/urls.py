@@ -3,7 +3,6 @@ from django.contrib.auth import views as auth_views
 from .views import (
     CustomLoginView,
     ProfileView,
-    profile_edit,
     settings_view,
     RegisterView,
     notification_list,
@@ -19,7 +18,6 @@ urlpatterns = [
     path("login/", CustomLoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
     path("user/<int:pk>/", ProfileView.as_view(), name="profile"),
-    path("profile/edit/", profile_edit, name="profile_edit"),
     path("settings/", settings_view, name="settings"),
     path("notifications/", notification_list, name="notification_list"),
     path("notifications/delete/", delete_notifications, name="delete_notifications"),
