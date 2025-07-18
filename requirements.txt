@@ -3,7 +3,7 @@ attrs==25.3.0
 autobahn==24.4.2
 Automat==25.4.16
 cffi==1.17.1
-channels==4.0.0
+channels==4.2.2
 constantly==23.10.4
 crispy-bootstrap5==2025.6
 cryptography==45.0.5
@@ -17,7 +17,7 @@ django-jazzmin==3.0.1
 django-taggit==6.1.0
 django-turnstile==0.1.2
 djangorestframework==3.16.0
-gunicorn==22.0.0
+gunicorn==23.0.0
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
