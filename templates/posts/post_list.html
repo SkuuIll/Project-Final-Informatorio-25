@@ -150,7 +150,7 @@
         {% endfor %}
     </div>
 
-    <div id="no-results" class="hidden col-span-full text-center py-16">
+    <!-- <div id="no-results" class="hidden col-span-full text-center py-16">
         <div class="glass-effect rounded-3xl p-12 max-w-md mx-auto">
             <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <i data-feather="search" class="w-10 h-10 text-gray-400"></i>
@@ -158,7 +158,7 @@
             <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">No se encontraron resultados</h3>
             <p class="text-gray-600 dark:text-gray-400">Intenta con otros términos de búsqueda o filtros.</p>
         </div>
-    </div>
+    </div> -->
     
     <!-- Paginación mejorada -->
     {% if is_paginated %}
@@ -391,7 +391,9 @@
                     card.style.order = index;
                 });
                 
-                noResults.classList.toggle('hidden', visiblePosts === 0);
+                if (noResults) {
+                    noResults.classList.toggle('hidden', visiblePosts === 0);
+                }
                 updateVisibleCount();
                 
                 hideLoading();

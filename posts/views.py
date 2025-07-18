@@ -160,6 +160,14 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        self.object = form.save(commit=False)
+        self.object.save()
+        tags = self.request.POST.getlist('tags')
+        tag_objects = []
+        for tag_name in tags:
+            tag, created = Tag.objects.get_or_create(name=tag_name)
+            tag_objects.append(tag)
+        self.object.tags.set(tag_objects)
         return super().form_valid(form)
 
 
@@ -171,6 +179,17 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        tags = self.request.POST.getlist('tags')
+        tag_objects = []
+        for tag_name in tags:
+            tag, created = Tag.objects.get_or_create(name=tag_name)
+            tag_objects.append(tag)
+        self.object.tags.set(tag_objects)
+        return super().form_valid(form)
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

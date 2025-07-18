@@ -298,12 +298,23 @@ CKEDITOR_5_CONFIGS = {
             "bulletedList",
             "numberedList",
             "blockQuote",
+            "imageUpload",
             "|",
             "undo",
             "redo",
         ],
+        "image": {
+            "toolbar": [
+                "imageTextAlternative",
+                "imageStyle:full",
+                "imageStyle:side",
+            ],
+        },
     }
 }
+
+CKEDITOR_5_UPLOAD_PATH = "uploads/"
+CKEDITOR_5_BROWSE_URL = "/media/uploads/"
 
 # --- Test Settings ---
 # Detect if running 'test' command
