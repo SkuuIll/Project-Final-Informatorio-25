@@ -95,10 +95,13 @@
                 <div class="flex items-center gap-2">
                     <label for="sort-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Ordenar por:</label>
                     <select id="sort-select" class="px-3 py-2 glass-effect rounded-lg border-0 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100">
-                        <option value="newest">Más reciente</option>
-                        <option value="oldest">Más antiguo</option>
-                        <option value="title">Título A-Z</option>
-                        <option value="title-desc">Título Z-A</option>
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Más reciente</option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Más antiguo</option>
+                        <option value="likes" {% if sort_by == 'likes' %}selected{% endif %}>Más populares</option>
+                        <option value="views" {% if sort_by == 'views' %}selected{% endif %}>Más vistos</option>
+                        <option value="comments" {% if sort_by == 'comments' %}selected{% endif %}>Más comentados</option>
+                        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Título A-Z</option>
+                        <option value="-title" {% if sort_by == '-title' %}selected{% endif %}>Título Z-A</option>
                     </select>
                 </div>
                 
@@ -280,6 +283,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Elementos DOM
+        const searchInput = document.getElementById('search-input');
         const filterTagsContainer = document.getElementById('filter-tags');
         const postCards = document.querySelectorAll('.post-card-wrapper');
         const noResults = document.getElementById('no-results');
@@ -296,6 +300,7 @@
         let currentFilter = 'all';
         let currentSort = 'newest';
         let currentView = 'grid';
+        let currentSearchQuery = '';
         let debounceTimer;
         
         // Configuración inicial
@@ -328,8 +333,7 @@
             ).length;
             visibleCount.textContent = visible;
             
-            // Mostrar/ocultar botón de limpiar filtros
-            const hasActiveFilters = currentFilter !== 'all';
+            const hasActiveFilters = currentFilter !== 'all' || currentSearchQuery !== '';
             clearFilters.classList.toggle('hidden', !hasActiveFilters);
         }
         
@@ -353,7 +357,7 @@
             return sortedPosts;
         }
         
-        function applyFilters() {
+        function applyFiltersAndSearch() {
             showLoading();
             
             setTimeout(() => {
@@ -361,9 +365,13 @@
                 
                 postCards.forEach(card => {
                     const tags = card.dataset.tags || '';
+                    const title = card.dataset.title || '';
+                    const content = card.dataset.content || '';
+
                     const matchesFilter = currentFilter === 'all' || tags.includes(currentFilter);
-                    
-                    if (matchesFilter) {
+                    const matchesSearch = currentSearchQuery === '' || title.includes(currentSearchQuery) || content.includes(currentSearchQuery);
+
+                    if (matchesFilter && matchesSearch) {
                         card.classList.remove('hidden-card');
                         card.classList.add('fade-in');
                         visiblePosts++;
@@ -373,20 +381,17 @@
                     }
                 });
                 
-                // Reorganizar posts visibles
                 const visibleCards = Array.from(postCards).filter(card => 
                     !card.classList.contains('hidden-card')
                 );
                 
                 const sortedCards = sortPosts(visibleCards, currentSort);
                 
-                // Reorganizar en el DOM
                 sortedCards.forEach((card, index) => {
                     card.style.order = index;
                 });
                 
-                // Actualizar UI
-                noResults.classList.toggle('hidden', visiblePosts > 0);
+                noResults.classList.toggle('hidden', visiblePosts === 0);
                 updateVisibleCount();
                 
                 hideLoading();
@@ -412,14 +417,14 @@
                 listView.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/30');
             }
             
-            // Guardar preferencia
             localStorage.setItem('devblog-view-preference', view);
         }
         
         function clearAllFilters() {
             currentFilter = 'all';
+            searchInput.value = '';
+            currentSearchQuery = '';
             
-            // Resetear filtros de tecnología
             filterTagsContainer.querySelectorAll('.filter-tag').forEach(tag => {
                 tag.classList.remove('active');
                 tag.setAttribute('aria-pressed', 'false');
@@ -427,10 +432,15 @@
             filterTagsContainer.querySelector('[data-filter="all"]').classList.add('active');
             filterTagsContainer.querySelector('[data-filter="all"]').setAttribute('aria-pressed', 'true');
             
-            applyFilters();
+            applyFiltersAndSearch();
         }
         
         // Event Listeners
+        searchInput.addEventListener('input', debounce(function(e) {
+            currentSearchQuery = e.target.value.toLowerCase().trim();
+            applyFiltersAndSearch();
+        }, 300));
+
         filterTagsContainer.addEventListener('click', function(e) {
             const clickedButton = e.target.closest('.filter-tag');
             if (!clickedButton) return;
@@ -444,12 +454,11 @@
             clickedButton.setAttribute('aria-pressed', 'true');
             
             currentFilter = clickedButton.dataset.filter;
-            applyFilters();
+            applyFiltersAndSearch();
         });
         
         sortSelect.addEventListener('change', function(e) {
-            currentSort = e.target.value;
-            applyFilters();
+            window.location.href = `?sort_by=${e.target.value}`;
         });
         
         gridView.addEventListener('click', () => toggleView('grid'));
@@ -457,7 +466,6 @@
         
         clearFilters.addEventListener('click', clearAllFilters);
         
-        // Intersection Observer para animaciones
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -471,16 +479,13 @@
             observer.observe(card);
         });
         
-        // Restaurar preferencias del usuario
         const savedView = localStorage.getItem('devblog-view-preference');
         if (savedView) {
             toggleView(savedView);
         }
         
-        // Inicialización
-        applyFilters();
+        applyFiltersAndSearch();
         
-        // Atajos de teclado
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === '\\') {

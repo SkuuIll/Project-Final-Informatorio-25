@@ -65,19 +65,33 @@ class PostViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
 
 
+from django.utils import timezone
+
 class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    ordering = ["-created_at"]
     paginate_by = 6
 
     def get_queryset(self):
-        return Post.objects.filter(status="published")
+        queryset = Post.objects.filter(status="published")
+        sort_by = self.request.GET.get('sort_by', '-created_at')
+
+        if sort_by == 'likes':
+            queryset = queryset.annotate(num_likes=Count('likes')).order_by('-is_sticky', '-num_likes', '-created_at')
+        elif sort_by == 'views':
+            queryset = queryset.order_by('-is_sticky', '-views', '-created_at')
+        elif sort_by == 'comments':
+            queryset = queryset.annotate(num_comments=Count('comments')).order_by('-is_sticky', '-num_comments', '-created_at')
+        else:
+            queryset = queryset.order_by('-is_sticky', sort_by)
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['all_tags'] = Tag.objects.all()
+        context['sort_by'] = self.request.GET.get('sort_by', '-created_at')
         return context
 
 
@@ -262,6 +276,18 @@ def like_post(request, slug):
         post.likes.add(request.user)
         liked = True
     return JsonResponse({'liked': liked, 'likes_count': post.likes.count()})
+
+
+@login_required
+def like_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    if request.user in comment.likes.all():
+        comment.likes.remove(request.user)
+        liked = False
+    else:
+        comment.likes.add(request.user)
+        liked = True
+    return JsonResponse({'liked': liked, 'likes_count': comment.likes.count()})
 
 
 @login_required

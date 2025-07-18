@@ -1,33 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Mis Notificaciones - DevBlog{% endblock %}
-
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Mis Notificaciones</h1>
-        {% if notifications %}
-            <a href="{% url 'accounts:delete_notifications' %}" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-                Borrar Todo
-            </a>
-        {% endif %}
-    </div>
-
-    <div class="glass-effect rounded-2xl shadow-lg p-6 border border-white/20 dark:border-slate-700/50">
-        {% if notifications %}
-            <ul class="space-y-4">
-                {% for notification in notifications %}
-                    <li class="p-4 rounded-lg {% if not notification.is_read %}bg-indigo-100/50 dark:bg-indigo-900/20{% else %}bg-slate-100/50 dark:bg-slate-800/20{% endif %} transition-colors duration-300">
-                        <a href="{{ notification.link }}" class="block">
-                            <p class="text-slate-800 dark:text-slate-200">{{ notification.message }}</p>
-                            <small class="text-slate-500 dark:text-slate-400">{{ notification.created_at|timesince }} ago</small>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-center text-slate-600 dark:text-slate-400 py-8">No tienes notificaciones.</p>
-        {% endif %}
+<div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Notifications</h1>
+    <div class="space-y-4">
+        {% for notification in notifications %}
+        <div class="p-4 rounded-lg {% if not notification.is_read %}bg-blue-100{% else %}bg-white{% endif %}">
+            <p>{{ notification.message }}</p>
+            <p class="text-sm text-gray-500">{{ notification.created_at|timesince }} ago</p>
+        </div>
+        {% empty %}
+        <p>You have no notifications.</p>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

@@ -6,8 +6,8 @@ from .models import Post, Comment
 class PostAdmin(admin.ModelAdmin):
     """Configuración del panel de administración para los Posts."""
 
-    list_display = ("title", "author", "status", "created_at", "views")
-    list_filter = ("status", "created_at", "author")
+    list_display = ("title", "author", "status", "created_at", "views", "is_sticky")
+    list_filter = ("status", "created_at", "author", "is_sticky")
     search_fields = ("title", "body")
     raw_id_fields = ("author",)
     date_hierarchy = "created_at"

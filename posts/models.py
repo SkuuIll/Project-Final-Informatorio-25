@@ -6,6 +6,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 from taggit.managers import TaggableManager
 import re
 from django.utils.html import strip_tags
+from django.utils import timezone
 
 
 class Post(models.Model):
@@ -40,6 +41,7 @@ class Post(models.Model):
         max_length=10, choices=STATUS_CHOICES, default="draft", verbose_name="Estado"
     )
     reading_time = models.PositiveIntegerField(default=0, verbose_name="Tiempo de lectura")
+    is_sticky = models.BooleanField(default=False, verbose_name="Destacado")
 
     def __str__(self):
         return self.title
@@ -54,6 +56,10 @@ class Post(models.Model):
             reading_speed = 200  # Palabras por minuto
             return max(1, round(word_count / reading_speed))
         return 0
+
+    @property
+    def is_new(self):
+        return (timezone.now() - self.created_at).days < 7
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -85,6 +91,7 @@ class Comment(models.Model):
         auto_now_add=True, verbose_name="Fecha de creación"
     )
     active = models.BooleanField(default=True, verbose_name="Activo")
+    likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)
 
     def __str__(self):
         return f"Comentario de {self.author.username} en {self.post.title}"

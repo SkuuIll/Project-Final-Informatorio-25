@@ -9,6 +9,7 @@ from .views import (
     PostDeleteView,
     dashboard_view,
     like_post,
+    like_comment,
     favorite_post,
     favorite_list,
     SearchResultsView,
@@ -37,6 +38,7 @@ urlpatterns = [
     path("post/<slug:slug>/eliminar/", PostDeleteView.as_view(), name="post_delete"),
     path("post/<slug:slug>/like/", like_post, name="like_post"),
     path("post/<slug:slug>/favorite/", favorite_post, name="favorite_post"),
+    path("comment/<int:pk>/like/", like_comment, name="like_comment"),
     path(
         "comment/<int:pk>/delete/", CommentDeleteView.as_view(), name="comment_delete"
     ),
