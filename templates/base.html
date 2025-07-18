@@ -41,11 +41,26 @@
     
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    
+    <!-- Configuración de Tailwind personalizada -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'light-bg': '#f8fafc',
+                        'light-card': '#ffffff',
+                        'dark-bg': '#0f172a',
+                        'dark-card': '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-500 flex flex-col min-h-screen">
+<body class="theme-transition bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-slate-900 dark:to-black text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
 
     <!-- Skip link para accesibilidad -->
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
@@ -84,7 +99,7 @@
 
     <!-- Loading overlay -->
     <div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl theme-transition">
             <div class="flex items-center space-x-4">
                 <div class="loading-spinner w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full"></div>
                 <span class="text-slate-700 dark:text-slate-300 font-medium">Cargando...</span>

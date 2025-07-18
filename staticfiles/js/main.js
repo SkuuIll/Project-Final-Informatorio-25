@@ -15,13 +15,41 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function setTheme(theme) {
         const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        document.documentElement.style.colorScheme = theme;
+        const html = document.documentElement;
+        
+        // Agregar clase de transición si no existe
+        if (!html.classList.contains('theme-transition')) {
+            html.classList.add('theme-transition');
+        }
+        
+        // Aplicar tema
+        html.classList.toggle('dark', isDark);
+        html.style.colorScheme = theme;
         localStorage.setItem('devblog-theme', theme);
+        
+        // Actualizar iconos
         updateThemeIcon();
         
-        // Mostrar toast de confirmación
-        showToast(isDark ? 'Tema oscuro activado' : 'Tema claro activado', 'success');
+        // Actualizar colores del body inmediatamente
+        document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+        
+        // Feedback visual mejorado
+        const message = isDark ? '🌙 Tema oscuro activado' : '☀️ Tema claro activado';
+        const toastType = isDark ? 'info' : 'success';
+        
+        // Pequeño delay para que se vea la transición
+        setTimeout(() => {
+            showToast(message, toastType, 2000);
+        }, 100);
+        
+        // Animar el botón del tema
+        themeToggleBtn.style.transform = 'scale(1.1) rotate(180deg)';
+        setTimeout(() => {
+            themeToggleBtn.style.transform = 'scale(1) rotate(0deg)';
+        }, 300);
+        
+        // Actualizar formas flotantes
+        updateFloatingShapes(isDark);
     }
 
     function updateThemeIcon() {
@@ -30,7 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
         lightIcon.classList.toggle('hidden', !isDark);
     }
     
-    updateThemeIcon();
+    function updateFloatingShapes(isDark) {
+        const shapes = document.querySelectorAll('.floating-shapes .shape');
+        shapes.forEach(shape => {
+            shape.style.transition = 'opacity 0.5s ease';
+            shape.style.opacity = isDark ? '0.03' : '0.08';
+        });
+    }
+    
+    // Aplicar tema inicial
+    const initialTheme = getTheme();
+    setTheme(initialTheme);
     
     themeToggleBtn.addEventListener('click', () => {
         const currentTheme = getTheme();
@@ -65,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ===== MENÚ MÓVIL =====
+    // ===== MENÚ MÓVIL =
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
 
