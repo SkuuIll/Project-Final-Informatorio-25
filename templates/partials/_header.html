@@ -1,6 +1,5 @@
 <header class="glass-effect sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/50 backdrop-blur-xl">
     <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" aria-label="Navegación Principal">
-        <!-- Logo mejorado -->
         <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white group focus-ring" aria-label="Página de inicio de DevBlog">
             <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-12 shadow-lg group-hover:shadow-glow group-hover:shadow-indigo-500/25">
                 <i data-feather="book-open" class="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110"></i>
@@ -9,12 +8,10 @@
         </a>
         
         <div class="flex items-center space-x-6">
-            <!-- Navegación desktop -->
             <div class="hidden md:flex items-center space-x-8">
                 {% include "partials/_nav_links.html" %}
             </div>
 
-            <!-- Búsqueda mejorada con animaciones -->
             <div class="hidden md:block ml-4 relative group">
                 <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search">
                     <label for="desktop-search" class="sr-only">Buscar posts</label>
@@ -29,19 +26,15 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300 group-focus-within:scale-110" aria-hidden="true">
                         <i data-feather="search" class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500"></i>
                     </div>
-                    <!-- Indicador de búsqueda activa -->
                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                         <div class="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full opacity-0 group-focus-within:opacity-100 transition-all duration-300 animate-pulse"></div>
                     </div>
                 </form>
-                <!-- Container para sugerencias de búsqueda -->
                 <div id="search-suggestions" class="search-suggestions hidden absolute top-full mt-2 w-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-2xl"></div>
             </div>
 
-            <!-- Separador elegante -->
             <div class="w-px h-8 bg-gradient-to-b from-transparent via-slate-300 to-transparent dark:via-slate-600 hidden md:block opacity-50" aria-hidden="true"></div>
 
-            <!-- Menú de usuario mejorado -->
             {% if user.is_authenticated %}
                 <div class="relative group" id="user-menu-dropdown">
                     <button id="user-menu-button" type="button" class="flex items-center space-x-3 p-2 rounded-2xl hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring group" aria-expanded="false" aria-haspopup="true" aria-controls="user-menu">
@@ -63,7 +56,6 @@
                         <span class="sr-only">Abrir menú de usuario</span>
                     </button>
                     <div id="user-menu" class="absolute hidden right-0 mt-3 w-64 glass-effect rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 origin-top-right transition-all duration-300 animate-fade-in-up backdrop-blur-xl" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                        <!-- Header del menú -->
                         <div class="p-4 border-b border-white/20 dark:border-slate-700/50 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
                             <div class="flex items-center space-x-3">
                                 {% if user.profile.avatar and user.profile.avatar.url %}
@@ -133,14 +125,12 @@
                 </div>
             {% endif %}
 
-            <!-- Toggle tema mejorado -->
             <button id="theme-toggle" type="button" class="p-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 focus-ring group relative overflow-hidden" aria-label="Cambiar tema">
                 <i id="theme-toggle-dark-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="moon"></i>
                 <i id="theme-toggle-light-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="sun"></i>
                 <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
             </button>
 
-            <!-- Botón menú móvil mejorado -->
             <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring group relative overflow-hidden" aria-controls="mobile-menu" aria-expanded="false">
                 <span class="sr-only">Abrir menú principal</span>
                 <i data-feather="menu" class="w-6 h-6 transition-transform duration-300 group-hover:scale-110"></i>
@@ -149,10 +139,8 @@
         </div>
     </nav>
 
-    <!-- Menú móvil mejorado -->
     <div id="mobile-menu" class="hidden md:hidden glass-effect border-t border-white/20 dark:border-slate-700/50 animate-slide-down backdrop-blur-xl">
         <div class="px-4 py-6 space-y-4">
-            <!-- Búsqueda móvil -->
             <div class="mb-6">
                 <form action="{% url 'posts:search_results' %}" method="get" class="relative group" role="search">
                     <label for="mobile-search" class="sr-only">Buscar posts</label>
@@ -169,12 +157,10 @@
                 </form>
             </div>
             
-            <!-- Links de navegación móvil -->
             <div class="space-y-2">
                 {% include "partials/_nav_links.html" %}
             </div>
             
-            <!-- Botones de autenticación en móvil -->
             {% if not user.is_authenticated %}
                 <div class="pt-4 border-t border-white/20 dark:border-slate-700/50 space-y-3">
                     <a href="{% url 'accounts:login' %}" class="w-full flex items-center justify-center px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 font-semibold">

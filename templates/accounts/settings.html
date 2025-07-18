@@ -6,7 +6,6 @@
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header con breadcrumb -->
         <div class="mb-8 animate-fade-in">
             <nav class="flex mb-4" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-2">
@@ -38,9 +37,7 @@
             </div>
         </div>
 
-        <!-- Contenedor principal con Alpine.js -->
         <div class="grid lg:grid-cols-4 gap-8" x-data="{ tab: 'profile' }">
-            <!-- Sidebar de navegación -->
             <div class="lg:col-span-1">
                 <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-6 sticky top-8">
                     <nav class="space-y-2">
@@ -60,9 +57,7 @@
                 </div>
             </div>
 
-            <!-- Contenido principal -->
             <div class="lg:col-span-3">
-                <!-- Editar Perfil -->
                 <div x-show="tab === 'profile'" 
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 transform translate-y-4"
@@ -101,7 +96,6 @@
                     </div>
                 </div>
 
-                <!-- Cambiar Contraseña -->
                 <div x-show="tab === 'password'" 
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 transform translate-y-4"

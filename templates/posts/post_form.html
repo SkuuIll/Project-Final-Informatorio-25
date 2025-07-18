@@ -7,7 +7,6 @@
     <form method="post" enctype="multipart/form-data" class="space-y-6" id="post-form">
         {% csrf_token %}
         
-        <!-- Encabezado y Acciones Principales -->
         <div class="glass-effect rounded-2xl p-6 border">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -38,7 +37,6 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="lg:col-span-3 space-y-6">
-                <!-- Título del Post -->
                 <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-4">
                         <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shrink-0">
@@ -70,7 +68,6 @@
                     </div>
                 </div>
 
-                <!-- Contenido del Post con CKEditor 5 -->
                 <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-3">
@@ -110,9 +107,7 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Imagen Destacada -->
                 <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-3">
                         <div class="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center shrink-0">
@@ -148,7 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Estadísticas del Post -->
                 <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-3">
                         <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shrink-0">
@@ -176,7 +170,6 @@
                     </div>
                 </div>
                 
-                <!-- Tags y Estado -->
                 <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
                     <div class="flex items-center space-x-3 mb-4">
                         <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shrink-0">
@@ -186,7 +179,6 @@
                     </div>
                     
                     <div class="space-y-4">
-                        <!-- Estado -->
                         <div>
                             <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Estado
@@ -199,7 +191,6 @@
                             </select>
                         </div>
 
-                        <!-- Tags -->
                         <div>
                             <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Tags
@@ -223,12 +214,11 @@
     </form>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.2/classic/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
 <style>
-    /* Efecto de cristal para los contenedores */
+
     .glass-effect {
         background-color: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
@@ -236,38 +226,37 @@
         border-color: rgba(255, 255, 255, 0.2);
     }
     .dark .glass-effect {
-        background-color: rgba(30, 41, 59, 0.6); /* slate-800/60 */
-        border-color: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+        background-color: rgba(30, 41, 59, 0.6); 
+        border-color: rgba(51, 65, 85, 0.5); 
     }
 
-    /* Estilos para CKEditor 5 (Light & Dark Mode) */
     .editor-container {
-        --ck-border-color: #e2e8f0; /* slate-200 */
+        --ck-border-color: #e2e8f0; 
         --ck-focus-ring-color: rgba(99, 102, 241, 0.2);
         --ck-color-base-background: #ffffff;
-        --ck-color-text: #1e293b; /* slate-800 */
+        --ck-color-text: #1e293b; 
         --ck-color-toolbar-background: #ffffff;
-        --ck-color-button-default-hover-background: #f1f5f9; /* slate-100 */
-        --ck-color-button-on-background: #e2e8f0; /* slate-200 */
-        --ck-color-base-placeholder: #9ca3af; /* gray-400 */
+        --ck-color-button-default-hover-background: #f1f5f9; 
+        --ck-color-button-on-background: #e2e8f0; 
+        --ck-color-base-placeholder: #9ca3af; 
     }
     .dark .editor-container {
-        --ck-border-color: #475569; /* slate-600 */
-        --ck-focus-ring-color: rgba(129, 140, 248, 0.3); /* indigo-400 */
-        --ck-color-base-background: #1e293b; /* slate-800 - SOLID COLOR */
-        --ck-color-text: #cbd5e1; /* slate-300 - IMPROVED CONTRAST */
-        --ck-color-toolbar-background: #0f172a; /* slate-900 */
-        --ck-color-button-default-hover-background: #334155; /* slate-700 */
-        --ck-color-button-on-background: #475569; /* slate-600 */
+        --ck-border-color: #475569; 
+        --ck-focus-ring-color: rgba(129, 140, 248, 0.3); 
+        --ck-color-base-background: #1e293b; 
+        --ck-color-text: #cbd5e1;
+        --ck-color-toolbar-background: #0f172a;
+        --ck-color-button-default-hover-background: #334155; 
+        --ck-color-button-on-background: #475569; 
         --ck-color-input-background: #334155;
         --ck-color-list-button-on-background: #475569;
         --ck-color-dropdown-panel-background: #1e293b;
         --ck-color-panel-border: #475569;
-        --ck-color-base-placeholder: #64748b; /* slate-500 */
+        --ck-color-base-placeholder: #64748b; 
     }
     .ck-editor__main > .ck-editor__editable {
-        min-height: 500px; /* Altura aumentada */
-        border-radius: 0 0 0.75rem 0.75rem !important; /* 12px */
+        min-height: 500px;
+        border-radius: 0 0 0.75rem 0.75rem !important; 
         font-size: 16px;
         line-height: 1.6;
         background-color: var(--ck-color-base-background) !important;
@@ -275,7 +264,7 @@
         border: none !important;
     }
     .ck-editor__top .ck-sticky-panel .ck-toolbar {
-        border-radius: 0.75rem 0.75rem 0 0 !important; /* 12px */
+        border-radius: 0.75rem 0.75rem 0 0 !important;
         border: none !important;
         border-bottom: 1px solid var(--ck-border-color) !important;
         background-color: var(--ck-color-toolbar-background) !important;
@@ -290,7 +279,6 @@
         color: var(--ck-color-base-placeholder) !important;
     }
     
-    /* Animaciones */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -303,14 +291,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- INICIALIZAR ICONOS FEATHER ---
     feather.replace();
 
-    // --- LÓGICA DEL FORMULARIO ---
     let editor;
     let autosaveTimeout;
     
-    // Inicializar CKEditor 5 con TODAS las funciones
     ClassicEditor
         .create(document.querySelector('#editor'), {
             toolbar: {
@@ -364,13 +349,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateStats();
                 scheduleAutosave();
             });
-            updateStats(); // Initial stats
+            updateStats(); 
         })
         .catch(error => {
             console.error('Error al inicializar CKEditor:', error);
         });
 
-    // Elementos del DOM
     const titleInput = document.getElementById('{{ form.title.id_for_label }}');
     const urlPreview = document.getElementById('url-preview');
     const wordCountEl = document.getElementById('word-count');
@@ -382,7 +366,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const autosaveStatus = document.getElementById('autosave-status');
     const autosaveIcon = autosaveStatus.nextElementSibling;
 
-    // Función para actualizar estadísticas
     function updateStats() {
         if (!editor) return;
         
@@ -409,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function() {
         imageCountEl.textContent = images;
     }
 
-    // Función para generar slug
     function slugify(text) {
         return text.toString().toLowerCase().trim()
             .replace(/\s+/g, '-')
@@ -424,7 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
         urlPreview.textContent = `/posts/${slug || 'tu-titulo-aqui'}`;
     });
 
-    // Función para programar autoguardado
     function scheduleAutosave() {
         clearTimeout(autosaveTimeout);
         autosaveStatus.textContent = 'Guardando...';
@@ -436,7 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function saveAsDraft() {
-        // Aquí iría la lógica AJAX para guardar el borrador
         console.log("Autoguardado disparado.");
         autosaveStatus.textContent = 'Guardado';
         autosaveStatus.className = 'text-green-600 dark:text-green-400';
@@ -444,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function() {
         feather.replace();
     }
 
-    // Manejo de imágenes
     const imageUploader = document.getElementById('image-uploader');
     const imageInput = document.getElementById('{{ form.header_image.id_for_label }}');
     const imagePreview = document.getElementById('image-preview');
@@ -486,7 +465,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Validación y envío del formulario
     const postForm = document.getElementById('post-form');
     postForm.addEventListener('submit', function(e) {
         if (editor) {

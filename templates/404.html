@@ -296,7 +296,6 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Efecto de partículas cursor
         const cursor = document.createElement('div');
         cursor.className = 'fixed w-4 h-4 bg-cyan-400 rounded-full pointer-events-none z-50 opacity-0 transition-opacity duration-300';
         document.body.appendChild(cursor);
@@ -311,9 +310,7 @@
             cursor.style.opacity = '0';
         });
         
-        // Sonido de error (opcional)
         const playErrorSound = () => {
-            // Crear un tono usando Web Audio API
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -331,8 +328,6 @@
             oscillator.stop(audioContext.currentTime + 0.5);
         };
         
-        // Reproducir sonido al cargar (opcional, descomenta si quieres)
-        // setTimeout(playErrorSound, 1000);
     });
 </script>
 {% endblock %}

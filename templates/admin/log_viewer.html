@@ -4,10 +4,9 @@
 {% block extrahead %}
 {{ block.super }}
 <style>
-    /* Estilos para el contenedor del visor de logs */
     #log-container {
-        background-color: #1d1f21; /* Fondo oscuro para mejor contraste */
-        color: #c5c8c6; /* Texto gris claro */
+        background-color: #1d1f21;
+        color: #c5c8c6; 
         padding: 1em;
         border-radius: 8px;
         font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
@@ -15,17 +14,14 @@
         line-height: 1.6;
         white-space: pre;
         overflow-x: auto;
-        counter-reset: line-number; /* Inicializa el contador de líneas */
+        counter-reset: line-number;
     }
 
-    /* Estilo para cada línea de log */
     .log-line {
         display: block;
         position: relative;
-        padding-left: 50px; /* Espacio para los números de línea */
-    }
+        padding-left: 50px; 
 
-    /* Pseudoelemento para mostrar los números de línea */
     .log-line::before {
         counter-increment: line-number;
         content: counter(line-number);
@@ -34,22 +30,20 @@
         top: 0;
         width: 40px;
         text-align: right;
-        color: #555; /* Color tenue para los números */
-        user-select: none; /* Evita que se puedan seleccionar */
+        color: #555; 
+        user-select: none;
     }
 
-    /* Colores para los diferentes niveles de log */
-    .log-line.info { color: #81a2be; }      /* Azul para INFO */
-    .log-line.debug { color: #b294bb; }     /* Morado para DEBUG */
-    .log-line.warning { color: #f0c674; }   /* Amarillo para WARNING */
-    .log-line.error { color: #cc6666; }     /* Rojo para ERROR */
+    .log-line.info { color: #81a2be; }      
+    .log-line.debug { color: #b294bb; }     
+    .log-line.warning { color: #f0c674; }   
+    .log-line.error { color: #cc6666; }     
     .log-line.critical {
         color: #e48a8a;
         font-weight: bold;
-        background-color: rgba(204, 102, 102, 0.1); /* Fondo rojo claro para CRITICAL */
+        background-color: rgba(204, 102, 102, 0.1);
     }
 
-    /* Estilos para la cabecera y los botones de acción */
     .log-header {
         display: flex;
         justify-content: space-between;
@@ -91,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const logContainer = document.getElementById('log-container');
     const rawLogContent = logContainer.textContent.trim();
     
-    // Limpiamos el contenedor para reconstruirlo con las líneas estilizadas.
     logContainer.innerHTML = '';
 
     const lines = rawLogContent.split('\n');
@@ -100,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const lineElement = document.createElement('span');
         lineElement.className = 'log-line';
         
-        // Determinamos el nivel del log y aplicamos la clase CSS correspondiente.
         const lowerLine = line.toLowerCase();
         if (lowerLine.includes('critical')) {
             lineElement.classList.add('critical');
@@ -118,10 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
         logContainer.appendChild(lineElement);
     });
 
-    // Funcionalidad para el botón de copiar.
     const copyButton = document.getElementById('copy-button');
     copyButton.addEventListener('click', function() {
-        // Usamos el contenido original sin formato para copiar.
         navigator.clipboard.writeText(rawLogContent).then(function() {
             copyButton.textContent = '¡Copiado!';
             setTimeout(() => {

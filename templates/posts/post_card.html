@@ -5,16 +5,10 @@
 
 <article class="group relative flex h-full flex-col overflow-hidden rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 cursor-pointer">
     
-    <!-- Efecto de fondo glassmorphism mejorado -->
     <div class="absolute inset-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-3xl shadow-lg group-hover:shadow-2xl group-hover:bg-white/80 dark:group-hover:bg-slate-800/80 transition-all duration-500"></div>
-    
-    <!-- Decoración gradient flotante -->
     <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
-    
-    <!-- Contenido principal -->
     <div class="relative z-10 flex flex-col h-full">
         
-        <!-- Imagen del header con overlays mejorados -->
         {% if post.header_image %}
         <div class="relative overflow-hidden rounded-t-3xl">
             <a href="{{ post.get_absolute_url }}" tabindex="-1" aria-hidden="true" class="block">
@@ -24,10 +18,8 @@
                      loading="lazy">
             </a>
             
-            <!-- Overlay gradient mejorado -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <!-- Badges mejorados -->
             <div class="absolute top-4 right-4 flex gap-2">
                 {% if post.is_new %}
                 <span class="flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
@@ -36,7 +28,6 @@
                 </span>
                 {% endif %}
                 
-                <!-- Badge de categoría dinámico -->
                 {% if post.category %}
                 <span class="bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20 dark:border-slate-700/50">
                     {{ post.category.name }}
@@ -44,7 +35,6 @@
                 {% endif %}
             </div>
             
-            <!-- Indicador de tiempo de lectura flotante -->
             <div class="absolute bottom-4 left-4">
                 <div class="flex items-center gap-2 bg-black/50 text-white text-sm font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
                     <i data-feather="clock" class="w-4 h-4"></i>
@@ -54,10 +44,8 @@
         </div>
         {% endif %}
 
-        <!-- Contenido de la tarjeta -->
         <div class="flex flex-1 flex-col p-8">
             <div class="flex-1">
-                <!-- Título con animación de underline mejorada -->
                 <h2 class="mb-4 text-2xl font-bold leading-tight text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                     <a href="{{ post.get_absolute_url }}" 
                        class="relative inline-block">
@@ -66,12 +54,10 @@
                     </a>
                 </h2>
                 
-                <!-- Descripción con fade mejorado -->
                 <p class="mb-6 text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors duration-300">
                     {{ post.content|striptags|truncatewords:25 }}
                 </p>
                 
-                <!-- Tags del post -->
                 {% if post.tags.all %}
                 <div class="flex flex-wrap gap-2 mb-6">
                     {% for tag in post.tags.all|slice:":3" %}
@@ -88,10 +74,8 @@
                 {% endif %}
             </div>
 
-            <!-- Footer de la tarjeta con información del autor y stats -->
             <div class="space-y-4 border-t border-slate-200/80 dark:border-slate-700/50 pt-6">
                 
-                <!-- Autor -->
                 <a href="{% url 'accounts:profile' pk=post.author.pk %}" 
                    class="flex items-center gap-4 group/author hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl p-2 -m-2 transition-all duration-300">
                     
@@ -119,17 +103,14 @@
                     </div>
                 </a>
 
-                <!-- Stats mejoradas -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                         
-                        <!-- Views -->
                         <div class="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
                             <i data-feather="eye" class="w-4 h-4"></i>
                             <span class="views-count font-medium">{{ post.views }}</span>
                         </div>
                         
-                        <!-- Comentarios -->
                         {% if post.comments.count > 0 %}
                         <div class="flex items-center gap-1.5 hover:text-green-500 transition-colors">
                             <i data-feather="message-circle" class="w-4 h-4"></i>
@@ -138,10 +119,8 @@
                         {% endif %}
                     </div>
 
-                    <!-- Botones de acción mejorados -->
                     <div class="flex items-center gap-2">
                         
-                        <!-- Botón de like mejorado -->
                         <button data-slug="{{ post.slug }}" 
                                 class="like-button group/like flex items-center gap-1.5 p-2.5 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all duration-300 hover:scale-110" 
                                 aria-label="Dar me gusta a {{ post.title }}">
@@ -149,7 +128,6 @@
                             <span class="likes-count text-sm font-medium">{{ post.likes.count }}</span>
                         </button>
                         
-                        <!-- Botón de leer más mejorado -->
                         <a href="{{ post.get_absolute_url }}" 
                            class="group/read flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2.5 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105" 
                            aria-label="Leer más sobre {{ post.title }}">
@@ -162,20 +140,9 @@
         </div>
     </div>
     
-    <!-- Indicador de progreso de lectura (opcional) -->
     <div class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 w-0 group-hover:w-full transition-all duration-1000 rounded-b-3xl"></div>
 </article>
 
 {% comment %}
-    MEJORAS IMPLEMENTADAS:
-    1. Glassmorphism avanzado con múltiples capas
-    2. Microanimaciones suaves y naturales
-    3. Mejor jerarquía visual y tipográfica
-    4. Sistema de badges más flexible
-    5. Stats mejoradas con iconografía consistente
-    6. Botones de acción más prominentes
-    7. Mejor accesibilidad con ARIA labels
-    8. Sistema de hover states más sofisticado
-    9. Compatibilidad con modo oscuro mejorada
-    10. Indicadores visuales de progreso y estado
+ 
 {% endcomment %}

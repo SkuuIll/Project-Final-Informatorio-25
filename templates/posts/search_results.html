@@ -10,7 +10,6 @@
 {% block content %}
 <div class="max-w-7xl mx-auto">
     
-    <!-- Hero Section con gradiente mejorado -->
     <section class="text-center mb-16 relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10"></div>
         
@@ -49,9 +48,7 @@
         </div>
     </section>
 
-    <!-- Resultados -->
     {% if posts %}
-        <!-- Filtros y ordenamiento -->
         <div class="mb-8 flex flex-wrap items-center justify-between gap-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
                 <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Filtrar por:</span>
@@ -78,14 +75,12 @@
             </div>
         </div>
 
-        <!-- Grid de resultados -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {% for post in posts %}
                 {% include 'posts/post_card.html' with post=post %}
             {% endfor %}
         </div>
         
-        <!-- Paginación mejorada -->
         <div class="flex justify-center mt-16">
             <nav class="flex items-center gap-2" aria-label="Paginación">
                 <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">
@@ -109,14 +104,11 @@
         </div>
         
     {% else %}
-        <!-- Estado vacío mejorado -->
         <div class="text-center py-20">
             <div class="relative max-w-md mx-auto">
-                <!-- Decoración de fondo -->
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-3xl blur-3xl opacity-60"></div>
                 
                 <div class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-12 shadow-xl border border-white/20 dark:border-slate-700/50">
-                    <!-- Icono animado -->
                     <div class="w-24 h-24 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
                         <i data-feather="search" class="w-12 h-12 text-slate-400 dark:text-slate-500"></i>
                     </div>
@@ -131,7 +123,6 @@
                         Intenta con otros términos o explora nuestros artículos más populares.
                     </p>
                     
-                    <!-- Sugerencias -->
                     <div class="space-y-4 mb-8">
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Sugerencias:</p>
                         <div class="flex flex-wrap gap-2 justify-center">
@@ -142,7 +133,6 @@
                         </div>
                     </div>
                     
-                    <!-- Botones de acción -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
                         <a href="{% url 'posts:post_list' %}" 
                            class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
@@ -162,7 +152,6 @@
     {% endif %}
 </div>
 
-<!-- Esquema JSON-LD para resultados de búsqueda -->
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",

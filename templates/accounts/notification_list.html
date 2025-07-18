@@ -6,7 +6,6 @@
 {% block content %}
 <div class="min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div class="flex items-center space-x-4">
                 <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -31,7 +30,6 @@
             </form>
         </div>
 
-        <!-- Notifications List -->
         <div class="space-y-4">
             {% for notification in notifications %}
             <a href="{{ notification.link }}" class="block group">
@@ -86,7 +84,6 @@
             {% endfor %}
         </div>
 
-        <!-- Statistics Cards -->
         {% if notifications %}
         <div class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -122,7 +119,6 @@
 </div>
 
 <style>
-/* Animaciones personalizadas que complementan el estilo base */
 @keyframes gentle-bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-2px); }
@@ -132,17 +128,14 @@
     animation: gentle-bounce 2s infinite;
 }
 
-/* Mejoras en las transiciones */
 .group:hover .transform {
     transform: scale(1.02);
 }
 
-/* Efectos suaves para las tarjetas */
 .backdrop-blur-sm {
     backdrop-filter: blur(8px);
 }
 
-/* Scrollbar personalizada que coincide con el tema */
 .container::-webkit-scrollbar {
     width: 8px;
 }
@@ -161,7 +154,6 @@
     background: rgba(99, 102, 241, 0.5);
 }
 
-/* Animación suave para las notificaciones nuevas */
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

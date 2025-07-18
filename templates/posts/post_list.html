@@ -41,9 +41,6 @@
                 </div>
             </form>
         </div>
-
-        <!-- SE HA ELIMINADO EL CAMPO DE BÚSQUEDA EN TIEMPO REAL DE AQUÍ -->
-
     </div>
 </section>
 
@@ -74,7 +71,6 @@
 <section aria-labelledby="articles-heading">
     <h2 id="articles-heading" class="sr-only">Lista de artículos</h2>
     
-    <!-- Controles de filtrado y ordenamiento -->
     <div class="mb-8 space-y-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -116,7 +112,6 @@
             </div>
         </div>
         
-        <!-- Contador de resultados -->
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-600 dark:text-gray-400">
                 Mostrando <span id="visible-count">{{ object_list|length }}</span> de <span id="total-count">{{ object_list|length }}</span> artículos
@@ -150,17 +145,6 @@
         {% endfor %}
     </div>
 
-    <!-- <div id="no-results" class="hidden col-span-full text-center py-16">
-        <div class="glass-effect rounded-3xl p-12 max-w-md mx-auto">
-            <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <i data-feather="search" class="w-10 h-10 text-gray-400"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">No se encontraron resultados</h3>
-            <p class="text-gray-600 dark:text-gray-400">Intenta con otros términos de búsqueda o filtros.</p>
-        </div>
-    </div> -->
-    
-    <!-- Paginación mejorada -->
     {% if is_paginated %}
     <nav class="mt-12 flex justify-center" aria-label="Paginación">
         <div class="flex items-center gap-2">
@@ -190,7 +174,6 @@
     {% endif %}
 </section>
 
-<!-- Loading spinner para transiciones -->
 <div id="loading-spinner" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="glass-effect rounded-2xl p-8 text-center">
         <div class="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -227,7 +210,6 @@
         transform: scale(1);
     }
     
-    /* Vista en lista */
     .posts-grid-list {
         display: grid;
         grid-template-columns: 1fr;
@@ -238,7 +220,6 @@
         transition: all 0.3s ease;
     }
     
-    /* Animaciones mejoradas */
     @keyframes slideInUp {
         from {
             opacity: 0;
@@ -254,7 +235,6 @@
         animation: slideInUp 0.6s ease-out;
     }
     
-    /* Highlight para búsqueda */
     .search-highlight {
         background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
         color: #1f2937;
@@ -263,7 +243,6 @@
         font-weight: 600;
     }
     
-    /* Skeleton loading */
     .skeleton {
         background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
         background-size: 200% 100%;
@@ -282,7 +261,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Elementos DOM
         const searchInput = document.getElementById('search-input');
         const filterTagsContainer = document.getElementById('filter-tags');
         const postCards = document.querySelectorAll('.post-card-wrapper');
@@ -296,18 +274,15 @@
         const clearFilters = document.getElementById('clear-filters');
         const loadingSpinner = document.getElementById('loading-spinner');
         
-        // Estado de la aplicación
         let currentFilter = 'all';
         let currentSort = 'newest';
         let currentView = 'grid';
         let currentSearchQuery = '';
         let debounceTimer;
         
-        // Configuración inicial
         const totalPosts = postCards.length;
         totalCount.textContent = totalPosts;
         
-        // Funciones utilitarias
         function showLoading() {
             loadingSpinner.classList.remove('hidden');
         }
@@ -350,7 +325,7 @@
                 case 'title-desc':
                     sortedPosts.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
                     break;
-                default: // newest
+                default: 
                     sortedPosts.sort((a, b) => new Date(b.dataset.date) - new Date(a.dataset.date));
             }
             
