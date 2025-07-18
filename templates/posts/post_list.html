@@ -21,7 +21,7 @@
         </p>
         
         <div class="mt-8 max-w-2xl mx-auto">
-            <form action="{% url 'posts:search_results' %}" method="get" role="search">
+            <form id="search-form" role="search">
                 <div class="relative">
                     <label for="search-input" class="sr-only">Buscar artículos</label>
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -29,42 +29,14 @@
                     </div>
                     <input 
                         type="search" 
-                        name="q"
                         id="search-input"
                         placeholder="Buscar artículos, tecnologías, tutoriales..."
-                        class="w-full pl-12 pr-16 py-4 glass-effect rounded-2xl border-0 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-lg"
+                        class="w-full pl-12 pr-4 py-4 glass-effect rounded-2xl border-0 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-lg"
                         autocomplete="off"
                     >
-                    <button type="submit" class="absolute inset-y-0 right-0 flex items-center justify-center w-16 h-full text-gray-500 hover:text-indigo-600 transition-colors" aria-label="Buscar">
-                        <i data-feather="arrow-right" class="w-6 h-6"></i>
-                    </button>
                 </div>
             </form>
         </div>
-    </div>
-</section>
-
-<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" aria-label="Estadísticas del blog">
-    <div class="glass-effect rounded-2xl p-6 text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300">
-            <i data-feather="book-open" class="w-6 h-6 text-white"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="total-posts">{{ object_list|length }}</h3>
-        <p class="text-gray-600 dark:text-gray-400">Artículos Publicados</p>
-    </div>
-    <div class="glass-effect rounded-2xl p-6 text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300">
-            <i data-feather="users" class="w-6 h-6 text-white"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">500+</h3>
-        <p class="text-gray-600 dark:text-gray-400">Desarrolladores</p>
-    </div>
-    <div class="glass-effect rounded-2xl p-6 text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300">
-            <i data-feather="trending-up" class="w-6 h-6 text-white"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">50k+</h3>
-        <p class="text-gray-600 dark:text-gray-400">Lecturas Mensuales</p>
     </div>
 </section>
 
@@ -114,7 +86,7 @@
         
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-600 dark:text-gray-400">
-                Mostrando <span id="visible-count">{{ object_list|length }}</span> de <span id="total-count">{{ object_list|length }}</span> artículos
+                Mostrando <span id="visible-count">0</span> de <span id="total-count">{{ object_list|length }}</span> artículos
             </p>
             <button id="clear-filters" class="hidden px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                 Limpiar filtros
@@ -133,7 +105,7 @@
             {% include 'posts/post_card.html' with post=post %}
         </div>
         {% empty %}
-        <div class="col-span-full text-center py-16">
+        <div class="col-span-full text-center py-16" id="no-results-message">
             <div class="glass-effect rounded-3xl p-12 max-w-md mx-auto">
                 <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <i data-feather="coffee" class="w-10 h-10 text-white"></i>
@@ -145,33 +117,23 @@
         {% endfor %}
     </div>
 
-    {% if is_paginated %}
-    <nav class="mt-12 flex justify-center" aria-label="Paginación">
-        <div class="flex items-center gap-2">
-            {% if page_obj.has_previous %}
-                <a href="?page=1" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la primera página">
-                    <i data-feather="chevrons-left" class="w-4 h-4"></i>
-                </a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la página anterior, página {{ page_obj.previous_page_number }}">
-                    <i data-feather="chevron-left" class="w-4 h-4"></i>
-                </a>
-            {% endif %}
-            
-            <span class="px-4 py-2 glass-effect rounded-lg font-medium" aria-current="page">
-                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    <nav id="pagination-controls" class="mt-16 flex items-center justify-between hidden" aria-label="Paginación">
+        <button id="prev-page-btn" class="inline-flex items-center gap-2 pl-3 pr-4 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+            <i data-feather="arrow-left" class="w-5 h-5"></i>
+            Anterior
+        </button>
+
+        <div class="hidden md:block">
+            <span id="page-indicator" class="px-5 py-3 glass-effect rounded-xl font-medium text-gray-800 dark:text-gray-200 shadow-inner">
+                Página 1 de 1
             </span>
-            
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la página siguiente, página {{ page_obj.next_page_number }}">
-                    <i data-feather="chevron-right" class="w-4 h-4"></i>
-                </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Ir a la última página, página {{ page_obj.paginator.num_pages }}">
-                    <i data-feather="chevrons-right" class="w-4 h-4"></i>
-                </a>
-            {% endif %}
         </div>
+
+        <button id="next-page-btn" class="inline-flex items-center gap-2 pl-4 pr-3 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+            Siguiente
+            <i data-feather="arrow-right" class="w-5 h-5"></i>
+        </button>
     </nav>
-    {% endif %}
 </section>
 
 <div id="loading-spinner" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
@@ -195,19 +157,7 @@
     }
     
     .post-card-wrapper.hidden-card {
-        opacity: 0;
-        transform: scale(0.9) translateY(20px);
-        pointer-events: none;
-    }
-    
-    .post-card-wrapper.fade-out {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    
-    .post-card-wrapper.fade-in {
-        opacity: 1;
-        transform: scale(1);
+        display: none;
     }
     
     .posts-grid-list {
@@ -234,243 +184,214 @@
     .animate-slide-in {
         animation: slideInUp 0.6s ease-out;
     }
-    
-    .search-highlight {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: #1f2937;
-        padding: 0.125rem 0.25rem;
-        border-radius: 0.25rem;
-        font-weight: 600;
-    }
-    
-    .skeleton {
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-    }
-    
-    @keyframes loading {
-        0% {
-            background-position: 200% 0;
-        }
-        100% {
-            background-position: -200% 0;
-        }
-    }
 </style>
+
+<script src="https://unpkg.com/feather-icons"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('search-form');
         const searchInput = document.getElementById('search-input');
         const filterTagsContainer = document.getElementById('filter-tags');
-        const postCards = document.querySelectorAll('.post-card-wrapper');
-        const noResults = document.getElementById('no-results');
+        const allPostCards = Array.from(document.querySelectorAll('.post-card-wrapper'));
+        const noResultsMessage = document.getElementById('no-results-message');
         const postsGrid = document.getElementById('posts-grid');
         const sortSelect = document.getElementById('sort-select');
         const gridView = document.getElementById('grid-view');
         const listView = document.getElementById('list-view');
-        const visibleCount = document.getElementById('visible-count');
-        const totalCount = document.getElementById('total-count');
-        const clearFilters = document.getElementById('clear-filters');
+        const visibleCountEl = document.getElementById('visible-count');
+        const totalCountEl = document.getElementById('total-count');
+        const clearFiltersBtn = document.getElementById('clear-filters');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const paginationControls = document.getElementById('pagination-controls');
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const pageIndicator = document.getElementById('page-indicator');
         
-        let currentFilter = 'all';
-        let currentSort = 'newest';
-        let currentView = 'grid';
-        let currentSearchQuery = '';
-        let debounceTimer;
+        let state = {
+            filter: 'all',
+            sort: sortSelect.value,
+            view: 'grid',
+            searchQuery: '',
+            currentPage: 1,
+            postsPerPage: 12,
+            visiblePosts: [],
+        };
         
-        const totalPosts = postCards.length;
-        totalCount.textContent = totalPosts;
-        
-        function showLoading() {
-            loadingSpinner.classList.remove('hidden');
-        }
-        
-        function hideLoading() {
-            loadingSpinner.classList.add('hidden');
-        }
-        
-        function debounce(func, delay) {
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(debounceTimer);
-                    func(...args);
-                };
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(later, delay);
-            };
-        }
-        
-        function updateVisibleCount() {
-            const visible = Array.from(postCards).filter(card => 
-                !card.classList.contains('hidden-card')
-            ).length;
-            visibleCount.textContent = visible;
-            
-            const hasActiveFilters = currentFilter !== 'all' || currentSearchQuery !== '';
-            clearFilters.classList.toggle('hidden', !hasActiveFilters);
-        }
-        
-        function sortPosts(posts, sortBy) {
-            const sortedPosts = Array.from(posts);
-            
-            switch(sortBy) {
-                case 'oldest':
-                    sortedPosts.sort((a, b) => new Date(a.dataset.date) - new Date(b.dataset.date));
-                    break;
-                case 'title':
-                    sortedPosts.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
-                    break;
-                case 'title-desc':
-                    sortedPosts.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
-                    break;
-                default: 
-                    sortedPosts.sort((a, b) => new Date(b.dataset.date) - new Date(a.dataset.date));
-            }
-            
-            return sortedPosts;
-        }
-        
-        function applyFiltersAndSearch() {
+
+        function render() {
             showLoading();
-            
+
             setTimeout(() => {
-                let visiblePosts = 0;
-                
-                postCards.forEach(card => {
+                let filteredPosts = allPostCards.filter(card => {
                     const tags = card.dataset.tags || '';
                     const title = card.dataset.title || '';
                     const content = card.dataset.content || '';
-
-                    const matchesFilter = currentFilter === 'all' || tags.includes(currentFilter);
-                    const matchesSearch = currentSearchQuery === '' || title.includes(currentSearchQuery) || content.includes(currentSearchQuery);
-
-                    if (matchesFilter && matchesSearch) {
-                        card.classList.remove('hidden-card');
-                        card.classList.add('fade-in');
-                        visiblePosts++;
-                    } else {
-                        card.classList.add('hidden-card');
-                        card.classList.remove('fade-in');
-                    }
+                    const matchesFilter = state.filter === 'all' || tags.includes(state.filter);
+                    const matchesSearch = state.searchQuery === '' || title.includes(state.searchQuery) || content.includes(state.searchQuery);
+                    return matchesFilter && matchesSearch;
                 });
+
+                state.visiblePosts = sortPosts(filteredPosts, state.sort);
                 
-                const visibleCards = Array.from(postCards).filter(card => 
-                    !card.classList.contains('hidden-card')
-                );
-                
-                const sortedCards = sortPosts(visibleCards, currentSort);
-                
-                sortedCards.forEach((card, index) => {
-                    card.style.order = index;
-                });
-                
-                if (noResults) {
-                    noResults.classList.toggle('hidden', visiblePosts === 0);
+                const paginatedPosts = paginatePosts(state.visiblePosts, state.currentPage, state.postsPerPage);
+
+                postsGrid.innerHTML = ''; 
+                if (paginatedPosts.length > 0) {
+                    paginatedPosts.forEach(card => postsGrid.appendChild(card));
+                    if (noResultsMessage) noResultsMessage.style.display = 'none';
+                } else {
+                    if (noResultsMessage) noResultsMessage.style.display = 'block';
                 }
-                updateVisibleCount();
+                
+                updateUICounts();
+                updatePaginationControls();
+                feather.replace(); 
                 
                 hideLoading();
             }, 150);
         }
-        
-        function toggleView(view) {
-            currentView = view;
+
+        function sortPosts(posts, sortBy) {
+            const sorted = [...posts]; 
+            switch(sortBy) {
+                case 'created_at':
+                    sorted.sort((a, b) => new Date(a.dataset.date) - new Date(b.dataset.date));
+                    break;
+                case 'title':
+                    sorted.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
+                    break;
+                case '-title':
+                    sorted.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
+                    break;
+                default:
+                    sorted.sort((a, b) => new Date(b.dataset.date) - new Date(a.dataset.date));
+            }
+            return sorted;
+        }
+
+        function paginatePosts(posts, page, postsPerPage) {
+            const start = (page - 1) * postsPerPage;
+            const end = start + postsPerPage;
+            return posts.slice(start, end);
+        }
+
+        function updateUICounts() {
+            const totalVisible = state.visiblePosts.length;
+            const paginated = paginatePosts(state.visiblePosts, state.currentPage, state.postsPerPage);
+            visibleCountEl.textContent = paginated.length;
+            totalCountEl.textContent = totalVisible;
             
+            const hasActiveFilters = state.filter !== 'all' || state.searchQuery !== '';
+            clearFiltersBtn.classList.toggle('hidden', !hasActiveFilters);
+        }
+        
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(state.visiblePosts.length / state.postsPerPage);
+
+            if (totalPages > 1) {
+                paginationControls.classList.remove('hidden');
+                pageIndicator.textContent = `Página ${state.currentPage} de ${totalPages}`;
+                prevPageBtn.disabled = state.currentPage === 1;
+                nextPageBtn.disabled = state.currentPage === totalPages;
+            } else {
+                paginationControls.classList.add('hidden');
+            }
+        }
+
+        function toggleView(view) {
+            state.view = view;
             if (view === 'list') {
                 postsGrid.classList.remove('md:grid-cols-2', 'lg:grid-cols-3');
                 postsGrid.classList.add('posts-grid-list');
                 gridView.setAttribute('aria-pressed', 'false');
                 listView.setAttribute('aria-pressed', 'true');
-                listView.classList.add('bg-indigo-100', 'dark:bg-indigo-900/30');
-                gridView.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/30');
-            } else {
+            } else { 
                 postsGrid.classList.add('md:grid-cols-2', 'lg:grid-cols-3');
                 postsGrid.classList.remove('posts-grid-list');
                 gridView.setAttribute('aria-pressed', 'true');
                 listView.setAttribute('aria-pressed', 'false');
-                gridView.classList.add('bg-indigo-100', 'dark:bg-indigo-900/30');
-                listView.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/30');
             }
-            
             localStorage.setItem('devblog-view-preference', view);
         }
+
+        function showLoading() { loadingSpinner.classList.remove('hidden'); }
+        function hideLoading() { loadingSpinner.classList.add('hidden'); }
         
-        function clearAllFilters() {
-            currentFilter = 'all';
-            searchInput.value = '';
-            currentSearchQuery = '';
-            
-            filterTagsContainer.querySelectorAll('.filter-tag').forEach(tag => {
-                tag.classList.remove('active');
-                tag.setAttribute('aria-pressed', 'false');
-            });
-            filterTagsContainer.querySelector('[data-filter="all"]').classList.add('active');
-            filterTagsContainer.querySelector('[data-filter="all"]').setAttribute('aria-pressed', 'true');
-            
-            applyFiltersAndSearch();
-        }
-        
-        // Event Listeners
-        searchInput.addEventListener('input', debounce(function(e) {
-            currentSearchQuery = e.target.value.toLowerCase().trim();
-            applyFiltersAndSearch();
+        searchForm.addEventListener('submit', e => {
+            e.preventDefault(); 
+        });
+
+        searchInput.addEventListener('input', debounce(e => {
+            state.searchQuery = e.target.value.toLowerCase().trim();
+            state.currentPage = 1; 
+            render();
         }, 300));
 
-        filterTagsContainer.addEventListener('click', function(e) {
+        filterTagsContainer.addEventListener('click', e => {
             const clickedButton = e.target.closest('.filter-tag');
             if (!clickedButton) return;
 
-            filterTagsContainer.querySelectorAll('.filter-tag').forEach(tag => {
-                tag.classList.remove('active');
-                tag.setAttribute('aria-pressed', 'false');
-            });
-            
+            filterTagsContainer.querySelector('.active').classList.remove('active');
             clickedButton.classList.add('active');
-            clickedButton.setAttribute('aria-pressed', 'true');
             
-            currentFilter = clickedButton.dataset.filter;
-            applyFiltersAndSearch();
+            state.filter = clickedButton.dataset.filter;
+            state.currentPage = 1; 
+            render();
         });
         
-        sortSelect.addEventListener('change', function(e) {
-            window.location.href = `?sort_by=${e.target.value}`;
+        sortSelect.addEventListener('change', e => {
+            state.sort = e.target.value;
+            state.currentPage = 1;
+            render();
+        });
+
+        prevPageBtn.addEventListener('click', () => {
+            if (state.currentPage > 1) {
+                state.currentPage--;
+                render();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(state.visiblePosts.length / state.postsPerPage);
+            if (state.currentPage < totalPages) {
+                state.currentPage++;
+                render();
+            }
         });
         
         gridView.addEventListener('click', () => toggleView('grid'));
         listView.addEventListener('click', () => toggleView('list'));
         
-        clearFilters.addEventListener('click', clearAllFilters);
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-slide-in');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '50px' });
-        
-        postCards.forEach(card => {
-            observer.observe(card);
+        clearFiltersBtn.addEventListener('click', () => {
+            state.filter = 'all';
+            state.searchQuery = '';
+            searchInput.value = '';
+            filterTagsContainer.querySelector('.active').classList.remove('active');
+            filterTagsContainer.querySelector('[data-filter="all"]').classList.add('active');
+            state.currentPage = 1;
+            render();
         });
         
-        const savedView = localStorage.getItem('devblog-view-preference');
-        if (savedView) {
-            toggleView(savedView);
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
         }
-        
-        applyFiltersAndSearch();
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey || e.metaKey) {
-                if (e.key === '\\') {
-                    e.preventDefault();
-                    clearAllFilters();
-                }
+
+        function init() {
+            totalCountEl.textContent = allPostCards.length;
+            const savedView = localStorage.getItem('devblog-view-preference');
+            if (savedView) {
+                toggleView(savedView);
             }
-        });
+            render();
+        }
+
+        init();
     });
 </script>
 {% endblock %}

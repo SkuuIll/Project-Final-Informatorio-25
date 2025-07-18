@@ -17,12 +17,12 @@ app_name = "accounts"
 urlpatterns = [
     path("login/", CustomLoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
-    path("user/<int:pk>/", ProfileView.as_view(), name="profile"),
+    path("@<str:username>/", ProfileView.as_view(), name="profile"),
     path("settings/", settings_view, name="settings"),
     path("notifications/", notification_list, name="notification_list"),
     path("notifications/delete/", delete_notifications, name="delete_notifications"),
-    path("follow/<int:pk>/", follow_user, name="follow_user"),
-    path("unfollow/<int:pk>/", unfollow_user, name="unfollow_user"),
+    path("follow/<str:username>/", follow_user, name="follow_user"),
+    path("unfollow/<str:username>/", unfollow_user, name="unfollow_user"),
     path("request-permission/", request_post_permission, name="request_post_permission"),
     path(
         "password_change/",

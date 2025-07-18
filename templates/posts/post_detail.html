@@ -189,7 +189,7 @@
                 </a>
             </div>
         </div>
-        <button data-url="{% url 'posts:favorite_post' post.slug %}" id="favorite-button" class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all" aria-label="Añadir a favoritos">
+        <button data-url="{% url 'posts:favorite_post' username=post.author.username slug=post.slug %}" id="favorite-button" class="p-3 rounded-full text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all" aria-label="Añadir a favoritos">
             <i data-feather="bookmark" class="w-6 h-6 {% if request.user in post.favorites.all %}text-amber-500 fill-current{% endif %}"></i>
         </button>
     </div>

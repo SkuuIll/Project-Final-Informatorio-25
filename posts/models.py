@@ -47,7 +47,7 @@ class Post(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("posts:post_detail", kwargs={"slug": self.slug})
+        return reverse("posts:post_detail", kwargs={"username": self.author.username, "slug": self.slug})
 
     def calculate_reading_time(self):
         if self.content:

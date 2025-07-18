@@ -42,23 +42,23 @@ def request_post_permission(request):
     return redirect("posts:dashboard")
 
 @login_required
-def follow_user(request, pk):
-    user_to_follow = get_object_or_404(User, pk=pk)
+def follow_user(request, username):
+    user_to_follow = get_object_or_404(User, username=username)
     if user_to_follow != request.user:
         request.user.profile.follows.add(user_to_follow.profile)
         Notification.objects.create(
             recipient=user_to_follow,
             sender=request.user,
             message=f'{request.user.username} ha comenzado a seguirte.',
-            link=reverse('accounts:profile', kwargs={'pk': request.user.pk})
+            link=reverse('accounts:profile', kwargs={'username': request.user.username})
         )
-    return redirect("accounts:profile", pk=pk)
+    return redirect("accounts:profile", username=user_to_follow.username)
 
 @login_required
-def unfollow_user(request, pk):
-    user_to_unfollow = get_object_or_404(User, pk=pk)
+def unfollow_user(request, username):
+    user_to_unfollow = get_object_or_404(User, username=username)
     request.user.profile.follows.remove(user_to_unfollow.profile)
-    return redirect("accounts:profile", pk=pk)
+    return redirect("accounts:profile", username=user_to_unfollow.username)
 
 @login_required
 def notification_list(request):
@@ -70,11 +70,15 @@ def notification_list(request):
 class ProfileView(LoginRequiredMixin, DetailView):
     model = User
     template_name = "accounts/profile.html"
-    context_object_name = "profile_user" 
+    context_object_name = "profile_user"
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, username=self.kwargs.get('username'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_own_profile'] = self.request.user == self.object
+        context['is_following'] = self.request.user.profile.follows.filter(user=self.object).exists()
         return context
 
 

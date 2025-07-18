@@ -78,7 +78,7 @@ class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    # paginate_by = 6
+    # paginate_by = 12
 
     def get_queryset(self):
         queryset = Post.objects.filter(status="published")
@@ -107,7 +107,9 @@ class PostDetailView(DetailView):
     template_name = "posts/post_detail.html"
 
     def get_object(self, queryset=None):
-        post = super().get_object(queryset)
+        username = self.kwargs.get('username')
+        slug = self.kwargs.get('slug')
+        post = get_object_or_404(Post, author__username=username, slug=slug)
         post.views += 1
         post.save(update_fields=["views"])
         return post
@@ -352,7 +354,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = "posts/comment_confirm_delete.html"
 
     def get_success_url(self):
-        return reverse_lazy("posts:post_detail", kwargs={"slug": self.object.post.slug})
+        return reverse_lazy("posts:post_detail", kwargs={"username": self.object.post.author.username, "slug": self.object.post.slug})
 
     def test_func(self):
         comment = self.get_object()
