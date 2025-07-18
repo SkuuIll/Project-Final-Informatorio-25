@@ -32,6 +32,16 @@ class PostListByTagView(ListView):
     context_object_name = "object_list"
     paginate_by = 6
 
+    def get_queryset(self):
+        tag_slug = self.kwargs.get("tag_slug")
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        return Post.objects.filter(tags__in=[tag], status="published").order_by("-created_at")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['all_tags'] = Tag.objects.all()
+        return context
+
 
 class TagListView(ListView):
     model = Tag
