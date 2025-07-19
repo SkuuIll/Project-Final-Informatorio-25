@@ -57,9 +57,7 @@ class Post(models.Model):
             return max(1, round(word_count / reading_speed))
         return 0
 
-    @property
-    def is_new(self):
-        return (timezone.now() - self.created_at).days < 7
+    
 
     def save(self, *args, **kwargs):
         if not self.slug:

@@ -99,6 +99,9 @@ class PostListView(ListView):
         context = super().get_context_data(**kwargs)
         context['all_tags'] = Tag.objects.annotate(num_posts=Count('post')).order_by('-num_posts')[:4]
         context['sort_by'] = self.request.GET.get('sort_by', '-created_at')
+        one_day_ago = timezone.now() - timedelta(days=1)
+        latest_posts = Post.objects.filter(status="published", created_at__gte=one_day_ago).order_by('-created_at')[:5]
+        context['latest_post_ids'] = [post.id for post in latest_posts]
         return context
 
 
