@@ -8,7 +8,7 @@ class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
     verbose_name_plural = 'Perfil'
-    fields = ('avatar', 'bio', 'can_post')
+    fields = ('avatar', 'bio', 'can_post', 'permission_requested')
 
 # Define un nuevo UserAdmin
 class UserAdmin(BaseUserAdmin):
@@ -34,8 +34,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'can_post')
-    list_filter = ('can_post',)
+    list_display = ('user',)
     search_fields = ('user__username',)
     actions = ['approve_posting']
 

@@ -30,15 +30,20 @@ def delete_notifications(request):
 
 @login_required
 def request_post_permission(request):
-    admins = User.objects.filter(is_staff=True)
-    for admin in admins:
-        Notification.objects.create(
-            recipient=admin,
-            sender=request.user,
-            message=f'El usuario {request.user.username} solicita permiso para postear.',
-            link=reverse('admin:accounts_profile_change', args=[request.user.profile.pk])
-        )
-    messages.success(request, "Tu solicitud ha sido enviada a los administradores.")
+    if not request.user.profile.permission_requested:
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            Notification.objects.create(
+                recipient=admin,
+                sender=request.user,
+                message=f'El usuario {request.user.username} solicita permiso para postear.',
+                link=reverse('admin:accounts_profile_change', args=[request.user.profile.pk])
+            )
+        request.user.profile.permission_requested = True
+        request.user.profile.save()
+        messages.success(request, "Tu solicitud ha sido enviada a los administradores.")
+    else:
+        messages.warning(request, "Ya has enviado una solicitud de permiso.")
     return redirect("posts:dashboard")
 
 @login_required

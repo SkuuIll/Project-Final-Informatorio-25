@@ -34,6 +34,11 @@
                     <i data-feather="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"></i>
                     <span class="font-semibold">Crear Nuevo Post</span>
                 </a>
+            {% elif user.profile.permission_requested %}
+                <button class="bg-gray-400 text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 cursor-not-allowed shadow-lg" disabled>
+                    <i data-feather="clock" class="w-5 h-5"></i>
+                    <span class="font-semibold">Esperando Aprobación</span>
+                </button>
             {% else %}
                 <a href="{% url 'accounts:request_post_permission' %}" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
                     <i data-feather="send" class="w-5 h-5"></i>

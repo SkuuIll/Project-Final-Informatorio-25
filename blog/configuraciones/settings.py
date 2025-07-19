@@ -156,7 +156,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
-    "guardian.backends.ObjectPermissionBackend",
 )
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 8388608  # 8 MB

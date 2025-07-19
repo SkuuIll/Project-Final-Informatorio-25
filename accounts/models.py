@@ -10,7 +10,8 @@ class Profile(models.Model):
         upload_to="avatars/", null=True, blank=True, verbose_name="Avatar"
     )
     bio = models.TextField(max_length=500, blank=True, verbose_name="Biografía")
-    can_post = models.BooleanField(default=False, verbose_name="Puede crear posts")
+    can_post = models.BooleanField(default=False, verbose_name="Puede postear")
+    permission_requested = models.BooleanField(default=False, verbose_name="Permiso solicitado")
     follows = models.ManyToManyField(
         'self',
         related_name='followed_by',
