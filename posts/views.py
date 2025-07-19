@@ -26,6 +26,37 @@ from .serializers import PostSerializer
 # Imports for dashboard
 from datetime import date, timedelta
 import json
+import os
+from django.core.files.storage import default_storage
+
+
+@login_required
+def upload_image_view(request):
+    """
+    Vista para manejar la subida de imágenes desde CKEditor.
+    """
+    if request.method == 'POST' and request.FILES.get('upload'):
+        uploaded_file = request.FILES['upload']
+        
+        # Validación básica del archivo
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+        ext = os.path.splitext(uploaded_file.name)[1].lower()
+        if ext not in allowed_extensions:
+            return JsonResponse({'error': {'message': 'Tipo de archivo no permitido.'}}, status=400)
+            
+        if uploaded_file.size > 8 * 1024 * 1024: # Límite de 8MB
+            return JsonResponse({'error': {'message': 'El archivo es demasiado grande (máx 8MB).'}}, status=400)
+
+        # Guardar el archivo y obtener la URL
+        try:
+            file_path = default_storage.save(f'uploads/posts_content/{uploaded_file.name}', uploaded_file)
+            file_url = default_storage.url(file_path)
+            return JsonResponse({'url': file_url})
+        except Exception as e:
+            return JsonResponse({'error': {'message': f'Error al guardar el archivo: {e}'}}, status=500)
+    
+    return JsonResponse({'error': {'message': 'Petición no válida.'}}, status=400)
+
 
 @csrf_exempt
 @login_required

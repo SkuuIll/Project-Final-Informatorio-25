@@ -18,6 +18,7 @@ from .views import (
     PostListByTagView,
     TagListView,
     PostArchiveView,
+    upload_image_view,
 )
 
 app_name = "posts"
@@ -45,4 +46,5 @@ urlpatterns = [
     path("search/", SearchResultsView.as_view(), name="search_results"),
     path("feed/", LatestPostsFeed(), name="post_feed"),
     path("archive/", PostArchiveView.as_view(), name="archive_list"),
+    path("upload-image/", upload_image_view, name="ckeditor_upload_image"),
 ]

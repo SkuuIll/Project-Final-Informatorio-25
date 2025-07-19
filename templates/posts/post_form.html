@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <form method="post" enctype="multipart/form-data" class="space-y-6" id="post-form">
+    <form method="post" enctype="multipart/form-data" class="space-y-6" id="post-form" data-upload-url="{% url 'posts:ckeditor_upload_image' %}">
         {% csrf_token %}
         
         <div class="glass-effect rounded-2xl p-6 border">
@@ -218,7 +218,7 @@
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
 <style>
-
+    /* Estilos existentes... */
     .glass-effect {
         background-color: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
@@ -289,6 +289,59 @@
 </style>
 
 <script>
+// --- CKEditor Custom Upload Adapter ---
+class SimpleUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+        this.uploadUrl = document.getElementById('post-form').dataset.uploadUrl;
+    }
+
+    upload() {
+        return this.loader.file.then(file => new Promise((resolve, reject) => {
+            const data = new FormData();
+            data.append('upload', file);
+            
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            fetch(this.uploadUrl, {
+                method: 'POST',
+                body: data,
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                       throw new Error(data.error ? data.error.message : 'Error en la subida del servidor.');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    reject(data.error.message);
+                } else {
+                    resolve({ default: data.url });
+                }
+            })
+            .catch(error => {
+                console.error('CKEditor upload error:', error);
+                reject('Hubo un problema al subir la imagen. Verifique el tamaño y el tipo de archivo.');
+            });
+        }));
+    }
+
+    abort() {
+        // This method is called when the upload is aborted.
+    }
+}
+
+function SimpleUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new SimpleUploadAdapter(loader);
+    };
+}
+// --- End of Adapter ---
+
 document.addEventListener('DOMContentLoaded', function() {
     
     feather.replace();
@@ -298,6 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     ClassicEditor
         .create(document.querySelector('#editor'), {
+            extraPlugins: [SimpleUploadAdapterPlugin], // Habilitar el adaptador de subida
             toolbar: {
                 items: [
                     'heading', '|',
