@@ -4,8 +4,7 @@ on:
   push:
     branches: [ "main", "master" ] # Cambia esto según tu rama principal
   pull_request:
-    branches: [ "main", "master" ] # Y también aquí
-
+    branches: [ "main", "master" ]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
