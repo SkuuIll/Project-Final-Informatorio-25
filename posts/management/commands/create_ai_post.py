@@ -4,10 +4,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 from posts.models import Post
 from posts.ai_generator import (
-    extract_content_from_url,
-    rewrite_content_with_ai,
-    generate_tags_with_ai,
+    generate_complete_post,
 )
+from posts.forms import COMPLETE_POST_PROMPT
 from dotenv import load_dotenv
 
 load_dotenv()  
@@ -36,24 +35,23 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.NOTICE(f'Procesando URL: {url}'))
 
-        self.stdout.write('Extrayendo contenido del artículo original...')
-        original_content = extract_content_from_url(url)
-        if not original_content:
-            raise CommandError('No se pudo extraer contenido de la URL.')
+        self.stdout.write(self.style.NOTICE('Generando post completo con IA, incluyendo imágenes...'))
+        result = generate_complete_post(url, COMPLETE_POST_PROMPT, extract_images=True)
 
-        self.stdout.write(self.style.NOTICE('Usando IA para reescribir el contenido y generar un título...'))
-        title, new_content = rewrite_content_with_ai(original_content)
+        if not result.get('success'):
+            raise CommandError(f"No se pudo generar el post: {result.get('error', 'Error desconocido')}")
 
-        self.stdout.write(self.style.NOTICE('Generando tags con IA...'))
-        tags = generate_tags_with_ai(new_content)
+        title = result.get('title', 'Título no generado')
+        content = result.get('content', '')
+        tags = result.get('tags', [])
 
         self.stdout.write(self.style.SUCCESS('Creando el post en la base de datos...'))
         
         new_post = Post.objects.create(
             author=author,
             title=title,
-            content=new_content,
-            status='published', 
+            content=content,
+            status='published',
         )
 
         if tags:

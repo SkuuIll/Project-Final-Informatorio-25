@@ -225,12 +225,9 @@ JAZZMIN_SETTINGS = {
     "hide_models": [],
     "order_with_respect_to": ["auth", "posts", "accounts"],
     "custom_links": {
-        "posts": [{
-            "name": "Gestionar Modelo IA",
-            "url": "posts:manage_ai_model",
-            "icon": "fas fa-robot",
-            "permissions": ["posts.view_aimodel"]
-        }]
+        "posts": [
+            # Removed "Gestionar Modelo IA" link as per request
+        ]
     },
     "icons": {
         "auth": "fas fa-users-cog",

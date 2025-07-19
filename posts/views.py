@@ -32,17 +32,6 @@ import os
 from django.core.files.storage import default_storage
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def manage_ai_model(request):
-    models = AIModel.objects.all()
-    if request.method == 'POST':
-        form = AIModelForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('posts:manage_ai_model')
-    else:
-        form = AIModelForm()
-    return render(request, 'admin/posts/ai_model_form.html', {'form': form, 'models': models})
 
 
 @login_required

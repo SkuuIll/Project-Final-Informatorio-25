@@ -4,12 +4,10 @@ from django.urls import path
 from .models import Post, Comment, AIModel
 from .forms import AiPostGeneratorForm, AIModelForm
 from .ai_generator import (
-    extract_content_from_url,
-    rewrite_content_with_ai,
-    generate_tags_with_ai,
+    generate_complete_post,
 )
+from .forms import COMPLETE_POST_PROMPT
 
-@admin.register(AIModel)
 class AIModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active')
     actions = ['activate_model']
@@ -24,6 +22,8 @@ class AIModelAdmin(admin.ModelAdmin):
         self.message_user(request, f"El modelo {model.name} ha sido activado.", level=messages.SUCCESS)
 
     activate_model.short_description = "Activar modelo seleccionado"
+
+admin.site.register(AIModel, AIModelAdmin)
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
@@ -54,25 +54,28 @@ class PostAdmin(admin.ModelAdmin):
                 url = form.cleaned_data['url']
                 rewrite_prompt = form.cleaned_data['rewrite_prompt']
                 tag_prompt = form.cleaned_data['tag_prompt']
+                extract_images = form.cleaned_data.get('extract_images', True)
+                max_images = form.cleaned_data.get('max_images', 5)
 
                 try:
-                    content = extract_content_from_url(url)
-                    if not content:
-                        self.message_user(request, "No se pudo extraer contenido de la URL.", level=messages.ERROR)
+                    result = generate_complete_post(url, rewrite_prompt, extract_images=extract_images, max_images=max_images)
+                    if not result.get('success'):
+                        self.message_user(request, f"No se pudo generar el post: {result.get('error', 'Error desconocido')}", level=messages.ERROR)
                         return redirect(".")
 
-                    title, new_content = rewrite_content_with_ai(content, rewrite_prompt)
-                    tags = generate_tags_with_ai(new_content, tag_prompt)
+                    title = result.get('title', 'Título no generado')
+                    content = result.get('content', '')
+                    tags = result.get('tags', [])
 
                     post = Post.objects.create(
                         author=request.user,
                         title=title,
-                        content=new_content,
+                        content=content,
                         status='draft',
                     )
                     if tags:
                         post.tags.add(*tags)
-                    
+
                     self.message_user(request, f"Post generado con éxito como borrador. Ya puedes editarlo.", level=messages.SUCCESS)
                     return redirect("admin:posts_post_change", post.id)
 

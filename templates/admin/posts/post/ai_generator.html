@@ -264,20 +264,57 @@
             <div class="form-section">
                 <div class="form-section-title">{% translate 'Configuración del Contenido' %}</div>
                 
+            <div class="form-section">
+                <div class="form-section-title">{% translate 'Opciones de Imágenes' %}</div>
+                <div class="enhanced-form-row" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="{{ form.extract_images.id_for_label }}" style="margin: 0; font-weight: 600; color: #444; display: flex; align-items: center; gap: 8px;">
+                        {{ form.extract_images }}
+                        {{ form.extract_images.label }}
+                        {% if form.extract_images.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                    </label>
+                </div>
+                {% if form.extract_images.help_text %}
+                    <div class="field-help-text" style="margin-left: 30px;">{{ form.extract_images.help_text }}</div>
+                {% endif %}
+                <style>
+                    /* Fix checkbox alignment and spacing */
+                    input[type="checkbox"] {
+                        margin: 0 10px 0 0;
+                        width: 20px;
+                        height: 20px;
+                        vertical-align: middle;
+                    }
+                </style>
+                <div class="enhanced-form-row" style="max-width: 150px;">
+                    <label for="{{ form.max_images.id_for_label }}" {% if form.max_images.field.required %}class="required"{% endif %}>
+                        {{ form.max_images.label }}
+                        {% if form.max_images.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                    </label>
+                    {{ form.max_images }}
+                    {% if form.max_images.help_text %}
+                        <div class="field-help-text">{{ form.max_images.help_text }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">{% translate 'Configuración del Contenido' %}</div>
                 {% for field in form %}
-                    <div class="enhanced-form-row">
-                        <label for="{{ field.id_for_label }}" {% if field.field.required %}class="required"{% endif %}>
-                            {{ field.label }}
-                            {% if field.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                        </label>
-                        
-                        {{ field }}
-                        
-                        {% if field.help_text %}
-                            <div class="field-help-text">{{ field.help_text }}</div>
-                        {% endif %}
-                    </div>
+                    {% if field.name != 'extract_images' and field.name != 'max_images' %}
+                        <div class="enhanced-form-row">
+                            <label for="{{ field.id_for_label }}" {% if field.field.required %}class="required"{% endif %}>
+                                {{ field.label }}
+                                {% if field.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="field-help-text">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endfor %}
+            </div>
+
             </div>
 
             <div class="enhanced-submit-row">

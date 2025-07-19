@@ -83,6 +83,8 @@ def extract_images_from_url(url: str, max_images: int = 5) -> list[dict]:
         print(f"Error al extraer imágenes: {e}")
         return []
 
+import os
+
 def download_image(image_url: str, folder: str = 'ai_posts/images/') -> str:
     """
     Descarga una imagen y la guarda en el almacenamiento de Django.
@@ -94,23 +96,32 @@ def download_image(image_url: str, folder: str = 'ai_posts/images/') -> str:
         }
         response = requests.get(image_url, headers=headers, timeout=10)
         response.raise_for_status()
-        
+
+        # Crear carpeta si no existe
+        if not default_storage.exists(folder):
+            try:
+                os.makedirs(default_storage.path(folder))
+                print(f"Carpeta creada: {folder}")
+            except Exception as e:
+                print(f"Error al crear carpeta {folder}: {e}")
+
         # Obtener la extensión del archivo
         parsed_url = urlparse(image_url)
         file_extension = os.path.splitext(parsed_url.path)[1]
         if not file_extension:
             file_extension = '.jpg'  # Por defecto
-        
+
         # Generar nombre único para el archivo
         filename = f"{uuid.uuid4()}{file_extension}"
         file_path = os.path.join(folder, filename)
-        
+
         # Guardar el archivo
         file_content = ContentFile(response.content)
         saved_path = default_storage.save(file_path, file_content)
-        
+        print(f"Imagen guardada en: {saved_path}")
+
         return default_storage.url(saved_path)
-    
+
     except Exception as e:
         print(f"Error al descargar imagen {image_url}: {e}")
         return None
@@ -245,13 +256,21 @@ def process_images_in_content(content: str, images_data: list[dict]) -> str:
     # Buscar comentarios de imágenes sugeridas
     image_comment_pattern = r'<!-- IMAGEN SUGERIDA: ([^>]+) -->'
     
+    used_images = set()
+    image_index = 0
+    
     def replace_image_comment(match):
+        nonlocal image_index
         description = match.group(1)
         
-        # Buscar una imagen que coincida con la descripción
-        for img_data in images_data:
-            if img_data.get('local_url'):
-                return f'<p><img src="{img_data["local_url"]}" alt="{img_data.get("alt", description)}" style="max-width: 100%; height: auto;"></p>'
+        # Insertar la siguiente imagen no usada
+        while image_index < len(images_data):
+            img_data = images_data[image_index]
+            image_index += 1
+            local_url = img_data.get('local_url')
+            if local_url and local_url not in used_images:
+                used_images.add(local_url)
+                return f'<p><img src="{local_url}" alt="{img_data.get("alt", description)}" style="max-width: 100%; height: auto;"></p>'
         
         # Si no hay imagen disponible, mantener el comentario
         return match.group(0)
