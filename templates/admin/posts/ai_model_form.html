@@ -1,0 +1,44 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Gestionar Modelos de IA</h1>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Modelos Actuales</h2>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for model in models %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ model.name }}</span>
+                        {% if model.is_active %}
+                            <span class="badge badge-success">Activo</span>
+                        {% else %}
+                            <form method="post" action="{% url 'admin:posts_aimodel_change' model.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="is_active" value="on">
+                                <button type="submit" class="btn btn-sm btn-primary">Activar</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2>Añadir Nuevo Modelo</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

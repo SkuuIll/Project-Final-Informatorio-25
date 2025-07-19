@@ -93,3 +93,19 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comentario de {self.author.username} en {self.post.title}"
+
+class AIModel(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Modelo")
+    is_active = models.BooleanField(default=False, verbose_name="Activo")
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            AIModel.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Modelo de IA"
+        verbose_name_plural = "Modelos de IA"

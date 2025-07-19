@@ -1,24 +1,98 @@
-from django.contrib import admin
-from .models import Post, Comment
-from .forms import PostForm
+from django.contrib import admin, messages
+from django.shortcuts import render, redirect
+from django.urls import path
+from .models import Post, Comment, AIModel
+from .forms import AiPostGeneratorForm, AIModelForm
+from .ai_generator import (
+    extract_content_from_url,
+    rewrite_content_with_ai,
+    generate_tags_with_ai,
+)
 
+@admin.register(AIModel)
+class AIModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active')
+    actions = ['activate_model']
+
+    def activate_model(self, request, queryset):
+        if queryset.count() > 1:
+            self.message_user(request, "Solo puedes activar un modelo a la vez.", level=messages.ERROR)
+            return
+        model = queryset.first()
+        model.is_active = True
+        model.save()
+        self.message_user(request, f"El modelo {model.name} ha sido activado.", level=messages.SUCCESS)
+
+    activate_model.short_description = "Activar modelo seleccionado"
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     """Configuración del panel de administración para los Posts."""
-    form = PostForm
     list_display = ("title", "author", "status", "created_at", "views", "is_sticky")
     list_filter = ("status", "created_at", "author", "is_sticky")
-    search_fields = ("title", "body")
+    search_fields = ("title", "content")
     raw_id_fields = ("author",)
     date_hierarchy = "created_at"
-    ordering = ("status", "created_at")
+    ordering = ("-created_at",)
+    change_list_template = "admin/posts/post/change_list.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "generate-ai/",
+                self.admin_site.admin_view(self.generate_ai_post_view),
+                name="post_generate_ai",
+            ),
+        ]
+        return custom_urls + urls
+
+    def generate_ai_post_view(self, request):
+        if request.method == "POST":
+            form = AiPostGeneratorForm(request.POST)
+            if form.is_valid():
+                url = form.cleaned_data['url']
+                rewrite_prompt = form.cleaned_data['rewrite_prompt']
+                tag_prompt = form.cleaned_data['tag_prompt']
+
+                try:
+                    content = extract_content_from_url(url)
+                    if not content:
+                        self.message_user(request, "No se pudo extraer contenido de la URL.", level=messages.ERROR)
+                        return redirect(".")
+
+                    title, new_content = rewrite_content_with_ai(content, rewrite_prompt)
+                    tags = generate_tags_with_ai(new_content, tag_prompt)
+
+                    post = Post.objects.create(
+                        author=request.user,
+                        title=title,
+                        content=new_content,
+                        status='draft',
+                    )
+                    if tags:
+                        post.tags.add(*tags)
+                    
+                    self.message_user(request, f"Post generado con éxito como borrador. Ya puedes editarlo.", level=messages.SUCCESS)
+                    return redirect("admin:posts_post_change", post.id)
+
+                except Exception as e:
+                    self.message_user(request, f"Ocurrió un error: {e}", level=messages.ERROR)
+                    return redirect(".")
+        else:
+            form = AiPostGeneratorForm()
+
+        context = dict(
+           self.admin_site.each_context(request),
+           form=form,
+           title="Generar Post con IA",
+        )
+        return render(request, "admin/posts/post/ai_generator.html", context)
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     """Configuración del panel de administración para los Comentarios."""
-
     list_display = ("author", "post", "created_at", "active")
     list_filter = ("active", "created_at")
     search_fields = ("author__username", "body")

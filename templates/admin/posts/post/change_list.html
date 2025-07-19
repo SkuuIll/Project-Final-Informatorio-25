@@ -1,0 +1,247 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .ai-generator-link {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            font-size: 13px !important;
+            text-transform: none !important;
+        }
+        
+        .ai-generator-link:hover {
+            background: linear-gradient(135deg, #218838, #1ea885) !important;
+            color: white !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+        }
+        
+        .ai-generator-link:active {
+            transform: translateY(0) !important;
+        }
+        
+        .ai-icon-sm {
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        /* Mejorar el botón estándar de añadir */
+        .object-tools .addlink {
+            transition: all 0.3s ease;
+        }
+        
+        .object-tools .addlink:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(121, 174, 200, 0.3);
+        }
+        
+        /* Separador visual entre botones */
+        .object-tools li:not(:last-child) {
+            margin-right: 8px;
+        }
+        
+        /* Tooltip para mejor UX */
+        .ai-generator-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .ai-generator-link:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Badge para indicar funcionalidad AI */
+        .ai-badge {
+            position: relative;
+        }
+        
+        .ai-badge::before {
+            content: "NEW";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff6b6b;
+            color: white;
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Responsive design para móviles */
+        @media (max-width: 768px) {
+            .object-tools {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .object-tools li {
+                margin: 0;
+                width: 100%;
+            }
+            
+            .ai-generator-link,
+            .object-tools .addlink {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .ai-generator-link::after {
+                display: none; /* Ocultar tooltip en móviles */
+            }
+        }
+        
+        /* Mejora de accesibilidad */
+        .ai-generator-link:focus {
+            outline: 3px solid rgba(40, 167, 69, 0.5);
+            outline-offset: 2px;
+        }
+        
+        /* Animación de carga sutil */
+        .ai-generator-link.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .ai-generator-link.loading .ai-icon-sm {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Estado hover mejorado para toda la barra de herramientas */
+        .object-tools {
+            padding: 10px 0;
+        }
+        
+        .object-tools ul {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block object-tools-items %}
+    <li class="ai-badge">
+        <a href="{% url 'admin:post_generate_ai' %}" 
+           class="ai-generator-link" 
+           data-tooltip="{% translate 'Crear contenido automáticamente usando IA' %}"
+           role="button"
+           aria-label="{% translate 'Generar nuevo post usando inteligencia artificial' %}">
+            <span class="ai-icon-sm">AI</span>
+            <span>{% blocktranslate %}Generar con IA{% endblocktranslate %}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.8;">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    
+    {% comment %}
+    Script para mejorar la experiencia del usuario
+    {% endcomment %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const aiLink = document.querySelector('.ai-generator-link');
+        
+        if (aiLink) {
+            // Feedback visual al hacer clic
+            aiLink.addEventListener('click', function(e) {
+                this.classList.add('loading');
+                
+                // Crear indicador de carga
+                const loadingText = document.createElement('span');
+                loadingText.textContent = '{% translate "Cargando..." %}';
+                loadingText.style.marginLeft = '8px';
+                loadingText.style.fontSize = '11px';
+                loadingText.style.opacity = '0.8';
+                
+                // Reemplazar temporalmente el texto
+                const originalText = this.querySelector('span:not(.ai-icon-sm)');
+                const originalContent = originalText.textContent;
+                originalText.textContent = '{% translate "Iniciando..." %}';
+                
+                // Restaurar después de un breve delay (para casos de carga rápida)
+                setTimeout(() => {
+                    if (this.classList.contains('loading')) {
+                        this.classList.remove('loading');
+                        originalText.textContent = originalContent;
+                    }
+                }, 3000);
+            });
+            
+            // Precarga de la página de destino para mejor rendimiento
+            aiLink.addEventListener('mouseenter', function() {
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = this.href;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Mejorar accesibilidad con navegación por teclado
+        const objectTools = document.querySelector('.object-tools');
+        if (objectTools) {
+            objectTools.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const focusedElement = document.activeElement;
+                    if (focusedElement.classList.contains('ai-generator-link')) {
+                        e.preventDefault();
+                        focusedElement.click();
+                    }
+                }
+            });
+        }
+    });
+    </script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -14,10 +14,12 @@ from django.views.generic import (
     DeleteView,
 )
 from django.views.generic.dates import ArchiveIndexView
-from .models import Post, Comment
-from .forms import CommentForm, PostForm
+from .models import Post, Comment, AIModel
+from .forms import CommentForm, PostForm, AIModelForm, AiPostGeneratorForm
 from taggit.models import Tag
 from accounts.models import Notification
+from django.contrib import messages
+from .ai_generator import extract_content_from_url, rewrite_content_with_ai, generate_tags_with_ai, generate_complete_post
 
 from django.db.models import Q, Sum, Count
 from rest_framework import viewsets
@@ -28,6 +30,19 @@ from datetime import date, timedelta
 import json
 import os
 from django.core.files.storage import default_storage
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def manage_ai_model(request):
+    models = AIModel.objects.all()
+    if request.method == 'POST':
+        form = AIModelForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('posts:manage_ai_model')
+    else:
+        form = AIModelForm()
+    return render(request, 'admin/posts/ai_model_form.html', {'form': form, 'models': models})
 
 
 @login_required
@@ -406,3 +421,129 @@ class PostArchiveView(ArchiveIndexView):
 
     def get_queryset(self):
         return Post.objects.filter(status="published").order_by("-created_at")
+
+def ai_post_generator_view(request):
+    """
+    Vista para generar posts con IA - Compatible con tu código existente
+    """
+    if request.method == 'POST':
+        form = AiPostGeneratorForm(request.POST)
+        if form.is_valid():
+            try:
+                url = form.cleaned_data['url']
+                rewrite_prompt = form.cleaned_data['rewrite_prompt']
+                tag_prompt = form.cleaned_data['tag_prompt']
+                
+                # Extraer contenido de la URL
+                url_data = extract_content_from_url(url)
+                
+                if not url_data or not url_data.get('content'):
+                    messages.error(request, 'No se pudo extraer contenido de la URL proporcionada.')
+                    return render(request, 'posts/ai_generator.html', {'form': form})
+                
+                # Verificar si usa el prompt completo o simple
+                prompt_type = form.cleaned_data.get('prompt_type', 'complete')
+                
+                if prompt_type == 'complete' and hasattr(form.cleaned_data, 'extract_images'):
+                    # Usar la función avanzada si está disponible
+                    extract_images = form.cleaned_data.get('extract_images', False)
+                    max_images = form.cleaned_data.get('max_images', 5)
+                    
+                    result = generate_complete_post(
+                        url=url,
+                        rewrite_prompt=rewrite_prompt,
+                        extract_images=extract_images,
+                        max_images=max_images
+                    )
+                    
+                    if result['success']:
+                        title = result['title']
+                        content = result['content']
+                        tags_list = result['tags']
+                    else:
+                        messages.error(request, f'Error al generar el post: {result.get("error", "Error desconocido")}')
+                        return render(request, 'posts/ai_generator.html', {'form': form})
+                
+                else:
+                    # Método tradicional - compatible con código existente
+                    content_text = url_data['content'] if isinstance(url_data, dict) else url_data
+                    
+                    # Generar título y contenido
+                    title, content = rewrite_content_with_ai(content_text, rewrite_prompt)
+                    
+                    # Generar tags por separado
+                    tags_list = generate_tags_with_ai(content_text, tag_prompt)
+                
+                # Crear el post
+                post = Post.objects.create(
+                    title=title,
+                    content=content,
+                    tags=', '.join(tags_list) if isinstance(tags_list, list) else tags_list,
+                    status='draft',  # Crear como borrador inicialmente
+                    author=request.user  # Si tienes campo author
+                )
+                
+                messages.success(request, f'Post "{title}" generado exitosamente!')
+                return redirect('post_detail', pk=post.pk)  # Ajusta según tu URL
+                
+            except Exception as e:
+                messages.error(request, f'Ocurrió un error: {str(e)}')
+                print(f"Error detallado: {e}")  # Para debugging
+                return render(request, 'posts/ai_generator.html', {'form': form})
+    else:
+        form = AiPostGeneratorForm()
+    
+    return render(request, 'posts/ai_generator.html', {'form': form})
+
+def ai_post_generator_simple_view(request):
+    """
+    Vista simplificada que garantiza compatibilidad con código existente
+    """
+    if request.method == 'POST':
+        form = AiPostGeneratorForm(request.POST)
+        if form.is_valid():
+            try:
+                url = form.cleaned_data['url']
+                rewrite_prompt = form.cleaned_data['rewrite_prompt']
+                tag_prompt = form.cleaned_data['tag_prompt']
+                
+                # Paso 1: Extraer contenido
+                content = extract_content_from_url(url)
+                
+                if not content:
+                    messages.error(request, 'No se pudo extraer contenido de la URL.')
+                    return render(request, 'posts/ai_generator.html', {'form': form})
+                
+                # Manejar tanto dict como string
+                content_text = content.get('content', content) if isinstance(content, dict) else content
+                
+                # Paso 2: Reescribir contenido (función original que devuelve tupla)
+                title, rewritten_content = rewrite_content_with_ai(content_text, rewrite_prompt)
+                
+                # Paso 3: Generar tags
+                tags = generate_tags_with_ai(content_text, tag_prompt)
+                tags_string = ', '.join(tags) if isinstance(tags, list) else str(tags)
+                
+                # Paso 4: Crear post
+                post = Post.objects.create(
+                    title=title,
+                    content=rewritten_content,
+                    tags=tags_string,
+                    status='draft'
+                )
+                
+                messages.success(request, 'Post generado exitosamente!')
+                return redirect('post_detail', pk=post.pk)
+                
+            except ValueError as e:
+                if "too many values to unpack" in str(e):
+                    messages.error(request, 'Error en la configuración de la IA. Por favor contacta al administrador.')
+                else:
+                    messages.error(request, f'Error: {str(e)}')
+            except Exception as e:
+                messages.error(request, f'Error inesperado: {str(e)}')
+                print(f"Error completo: {e}")  # Para debugging
+    else:
+        form = AiPostGeneratorForm()
+    
+    return render(request, 'posts/ai_generator.html', {'form': form})

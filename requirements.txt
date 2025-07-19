@@ -2,6 +2,7 @@ asgiref==3.9.1
 attrs==25.3.0
 autobahn==24.4.2
 Automat==25.4.16
+beautifulsoup4==4.12.3
 cffi==1.17.1
 channels==4.2.2
 constantly==23.10.4
@@ -16,6 +17,7 @@ django-jazzmin==3.0.1
 django-taggit==6.1.0
 django-turnstile==0.1.2
 djangorestframework==3.16.0
+google-generativeai==0.7.2
 gunicorn==23.0.0
 hyperlink==21.0.0
 idna==3.10
@@ -27,6 +29,7 @@ pyasn1_modules==0.4.2
 pycparser==2.22
 pyOpenSSL==25.1.0
 python-dotenv==1.1.1
+requests==2.32.3
 service-identity==24.2.0
 setuptools==80.9.0
 sqlparse==0.5.3
@@ -39,3 +42,4 @@ zope.interface==7.2
 coverage==7.9.2
 ruff==0.12.3
 Cython==3.1.2
+django-widget-tweaks==1.5.0

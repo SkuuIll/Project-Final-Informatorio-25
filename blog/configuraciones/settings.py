@@ -224,6 +224,14 @@ JAZZMIN_SETTINGS = {
     "hide_apps": [],
     "hide_models": [],
     "order_with_respect_to": ["auth", "posts", "accounts"],
+    "custom_links": {
+        "posts": [{
+            "name": "Gestionar Modelo IA",
+            "url": "posts:manage_ai_model",
+            "icon": "fas fa-robot",
+            "permissions": ["posts.view_aimodel"]
+        }]
+    },
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
@@ -231,6 +239,7 @@ JAZZMIN_SETTINGS = {
         "posts.Post": "fas fa-newspaper",
         "posts.Comment": "fas fa-comments",
         "accounts.Profile": "fas fa-id-card",
+        "posts.AIModel": "fas fa-robot",
     },
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-circle",

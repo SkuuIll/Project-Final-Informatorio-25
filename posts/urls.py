@@ -19,6 +19,9 @@ from .views import (
     TagListView,
     PostArchiveView,
     upload_image_view,
+    manage_ai_model,
+    ai_post_generator_view,
+    ai_post_generator_simple_view,
 )
 
 app_name = "posts"
@@ -47,4 +50,7 @@ urlpatterns = [
     path("feed/", LatestPostsFeed(), name="post_feed"),
     path("archive/", PostArchiveView.as_view(), name="archive_list"),
     path("upload-image/", upload_image_view, name="ckeditor_upload_image"),
+    path('admin/posts/aimodel/', manage_ai_model, name='manage_ai_model'),
+    path('generate-ai-post/', ai_post_generator_view, name='ai_post_generator'),
+    path('generate-ai-post-simple/', ai_post_generator_simple_view, name='ai_post_generator_simple'),
 ]
