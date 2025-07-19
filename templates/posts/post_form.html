@@ -218,7 +218,6 @@
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
 <style>
-    /* Estilos existentes... */
     .glass-effect {
         background-color: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
@@ -289,7 +288,6 @@
 </style>
 
 <script>
-// --- CKEditor Custom Upload Adapter ---
 class SimpleUploadAdapter {
     constructor(loader) {
         this.loader = loader;
@@ -331,7 +329,6 @@ class SimpleUploadAdapter {
     }
 
     abort() {
-        // This method is called when the upload is aborted.
     }
 }
 
@@ -340,7 +337,6 @@ function SimpleUploadAdapterPlugin(editor) {
         return new SimpleUploadAdapter(loader);
     };
 }
-// --- End of Adapter ---
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -351,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     ClassicEditor
         .create(document.querySelector('#editor'), {
-            extraPlugins: [SimpleUploadAdapterPlugin], // Habilitar el adaptador de subida
+            extraPlugins: [SimpleUploadAdapterPlugin],
             toolbar: {
                 items: [
                     'heading', '|',
