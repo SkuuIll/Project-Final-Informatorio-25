@@ -46,7 +46,7 @@
         <form method="post" class="space-y-6">
             {% csrf_token %}
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="{% url 'posts:post_detail' object.slug %}" 
+                <a href="{% url 'posts:post_detail' username=object.author.username slug=object.slug %}"
                    class="glass-effect px-8 py-4 rounded-xl font-semibold text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg border border-white/20 dark:border-slate-700/50 flex items-center justify-center space-x-2">
                     <i data-feather="x" class="w-5 h-5"></i>
                     <span>Cancelar</span>

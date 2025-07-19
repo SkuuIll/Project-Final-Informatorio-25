@@ -4,8 +4,8 @@
 {% if user.is_authenticated %}
     <a href="{% url 'posts:dashboard' %}" class="nav-link font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 focus-ring relative">
         Dashboard
-        {% if notification_count > 0 %}
-            <span class="notification-badge">{{ notification_count }}</span>
+        {% if notification_count|default:0 > 0 %}
+            <span class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">{{ notification_count }}</span>
         {% endif %}
     </a>
 {% endif %}

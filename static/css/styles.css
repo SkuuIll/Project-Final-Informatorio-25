@@ -35,3 +35,177 @@ html { scroll-behavior: smooth; }
 .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
 .dark .text-contrast { color: #f8fafc; }
 .dark .bg-contrast { background-color: #1e293b; }
+
+/* Custom styles to fully support CKEditor content inside .prose */
+
+/* General typography */
+.prose {
+    color: #111827; /* Texto oscuro para modo claro */
+    line-height: 1.75;
+    font-size: 1.125rem;
+}
+
+/* Encabezados */
+.prose h1 {
+    font-size: 2.75rem;
+    font-weight: 900;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: #f3f4f6; /* Color claro para encabezados en modo oscuro */
+}
+
+.prose h2 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #e5e7eb; /* Color claro para encabezados en modo oscuro */
+}
+
+.prose h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #d1d5db; /* Color claro para encabezados en modo oscuro */
+}
+
+/* Párrafos */
+.prose p {
+    margin-bottom: 1.5rem;
+    color: #374151; /* Texto oscuro para modo claro */
+}
+
+/* Texto en negrita y fuerte */
+.prose strong,
+.prose b {
+    font-weight: 900;
+    color: #5b21b6; /* Violeta oscuro para modo claro */
+    background-color: #ddd6fe; /* Fondo claro para modo claro */
+    padding: 0 0.2em;
+    border-radius: 0.25em;
+    font-size: 1.15rem;
+}
+
+/* Texto en cursiva y enfatizado */
+.prose em,
+.prose i {
+    font-style: italic;
+    color: #7c3aed; /* Violeta oscuro para modo claro */
+}
+
+/* Citas */
+.prose blockquote {
+    border-left: 4px solid #a78bfa; /* Violeta oscuro para modo claro */
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+    color: #5b21b6; /* Violeta oscuro para modo claro */
+    font-style: italic;
+    background-color: #ede9fe; /* Fondo claro para modo claro */
+    border-radius: 0.5rem;
+}
+
+/* Listas */
+.prose ul,
+.prose ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #374151; /* Texto oscuro para modo claro */
+}
+
+.prose li {
+    margin-bottom: 0.5rem;
+}
+
+/* Enlaces */
+.prose a {
+    color: #7c3aed; /* Violeta oscuro para modo claro */
+    text-decoration: underline;
+}
+
+.prose a:hover {
+    color: #5b21b6; /* Violeta oscuro más claro para modo claro */
+}
+
+/* Código en bloque y en línea */
+.prose code {
+    background-color: #ddd6fe; /* Fondo claro para modo claro */
+    color: #5b21b6; /* Violeta oscuro para modo claro */
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+    font-family: 'Fira Mono', monospace;
+    font-size: 0.95rem;
+}
+
+.prose pre {
+    background-color: #ddd6fe; /* Fondo claro para modo claro */
+    color: #5b21b6; /* Violeta oscuro para modo claro */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-family: 'Fira Mono', monospace;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Tablas */
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    color: #d4d4d8; /* Texto claro para modo oscuro */
+}
+
+.prose th,
+.prose td {
+    border: 1px solid #4c1d95; /* Violeta oscuro para modo oscuro */
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.prose th {
+    background-color: #5b21b6; /* Violeta oscuro para modo oscuro */
+    font-weight: 700;
+}
+
+/* Imágenes responsivas */
+.prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 10px 15px -3px rgba(167, 139, 250, 0.3), 0 4px 6px -2px rgba(167, 139, 250, 0.2);
+}
+
+/* Ajustes para vista móvil */
+@media (max-width: 640px) {
+    .glass-effect {
+        padding: 1.5rem !important;
+    }
+    .prose {
+        font-size: 1rem !important;
+        line-height: 1.6 !important;
+    }
+    .prose p {
+        margin-bottom: 1rem !important;
+    }
+    .prose strong,
+    .prose b {
+        font-weight: 800 !important;
+        font-size: 1.05rem !important;
+    }
+    .prose em,
+    .prose i {
+        font-size: 1rem !important;
+    }
+    .prose h1 {
+        font-size: 1.75rem !important;
+    }
+    .prose h2 {
+        font-size: 1.5rem !important;
+    }
+    .prose h3 {
+        font-size: 1.25rem !important;
+    }
+}

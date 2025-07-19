@@ -90,29 +90,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenu = document.getElementById('user-menu');
 
-        const toggleUserMenu = () => {
-            const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
-            userMenu.classList.toggle('hidden');
-            userMenuButton.setAttribute('aria-expanded', !isExpanded);
-        };
+        if (userMenuButton && userMenu) {
+            console.log('User menu elements found:', { userMenuButton, userMenu });
+            
+            const toggleUserMenu = () => {
+                const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                console.log('Toggling user menu. Current expanded state:', isExpanded);
+                
+                if (isExpanded) {
+                    userMenu.classList.add('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'false');
+                } else {
+                    userMenu.classList.remove('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'true');
+                }
+                
+                console.log('Menu toggled. New state:', userMenuButton.getAttribute('aria-expanded'));
+            };
 
-        userMenuButton.addEventListener('click', toggleUserMenu);
-
-        // Cerrar menú al hacer clic fuera
-        document.addEventListener('click', (event) => {
-            if (!userMenuDropdown.contains(event.target)) {
-                userMenu.classList.add('hidden');
-                userMenuButton.setAttribute('aria-expanded', 'false');
-            }
-        });
-        
-        // Cerrar menú con ESC
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && userMenuButton.getAttribute('aria-expanded') === 'true') {
+            userMenuButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('User menu button clicked');
                 toggleUserMenu();
-                userMenuButton.focus();
-            }
-        });
+            });
+
+            // Cerrar menú al hacer clic fuera
+            document.addEventListener('click', (event) => {
+                if (!userMenuDropdown.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Cerrar menú con ESC
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && userMenuButton.getAttribute('aria-expanded') === 'true') {
+                    toggleUserMenu();
+                    userMenuButton.focus();
+                }
+            });
+        } else {
+            console.error('User menu elements not found:', { userMenuButton, userMenu });
+        }
+    } else {
+        console.error('User menu dropdown container not found');
     }
 
     // ===== SISTEMA DE NOTIFICACIONES TOAST =====

@@ -1,0 +1,324 @@
+/* Correcciones de estilos para DevBlog */
+
+/* Corrección para la clase notification-badge */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    height: 1.25rem;
+    width: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+    z-index: 10;
+}
+
+/* Corrección para elementos glass-effect */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Corrección para gradientes */
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Corrección para focus-ring */
+.focus-ring:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+/* Corrección para animaciones */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounceGentle {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+@keyframes slideDown {
+    from { 
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Corrección para el tema oscuro y prevención de FOUC */
+.theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevenir FOUC - aplicar estilos base inmediatamente */
+html {
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+html.dark {
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+
+/* Transiciones suaves para el cambio de tema */
+body, 
+.glass-effect,
+header,
+footer,
+main {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Evitar flash de contenido sin estilo */
+.no-fouc {
+    visibility: hidden;
+}
+
+.no-fouc.loaded {
+    visibility: visible;
+}
+
+/* Corrección para floating shapes */
+.floating-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.floating-shapes .shape {
+    position: absolute;
+    opacity: 0.1;
+    animation: float 20s infinite linear;
+}
+
+.floating-shapes .shape:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-shapes .shape:nth-child(2) {
+    top: 20%;
+    right: 10%;
+    animation-delay: -5s;
+}
+
+.floating-shapes .shape:nth-child(3) {
+    bottom: 20%;
+    left: 20%;
+    animation-delay: -10s;
+}
+
+.floating-shapes .shape:nth-child(4) {
+    bottom: 10%;
+    right: 20%;
+    animation-delay: -15s;
+}
+
+.floating-shapes .shape:nth-child(5) {
+    top: 50%;
+    left: 50%;
+    animation-delay: -7s;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-30px) rotate(120deg); }
+    66% { transform: translateY(30px) rotate(240deg); }
+    100% { transform: translateY(0px) rotate(360deg); }
+}
+
+/* Corrección para loading spinner */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Corrección para scroll indicator */
+.scroll-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    z-index: 9999;
+    transition: width 0.3s ease;
+}
+
+/* Corrección para skip link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 1000;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+/* Corrección para prose content */
+.prose {
+    max-width: none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: inherit;
+}
+
+.prose a {
+    color: #6366f1;
+    text-decoration: underline;
+}
+
+.prose a:hover {
+    color: #4f46e5;
+}
+
+.dark .prose a {
+    color: #818cf8;
+}
+
+.dark .prose a:hover {
+    color: #a5b4fc;
+}
+
+/* Corrección para line-clamp */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Corrección para shadow-glow */
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Corrección para nav-link */
+.nav-link {
+    position: relative;
+    display: inline-block;
+}
+
+/* Corrección para select options en modo oscuro */
+select option {
+    background: #1f2937;
+    color: #f3f4f6;
+}
+
+.dark select option {
+    background: #1f2937;
+    color: #f3f4f6;
+}
+
+/* Corrección para botones deshabilitados */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Corrección para legibilidad del footer en modo claro */
+footer {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #f1f5f9 !important;
+}
+
+footer .text-slate-400 {
+    color: #cbd5e1 !important;
+}
+
+footer .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+footer .text-slate-200 {
+    color: #f1f5f9 !important;
+}
+
+footer .text-white {
+    color: #ffffff !important;
+}
+
+footer a {
+    color: #cbd5e1 !important;
+}
+
+footer a:hover {
+    color: #ffffff !important;
+}
+
+/* Asegurar que el footer sea legible en ambos modos */
+.dark footer {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #f1f5f9 !important;
+}

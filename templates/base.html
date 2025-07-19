@@ -11,7 +11,7 @@
     <meta property="og:title" content="{% block og_title %}DevBlog - Tu Blog de Tecnología{% endblock %}">
     <meta property="og:description" content="{% block og_description %}DevBlog es tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías.{% endblock %}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri|default:'' }}{% endblock %}">
     <meta property="og:image" content="{% block og_image %}{% static 'img/social_banner.png' %}{% endblock %}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}DevBlog - Tu Blog de Tecnología{% endblock %}">
@@ -27,8 +27,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
 
     <script>
+        // Prevenir FOUC (Flash of Unstyled Content) - aplicar tema antes de que se renderice la página
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -86,6 +99,7 @@
     </div>
 
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/fixes.js' %}"></script>
 
     <script type="application/ld+json">
     {
@@ -93,7 +107,7 @@
         "@type": "Blog",
         "name": "DevBlog",
         "description": "Tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías",
-        "url": "{{ request.build_absolute_uri.scheme }}://{{ request.get_host }}",
+        "url": "{{ request.scheme }}://{{ request.get_host }}",
         "author": {
             "@type": "Organization",
             "name": "DevBlog Team"
@@ -103,7 +117,7 @@
             "name": "DevBlog",
             "logo": {
                 "@type": "ImageObject",
-                "url": "{% static 'img/logo.png' %}"
+                "url": "{% static 'img/social_banner.png' %}"
             }
         }
     }
@@ -121,18 +135,24 @@
 
             notificationSocket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
-                window.showToast(data.message, 'info');
+                if (typeof window.showToast === 'function') {
+                    window.showToast(data.message, 'info');
+                }
                 const notificationBadge = document.querySelector('.notification-badge');
                 if (notificationBadge) {
                     const currentCount = parseInt(notificationBadge.textContent) || 0;
                     notificationBadge.textContent = currentCount + 1;
                     notificationBadge.classList.remove('hidden');
                 }
-                const unreadCountSpan = document.querySelector('#user-menu a[href="{% url 'accounts:notification_list' %}"] span.ml-auto');
-                if(unreadCountSpan){
-                    const currentUnreadCount = parseInt(unreadCountSpan.textContent) || 0;
-                    unreadCountSpan.textContent = currentUnreadCount + 1;
-                    unreadCountSpan.classList.remove('hidden');
+                try {
+                    const unreadCountSpan = document.querySelector('#user-menu a[href="{% url "accounts:notification_list" %}"] span.ml-auto');
+                    if(unreadCountSpan){
+                        const currentUnreadCount = parseInt(unreadCountSpan.textContent) || 0;
+                        unreadCountSpan.textContent = currentUnreadCount + 1;
+                        unreadCountSpan.classList.remove('hidden');
+                    }
+                } catch(e) {
+                    console.log('Error updating notification count:', e);
                 }
             };
 

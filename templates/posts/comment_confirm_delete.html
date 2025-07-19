@@ -37,7 +37,7 @@
                 <span>Sí, Eliminar</span>
             </button>
             
-            <a href="{% url 'posts:post_detail' slug=object.post.slug %}" class="w-full sm:w-auto flex-1 text-center font-semibold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/50 px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-all duration-300 border border-slate-300 dark:border-slate-600">
+            <a href="{% url 'posts:post_detail' username=object.post.author.username slug=object.post.slug %}" class="w-full sm:w-auto flex-1 text-center font-semibold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/50 px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-all duration-300 border border-slate-300 dark:border-slate-600">
                 Cancelar
             </a>
         </form>

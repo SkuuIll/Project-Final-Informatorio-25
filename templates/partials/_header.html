@@ -81,7 +81,7 @@
                             <a href="{% url 'accounts:notification_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
                                 <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative">
                                     <i data-feather="bell" class="w-4 h-4 text-white"></i>
-                                    {% if unread_notifications_count > 0 %}
+                                    {% if unread_notifications_count|default:0 > 0 %}
                                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </div>

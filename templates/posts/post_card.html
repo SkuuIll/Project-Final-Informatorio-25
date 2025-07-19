@@ -21,7 +21,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <div class="absolute top-4 right-4 flex gap-2">
-                {% if post.id in latest_post_ids %}
+                {% if latest_post_ids and post.id in latest_post_ids %}
                 <span class="flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
                     <i data-feather="star" class="w-3 h-3 fill-current"></i>
                     Nuevo
@@ -38,7 +38,7 @@
             <div class="absolute bottom-4 left-4">
                 <div class="flex items-center gap-2 bg-black/50 text-white text-sm font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
                     <i data-feather="clock" class="w-4 h-4"></i>
-                    <span>{{ post.reading_time }} min</span>
+                    <span>{{ post.reading_time|default:"5" }} min</span>
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@
                         
                         <div class="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
                             <i data-feather="eye" class="w-4 h-4"></i>
-                            <span class="views-count font-medium">{{ post.views }}</span>
+                            <span class="views-count font-medium">{{ post.views|default:0 }}</span>
                         </div>
                         
                         {% if post.comments.count > 0 %}
