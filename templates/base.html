@@ -98,7 +98,10 @@
         </div>
     </div>
 
-    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // Hacer el token CSRF disponible para JavaScript
+        window.csrfToken = '{{ csrf_token }}';
+    </script>
     <script src="{% static 'js/fixes.js' %}"></script>
 
     <script type="application/ld+json">

@@ -324,15 +324,31 @@ def dashboard_view(request):
     return render(request, "posts/dashboard.html", context)
 
 
-@login_required
-def like_post(request, slug):
-    post = get_object_or_404(Post, slug=slug)
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+@require_POST
+def like_post(request, username, slug):
+    # Verificar si es una petición AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Para peticiones AJAX, verificar autenticación manualmente
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Debes iniciar sesión para dar me gusta'}, status=401)
+    else:
+        # Para peticiones normales, usar el decorador login_required
+        if not request.user.is_authenticated:
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(request.get_full_path())
+    
+    post = get_object_or_404(Post, author__username=username, slug=slug)
+    
     if request.user in post.likes.all():
         post.likes.remove(request.user)
         liked = False
     else:
         post.likes.add(request.user)
         liked = True
+    
     return JsonResponse({'liked': liked, 'likes_count': post.likes.count()})
 
 
