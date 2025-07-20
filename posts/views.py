@@ -75,14 +75,16 @@ class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 6
+    paginate_by = 12
 
     def get_queryset(self):
         return Post.objects.filter(status="published").order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['all_tags'] = Tag.objects.all()
+        latest_posts = Post.objects.order_by('-created_at').values_list('tags', flat=True)
+        used_tags = Tag.objects.filter(id__in=latest_posts).distinct()
+        context['all_tags'] = used_tags[:6]
         return context
 
 
@@ -90,7 +92,7 @@ class PostListByTagView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 6
+    paginate_by = 12
 
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
@@ -99,7 +101,9 @@ class PostListByTagView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['all_tags'] = Tag.objects.all()
+        latest_posts = Post.objects.order_by('-created_at').values_list('tags', flat=True)
+        used_tags = Tag.objects.filter(id__in=latest_posts).distinct()
+        context['all_tags'] = used_tags[:6]
         return context
 
 
