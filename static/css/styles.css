@@ -181,31 +181,62 @@ html { scroll-behavior: smooth; }
 /* Ajustes para vista móvil */
 @media (max-width: 640px) {
     .glass-effect {
-        padding: 1.5rem !important;
+        padding: 1.2rem !important;
     }
     .prose {
-        font-size: 1rem !important;
-        line-height: 1.6 !important;
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
     }
     .prose p {
-        margin-bottom: 1rem !important;
+        margin-bottom: 0.8rem !important;
     }
     .prose strong,
     .prose b {
-        font-weight: 800 !important;
-        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
     }
     .prose em,
     .prose i {
-        font-size: 1rem !important;
+        font-size: 0.9rem !important;
     }
     .prose h1 {
-        font-size: 1.75rem !important;
-    }
-    .prose h2 {
         font-size: 1.5rem !important;
     }
-    .prose h3 {
+    .prose h2 {
         font-size: 1.25rem !important;
+    }
+    .prose h3 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Mejoras para usabilidad móvil */
+    #mobile-menu {
+        padding: 0.75rem !important;
+    }
+    #mobile-menu a {
+        display: block;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.3s ease;
+    }
+    #mobile-menu a:hover,
+    #mobile-menu a:focus {
+        background-color: rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+    #mobile-menu form input[type="search"] {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+    button#mobile-menu-toggle {
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
+    /* Ajustes para el icono del menú hamburguesa */
+    #mobile-menu-toggle i[data-feather="menu"] {
+        width: 24px;
+        height: 24px;
     }
 }

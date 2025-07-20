@@ -5,22 +5,22 @@
 {% block content %}
 <section class="relative overflow-hidden mb-16" aria-labelledby="hero-heading">
     <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 rounded-3xl" aria-hidden="true"></div>
-    <div class="relative glass-effect rounded-3xl p-8 md:p-12 text-center">
-        <div class="animate-bounce-gentle mb-6">
-            <div class="inline-flex items-center justify-center w-20 h-20 gradient-bg rounded-2xl shadow-2xl">
-                <i data-feather="book-open" class="w-10 h-10 text-white"></i>
+    <div class="relative glass-effect rounded-3xl p-3 sm:p-6 md:p-12 text-center">
+        <div class="animate-bounce-gentle mb-5">
+            <div class="inline-flex items-center justify-center w-16 h-16 gradient-bg rounded-2xl shadow-2xl">
+                <i data-feather="book-open" class="w-8 h-8 text-white"></i>
             </div>
         </div>
-        <h1 id="hero-heading" class="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 mb-4">
+        <h1 id="hero-heading" class="text-2xl sm:text-3xl md:text-6xl font-black text-gray-900 dark:text-gray-100 mb-3">
             <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 DevBlog
             </span>
         </h1>
-        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+        <p class="text-sm sm:text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Descubre las últimas tendencias en desarrollo web, tutoriales paso a paso y insights de expertos en tecnología. Tu próximo nivel profesional comienza aquí.
         </p>
         
-        <div class="mt-8 max-w-2xl mx-auto">
+        <div class="mt-6 max-w-2xl mx-auto">
             <form id="search-form" role="search">
                 <div class="relative">
                     <label for="search-input" class="sr-only">Buscar artículos</label>
@@ -31,7 +31,7 @@
                         type="search" 
                         id="search-input"
                         placeholder="Buscar artículos, tecnologías, tutoriales..."
-                        class="w-full pl-12 pr-4 py-4 glass-effect rounded-2xl border-0 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-lg"
+                        class="w-full pl-12 pr-4 py-2 sm:py-3 glass-effect rounded-2xl border-0 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base"
                         autocomplete="off"
                     >
                 </div>

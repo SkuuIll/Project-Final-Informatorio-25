@@ -131,11 +131,7 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
             </button>
 
-            <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring group relative overflow-hidden" aria-controls="mobile-menu" aria-expanded="false">
-                <span class="sr-only">Abrir menú principal</span>
-                <i data-feather="menu" class="w-6 h-6 transition-transform duration-300 group-hover:scale-110"></i>
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
-            </button>
+            <!-- Removed hamburger menu toggle button as per user request -->
         </div>
     </nav>
 
@@ -173,4 +169,91 @@
             {% endif %}
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    userMenu.classList.toggle('hidden');
+                });
+
+                // Optional: Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                        userMenuButton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // ===== LIKE BUTTONS =====
+            document.querySelectorAll('.like-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const icon = this.querySelector('svg');
+                    if (!icon) {
+                        console.error("SVG icon not found inside the button.");
+                        return;
+                    }
+
+                    const username = this.dataset.username;
+                    const slug = this.dataset.slug;
+                    const url = `/post/${username}/${slug}/like/`;
+                    const likesCountSpan = this.querySelector('.likes-count');
+                    
+                    // Verificar si el usuario está autenticado
+                    const csrfToken = window.csrfToken || null;
+                    if (!csrfToken) {
+                        alert('Debes iniciar sesión para dar me gusta');
+                        return;
+                    }
+                    
+                    // Deshabilitar botón temporalmente para evitar clicks múltiples
+                    this.disabled = true;
+                    this.style.opacity = '0.6';
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error del servidor: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.likes_count !== undefined && likesCountSpan) {
+                            likesCountSpan.textContent = data.likes_count;
+                        }
+                        
+                        if (data.liked) {
+                            icon.classList.add('text-red-500', 'fill-current');
+                        } else {
+                            icon.classList.remove('text-red-500', 'fill-current');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al dar me gusta:', error);
+                        alert(error.message || 'Error al procesar la solicitud');
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.style.opacity = '1';
+                    });
+                });
+            });
+        });
+    </script>
 </header>
