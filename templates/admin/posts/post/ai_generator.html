@@ -1,0 +1,374 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ media }}
+    <style>
+        /* Estilos generales del contenedor del formulario */
+        .ai-generator-form {
+            background: #f8f9fa; /* Color de fondo más claro */
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        /* Encabezado del generador */
+        .ai-generator-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #5b9bd5; /* Nuevo color de borde azul */
+        }
+        
+        .ai-generator-header h1 {
+            margin: 0;
+            color: #333; /* Color de texto más oscuro para contraste */
+            font-size: 24px;
+            font-weight: 400;
+        }
+        
+        .ai-icon {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+            background: linear-gradient(135deg, #5b9bd5, #4a8ac9); /* Nuevo gradiente azul */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        /* Secciones del formulario */
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a8ac9; /* Título de sección en azul */
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: #5b9bd5;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        
+        /* Filas de campos del formulario */
+        .enhanced-form-row {
+            margin-bottom: 20px;
+        }
+        
+        .enhanced-form-row label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .enhanced-form-row input,
+        .enhanced-form-row textarea,
+        .enhanced-form-row select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+        
+        .enhanced-form-row input:focus,
+        .enhanced-form-row textarea:focus,
+        .enhanced-form-row select:focus {
+            outline: none;
+            border-color: #5b9bd5;
+            box-shadow: 0 0 0 4px rgba(91, 155, 213, 0.2);
+        }
+        
+        /* --- CAMBIO PRINCIPAL: Espacio para escribir ampliado --- */
+        .enhanced-form-row textarea {
+            resize: vertical;
+            min-height: 200px; /* Aumentado de 100px a 200px */
+        }
+        
+        .field-help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        
+        /* Fila del botón de envío */
+        .enhanced-submit-row {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 30px;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* --- CAMBIO PRINCIPAL: Nuevo estilo de botón --- */
+        .ai-generate-btn {
+            background: linear-gradient(135deg, #5b9bd5, #4a8ac9); /* Nuevo gradiente azul */
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .ai-generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(74, 138, 201, 0.4);
+        }
+        
+        .ai-generate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mensajes de error y éxito */
+        .error-message, .success-message {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left-width: 5px;
+            border-left-style: solid;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        /* Diseño responsivo */
+        @media (max-width: 768px) {
+            .ai-generator-form {
+                margin: 10px 0;
+                padding: 15px;
+            }
+            
+            .ai-generator-header h1 {
+                font-size: 20px;
+            }
+            
+            .enhanced-submit-row {
+                padding: 15px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-posts model-post change-form ai-generator-page{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px; vertical-align: text-bottom;">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        {% translate 'Home' %}
+    </a>
+    &rsaquo; <a href="{% url 'admin:app_list' 'posts' %}">Posts</a>
+    &rsaquo; <a href="{% url 'admin:posts_post_changelist' %}">{% translate 'Posts List' %}</a>
+    &rsaquo; <span>{{ title|default:"Generador de Posts con IA" }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="ai-generator-form">
+        <div class="ai-generator-header">
+            <div class="ai-icon">AI</div>
+            <h1>{% translate 'Generador de Posts con Inteligencia Artificial' %}</h1>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form {% if is_multipart %}enctype="multipart/form-data" {% endif %}action="" method="post" id="ai_post_form" novalidate>
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="error-message">
+                    <strong>
+                        {% if form.errors.items|length == 1 %}
+                            {% translate "Por favor corrige el siguiente error:" %}
+                        {% else %}
+                            {% translate "Por favor corrige los siguientes errores:" %}
+                        {% endif %}
+                    </strong>
+                    {{ form.non_field_errors }}
+                    <ul style="margin: 10px 0 0 20px;">
+                        {% for field in form %}
+                            {% if field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ field.errors|join:", " }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="form-section">
+                <div class="form-section-title">{% translate 'Configuración del Contenido' %}</div>
+                
+            <div class="form-section">
+                <div class="form-section-title">{% translate 'Opciones de Imágenes' %}</div>
+                <div class="enhanced-form-row" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="{{ form.extract_images.id_for_label }}" style="margin: 0; font-weight: 600; color: #444; display: flex; align-items: center; gap: 8px;">
+                        {{ form.extract_images }}
+                        {{ form.extract_images.label }}
+                        {% if form.extract_images.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                    </label>
+                </div>
+                {% if form.extract_images.help_text %}
+                    <div class="field-help-text" style="margin-left: 30px;">{{ form.extract_images.help_text }}</div>
+                {% endif %}
+                <style>
+                    /* Fix checkbox alignment and spacing */
+                    input[type="checkbox"] {
+                        margin: 0 10px 0 0;
+                        width: 20px;
+                        height: 20px;
+                        vertical-align: middle;
+                    }
+                </style>
+                <div class="enhanced-form-row" style="max-width: 150px;">
+                    <label for="{{ form.max_images.id_for_label }}" {% if form.max_images.field.required %}class="required"{% endif %}>
+                        {{ form.max_images.label }}
+                        {% if form.max_images.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                    </label>
+                    {{ form.max_images }}
+                    {% if form.max_images.help_text %}
+                        <div class="field-help-text">{{ form.max_images.help_text }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">{% translate 'Configuración del Contenido' %}</div>
+                {% for field in form %}
+                    {% if field.name != 'extract_images' and field.name != 'max_images' %}
+                        <div class="enhanced-form-row">
+                            <label for="{{ field.id_for_label }}" {% if field.field.required %}class="required"{% endif %}>
+                                {{ field.label }}
+                                {% if field.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="field-help-text">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            </div>
+
+            <div class="enhanced-submit-row">
+                <button type="submit" class="ai-generate-btn" name="_save" id="generate-btn">
+                    <div class="loading-spinner"></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 16.5L5 12l1.41-1.41L9.5 13.67l7.59-7.59L18.5 7.5 9.5 16.5z"/>
+                    </svg>
+                    <span class="btn-text">{% translate 'Generar Post con IA' %}</span>
+                </button>
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    {% translate 'El proceso puede tomar algunos segundos...' %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ai_post_form');
+    const generateBtn = document.getElementById('generate-btn');
+    const spinner = generateBtn.querySelector('.loading-spinner');
+    const btnText = generateBtn.querySelector('.btn-text');
+    
+    form.addEventListener('submit', function(e) {
+        // Mostrar estado de carga
+        generateBtn.disabled = true;
+        spinner.style.display = 'block';
+        btnText.textContent = '{% translate "Generando..." %}';
+        generateBtn.style.opacity = '0.7';
+        
+        // Validación básica del lado del cliente
+        let hasErrors = false;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                hasErrors = true;
+                field.style.borderColor = '#dc3545';
+            } else {
+                field.style.borderColor = '#ccc';
+            }
+        });
+        
+        if (hasErrors) {
+            e.preventDefault();
+            // Restaurar estado del botón
+            generateBtn.disabled = false;
+            spinner.style.display = 'none';
+            btnText.textContent = '{% translate "Generar Post con IA" %}';
+            generateBtn.style.opacity = '1';
+        }
+    });
+});
+</script>
+{% endblock %}

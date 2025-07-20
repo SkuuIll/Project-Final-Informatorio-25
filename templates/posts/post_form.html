@@ -1,0 +1,530 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Editar Post{% else %}Crear Nuevo Post{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-6" id="post-form" data-upload-url="{% url 'posts:ckeditor_upload_image' %}">
+        {% csrf_token %}
+        
+        <div class="glass-effect rounded-2xl p-6 border">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-500 dark:to-purple-500">
+                        {% if form.instance.pk %}
+                            Editando Post
+                        {% else %}
+                            Crea un Nuevo Post
+                        {% endif %}
+                    </h1>
+                    <p class="text-slate-600 dark:text-slate-400 mt-1 text-base">Da vida a tus ideas y compártelas con el mundo.</p>
+                </div>
+                <div class="flex items-center flex-wrap gap-2">
+                    
+                    <a href="{{ object.get_absolute_url|default_if_none:'/' }}" 
+                       class="group flex items-center space-x-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-105">
+                        <i data-feather="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                        <span>Cancelar</span>
+                    </a>
+                    <button type="submit" 
+                            class="group flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                        <i data-feather="save" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
+                        <span>{% if form.instance.pk %}Guardar Cambios{% else %}Publicar Post{% endif %}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shrink-0">
+                            <i data-feather="edit-3" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Título del Post</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Título *
+                            </label>
+                            <input type="text" 
+                                   name="{{ form.title.name }}" 
+                                   id="{{ form.title.id_for_label }}"
+                                   value="{{ form.title.value|default:'' }}"
+                                   class="w-full px-4 py-3 text-lg rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500 font-semibold"
+                                   placeholder="Escribe un título atractivo..."
+                                   required>
+                        </div>
+                        
+                        <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-2 pt-1">
+                            <i data-feather="link" class="w-4 h-4"></i>
+                            <span>URL: </span>
+                            <span id="url-preview" class="font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                                /posts/{{ form.instance.slug|default:"tu-titulo-aqui" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-2xl p-6 border animate-fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center shrink-0">
+                                <i data-feather="file-text" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Contenido del Post</h2>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-slate-500 dark:text-slate-400">Editor Avanzado</span>
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden editor-container">
+                            <textarea name="{{ form.content.name }}" id="editor" class="hidden">{{ form.content.value|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <div class="flex items-center space-x-2">
+                                    <i data-feather="type" class="w-4 h-4"></i>
+                                    <span id="word-count">0 palabras</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i data-feather="clock" class="w-4 h-4"></i>
+                                    <span id="reading-time">0 min de lectura</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="autosave-status" class="text-green-600 dark:text-green-400">Guardado</span>
+                                <i data-feather="check-circle" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center shrink-0">
+                            <i data-feather="image" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">Imagen Destacada</h3>
+                    </div>
+                    <div id="image-uploader" class="relative group cursor-pointer">
+                        <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-300">
+                            <div id="image-preview-container" class="relative">
+                                {% if form.instance.header_image and form.instance.header_image.url %}
+                                    <img id="image-preview" 
+                                         src="{{ form.instance.header_image.url }}" 
+                                         class="mx-auto max-h-40 w-full rounded-lg object-cover shadow-md">
+                                {% else %}
+                                    <img id="image-preview" src="" class="mx-auto max-h-40 w-full rounded-lg object-cover shadow-md hidden">
+                                {% endif %}
+                                <div id="image-placeholder" class="{% if form.instance.header_image and form.instance.header_image.url %}hidden{% endif %}">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i data-feather="upload-cloud" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-400 font-medium text-sm">Arrastra una imagen</p>
+                                    <p class="text-slate-500 dark:text-slate-500 text-xs mt-1">o <span class="text-indigo-600 dark:text-indigo-400 font-medium">haz clic</span></p>
+                                    <p id="file-size-info" class="text-xs text-slate-400 dark:text-slate-500 mt-2">PNG, JPG hasta 8MB</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" 
+                               name="{{ form.header_image.name }}" 
+                               id="{{ form.header_image.id_for_label }}"
+                               accept="image/*"
+                               class="hidden">
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shrink-0">
+                            <i data-feather="bar-chart-2" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">Estadísticas</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Párrafos:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="paragraph-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Encabezados:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="heading-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Enlaces:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="link-count">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600 dark:text-slate-400">Imágenes:</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-slate-100" id="image-count">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-2xl p-5 border animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shrink-0">
+                            <i data-feather="tag" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">Tags y Configuración</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Estado
+                            </label>
+                            <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300">
+                                {% for value, text in form.status.field.choices %}
+                                    <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Tags
+                            </label>
+                            <div class="relative">
+                                <input type="text" 
+                                       name="{{ form.tags.name }}" 
+                                       id="{{ form.tags.id_for_label }}"
+                                       value="{{ form.tags.value|default:'' }}"
+                                       class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500"
+                                       placeholder="tecnología, web...">
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                                Separa los tags con comas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.2/classic/ckeditor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+<style>
+    .glass-effect {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    .dark .glass-effect {
+        background-color: rgba(30, 41, 59, 0.6); 
+        border-color: rgba(51, 65, 85, 0.5); 
+    }
+
+    .editor-container {
+        --ck-border-color: #e2e8f0; 
+        --ck-focus-ring-color: rgba(99, 102, 241, 0.2);
+        --ck-color-base-background: #ffffff;
+        --ck-color-text: #1e293b; 
+        --ck-color-toolbar-background: #ffffff;
+        --ck-color-button-default-hover-background: #f1f5f9; 
+        --ck-color-button-on-background: #e2e8f0; 
+        --ck-color-base-placeholder: #9ca3af; 
+    }
+    .dark .editor-container {
+        --ck-border-color: #475569; 
+        --ck-focus-ring-color: rgba(129, 140, 248, 0.3); 
+        --ck-color-base-background: #1e293b; 
+        --ck-color-text: #cbd5e1;
+        --ck-color-toolbar-background: #0f172a;
+        --ck-color-button-default-hover-background: #334155; 
+        --ck-color-button-on-background: #475569; 
+        --ck-color-input-background: #334155;
+        --ck-color-list-button-on-background: #475569;
+        --ck-color-dropdown-panel-background: #1e293b;
+        --ck-color-panel-border: #475569;
+        --ck-color-base-placeholder: #64748b; 
+    }
+    .ck-editor__main > .ck-editor__editable {
+        min-height: 500px;
+        border-radius: 0 0 0.75rem 0.75rem !important; 
+        font-size: 16px;
+        line-height: 1.6;
+        background-color: var(--ck-color-base-background) !important;
+        color: var(--ck-color-text) !important;
+        border: none !important;
+    }
+    .ck-editor__top .ck-sticky-panel .ck-toolbar {
+        border-radius: 0.75rem 0.75rem 0 0 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--ck-border-color) !important;
+        background-color: var(--ck-color-toolbar-background) !important;
+    }
+    .ck.ck-button, .ck.ck-button:hover {
+        color: var(--ck-color-text) !important;
+    }
+    .ck.ck-dropdown__panel {
+        border: 1px solid var(--ck-panel-border) !important;
+    }
+    .ck-editor__editable.ck-placeholder::before {
+        color: var(--ck-color-base-placeholder) !important;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+</style>
+
+<script>
+class SimpleUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+        this.uploadUrl = document.getElementById('post-form').dataset.uploadUrl;
+    }
+
+    upload() {
+        return this.loader.file.then(file => new Promise((resolve, reject) => {
+            const data = new FormData();
+            data.append('upload', file);
+            
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            fetch(this.uploadUrl, {
+                method: 'POST',
+                body: data,
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                       throw new Error(data.error ? data.error.message : 'Error en la subida del servidor.');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    reject(data.error.message);
+                } else {
+                    resolve({ default: data.url });
+                }
+            })
+            .catch(error => {
+                console.error('CKEditor upload error:', error);
+                reject('Hubo un problema al subir la imagen. Verifique el tamaño y el tipo de archivo.');
+            });
+        }));
+    }
+
+    abort() {
+    }
+}
+
+function SimpleUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new SimpleUploadAdapter(loader);
+    };
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    feather.replace();
+
+    let editor;
+    let autosaveTimeout;
+    
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            extraPlugins: [SimpleUploadAdapterPlugin],
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'fontSize', 'fontColor', 'fontBackgroundColor', 'highlight', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'alignment', '|',
+                    'numberedList', 'bulletedList', 'todoList', 'outdent', 'indent', '|',
+                    'link', 'imageUpload', 'mediaEmbed', 'blockQuote', 'insertTable', 'codeBlock', 'horizontalLine', '|',
+                    'specialCharacters', 'findAndReplace', '|',
+                    'undo', 'redo'
+                ],
+                shouldNotGroupWhenFull: true
+            },
+            placeholder: 'Comienza a escribir tu increíble historia...',
+            fontSize: {
+                options: [ 'default', 14, 16, 18, 20, 24, 28 ],
+                supportAllValues: true
+            },
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Párrafo', class: 'ck-heading_paragraph' },
+                    { model: 'heading1', view: 'h1', title: 'Encabezado 1', class: 'ck-heading_heading1' },
+                    { model: 'heading2', view: 'h2', title: 'Encabezado 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Encabezado 3', class: 'ck-heading_heading3' }
+                ]
+            },
+            image: {
+                toolbar: [ 'imageTextAlternative', '|', 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side' ]
+            },
+            table: {
+                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+            },
+            codeBlock: {
+                languages: [
+                    { language: 'plaintext', label: 'Texto plano' },
+                    { language: 'html', label: 'HTML' },
+                    { language: 'css', label: 'CSS' },
+                    { language: 'javascript', label: 'JavaScript' },
+                    { language: 'python', label: 'Python' }
+                ]
+            },
+            mediaEmbed: {
+                previewsInData: true
+            }
+        })
+        .then(editorInstance => {
+            editor = editorInstance;
+            editor.model.document.on('change:data', () => {
+                updateStats();
+                scheduleAutosave();
+            });
+            updateStats(); 
+        })
+        .catch(error => {
+            console.error('Error al inicializar CKEditor:', error);
+        });
+
+    const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+    const urlPreview = document.getElementById('url-preview');
+    const wordCountEl = document.getElementById('word-count');
+    const readingTimeEl = document.getElementById('reading-time');
+    const paragraphCountEl = document.getElementById('paragraph-count');
+    const headingCountEl = document.getElementById('heading-count');
+    const linkCountEl = document.getElementById('link-count');
+    const imageCountEl = document.getElementById('image-count');
+    const autosaveStatus = document.getElementById('autosave-status');
+    const autosaveIcon = autosaveStatus.nextElementSibling;
+
+    function updateStats() {
+        if (!editor) return;
+        
+        const content = editor.getData();
+        const plainText = content.replace(/<[^>]*>/g, '');
+        
+        const words = plainText.trim().match(/\S+/g) || [];
+        const wordCount = words.length;
+        const readingTime = Math.ceil(wordCount / 200);
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        
+        const paragraphs = tempDiv.querySelectorAll('p').length;
+        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+        const links = tempDiv.querySelectorAll('a').length;
+        const images = tempDiv.querySelectorAll('img').length;
+        
+        wordCountEl.textContent = `${wordCount} palabra${wordCount !== 1 ? 's' : ''}`;
+        readingTimeEl.textContent = `${readingTime} min de lectura`;
+        paragraphCountEl.textContent = paragraphs;
+        headingCountEl.textContent = headings;
+        linkCountEl.textContent = links;
+        imageCountEl.textContent = images;
+    }
+
+    function slugify(text) {
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    }
+
+    titleInput.addEventListener('keyup', function() {
+        const slug = slugify(this.value);
+        urlPreview.textContent = `/posts/${slug || 'tu-titulo-aqui'}`;
+    });
+
+    function scheduleAutosave() {
+        clearTimeout(autosaveTimeout);
+        autosaveStatus.textContent = 'Guardando...';
+        autosaveStatus.className = 'text-amber-600 dark:text-amber-400';
+        autosaveIcon.setAttribute('data-feather', 'loader');
+        feather.replace();
+
+        autosaveTimeout = setTimeout(saveAsDraft, 2000);
+    }
+
+    function saveAsDraft() {
+        console.log("Autoguardado disparado.");
+        autosaveStatus.textContent = 'Guardado';
+        autosaveStatus.className = 'text-green-600 dark:text-green-400';
+        autosaveIcon.setAttribute('data-feather', 'check-circle');
+        feather.replace();
+    }
+
+    const imageUploader = document.getElementById('image-uploader');
+    const imageInput = document.getElementById('{{ form.header_image.id_for_label }}');
+    const imagePreview = document.getElementById('image-preview');
+    const imagePlaceholder = document.getElementById('image-placeholder');
+
+    if (imageUploader && imageInput) {
+        imageUploader.addEventListener('click', () => imageInput.click());
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            imageUploader.addEventListener(eventName, e => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+            }, false);
+        });
+        
+        imageInput.addEventListener('change', e => {
+            if (e.target.files.length) handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const file = files[0];
+            const maxSize = 8 * 1024 * 1024; // 8MB
+
+            if (file && file.size > maxSize) {
+                alert('El archivo supera el límite de 8MB.');
+                imageInput.value = '';
+                return;
+            }
+
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    imagePlaceholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+
+    const postForm = document.getElementById('post-form');
+    postForm.addEventListener('submit', function(e) {
+        if (editor) {
+            document.querySelector('#editor').value = editor.getData();
+        }
+
+        const submitBtn = postForm.querySelector('button[type="submit"]');
+        submitBtn.querySelector('span').textContent = 'Publicando...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

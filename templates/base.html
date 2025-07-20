@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}DevBlog es tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}desarrollo web, programación, tecnología, JavaScript, Python, Django, React{% endblock %}">
+    <meta name="author" content="DevBlog">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="{% block og_title %}DevBlog - Tu Blog de Tecnología{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}DevBlog es tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri|default:'' }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'img/social_banner.png' %}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}DevBlog - Tu Blog de Tecnología{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}DevBlog es tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'img/social_banner.png' %}{% endblock %}">
+    <title>{% block title %}DevBlog - Tu Blog de Tecnología{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/apple-touch-icon.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js" defer></script>
+    
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
+
+        <script src="{% static 'js/theme.js' %}"></script>
+
+        
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="theme-transition bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-slate-900 dark:to-black text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
+
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+    
+    <div class="scroll-indicator" id="scroll-indicator"></div>
+
+    <div class="floating-shapes" aria-hidden="true">
+        <div class="shape w-64 h-64 rounded-full bg-gradient-to-r from-purple-400 to-pink-400"></div>
+        <div class="shape w-48 h-48 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400"></div>
+        <div class="shape w-32 h-32 rounded-full bg-gradient-to-r from-green-400 to-blue-400"></div>
+        <div class="shape w-72 h-72 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400"></div>
+        <div class="shape w-56 h-56 rounded-full bg-gradient-to-r from-red-400 to-purple-400"></div>
+    </div>
+
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    {% include "partials/_header.html" %}
+
+    <main id="main-content" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+        {% block breadcrumbs %}{% endblock %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 transform opacity-0 invisible focus-ring z-40" aria-label="Volver al inicio">
+        <i data-feather="arrow-up" class="w-5 h-5"></i>
+    </button>
+
+    {% include "partials/_footer.html" %}
+
+    <div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl theme-transition">
+            <div class="flex items-center space-x-4">
+                <div class="loading-spinner w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full"></div>
+                <span class="text-slate-700 dark:text-slate-300 font-medium">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="{% static 'js/fixes.js' %}"></script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "DevBlog",
+        "description": "Tu blog de referencia para aprender sobre desarrollo web, programación y las últimas tecnologías",
+        "url": "{{ request.scheme }}://{{ request.get_host }}",
+        "author": {
+            "@type": "Organization",
+            "name": "DevBlog Team"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "DevBlog",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{% static 'img/social_banner.png' %}"
+            }
+        }
+    }
+    </script>
+
+    {% block extra_js %}
+    {% if user.is_authenticated %}
+    <script src="{% static 'js/notifications.js' %}"></script>
+    {% endif %}
+{% endblock %}
+</body>
+</html>

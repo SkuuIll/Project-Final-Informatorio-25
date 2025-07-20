@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación - DevBlog{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto my-12 animate-fade-in">
+    <div class="glass-effect rounded-2xl p-8 sm:p-12 border border-white/20 dark:border-slate-700/50 shadow-2xl">
+        <div class="text-center">
+            
+            <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-feather="alert-triangle" class="w-12 h-12 text-red-600 dark:text-red-400"></i>
+            </div>
+
+            <h1 class="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+                Confirmar Eliminación
+            </h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-2">
+                ¿Estás seguro de que quieres eliminar este comentario?
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-500 mb-8">
+                Esta acción no se puede deshacer.
+            </p>
+            
+            {% if object.content %}
+            <blockquote class="text-left bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg border-l-4 border-slate-300 dark:border-slate-600 mb-8">
+                <p class="text-slate-600 dark:text-slate-400 italic">"{{ object.content|truncatewords:30 }}"</p>
+            </blockquote>
+            {% endif %}
+
+        </div>
+
+        <form method="post" class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {% csrf_token %}
+            
+            <button type="submit" class="w-full sm:w-auto flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-3 rounded-xl hover:from-red-700 hover:to-rose-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-red-500/50 hover:scale-105 transform flex items-center justify-center space-x-2">
+                <i data-feather="trash-2" class="w-5 h-5"></i>
+                <span>Sí, Eliminar</span>
+            </button>
+            
+            <a href="{% url 'posts:post_detail' username=object.post.author.username slug=object.post.slug %}" class="w-full sm:w-auto flex-1 text-center font-semibold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/50 px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-all duration-300 border border-slate-300 dark:border-slate-600">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

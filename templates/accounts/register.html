@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Cuenta - DevBlog{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto animate-fade-in">
+    <div class="glass-effect rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-slate-700/50 hover:scale-[1.02] transition-transform duration-500">
+        <div class="p-8 sm:p-10">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
+                    <i data-feather="user-plus" class="w-8 h-8 text-white"></i>
+                </div>
+                <h2 class="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Crea tu Cuenta
+                </h2>
+                <p class="mt-3 text-slate-600 dark:text-slate-400">
+                    Únete a la comunidad de <span class="font-semibold text-indigo-600 dark:text-indigo-400">DevBlog</span>
+                </p>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="space-y-2">
+                    <label for="id_username" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-2">
+                        <i data-feather="user" class="w-4 h-4"></i>
+                        <span>Usuario</span>
+                    </label>
+                    <input type="text" name="username" id="id_username" 
+                           autocomplete="username"
+                           class="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/50 text-slate-900 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-slate-800/70" 
+                           required 
+                           placeholder="Elige un nombre de usuario">
+                    {% for error in form.username.errors %}
+                        <div class="text-red-500 text-sm mt-1 flex items-center space-x-1" role="alert">
+                            <i data-feather="alert-circle" class="w-4 h-4"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="id_email" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-2">
+                        <i data-feather="mail" class="w-4 h-4"></i>
+                        <span>Correo Electrónico</span>
+                    </label>
+                    <input type="email" name="email" id="id_email" 
+                           autocomplete="email"
+                           class="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/50 text-slate-900 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-slate-800/70" 
+                           required 
+                           placeholder="ejemplo@correo.com">
+                    {% for error in form.email.errors %}
+                        <div class="text-red-500 text-sm mt-1 flex items-center space-x-1" role="alert">
+                            <i data-feather="alert-circle" class="w-4 h-4"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="id_password1" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-2">
+                        <i data-feather="lock" class="w-4 h-4"></i>
+                        <span>Contraseña</span>
+                    </label>
+                    <input type="password" name="password1" id="id_password1" 
+                           autocomplete="new-password"
+                           class="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/50 text-slate-900 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-slate-800/70" 
+                           required 
+                           placeholder="Crea una contraseña segura">
+                    {% for error in form.password1.errors %}
+                        <div class="text-red-500 text-sm mt-1 flex items-center space-x-1" role="alert">
+                            <i data-feather="alert-circle" class="w-4 h-4"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endfor %}
+                    {% if form.password1.help_text %}
+                    <div class="bg-slate-50 dark:bg-slate-800/30 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50">
+                        <div class="flex items-start space-x-2">
+                            <i data-feather="info" class="w-4 h-4 mt-0.5 text-indigo-500 flex-shrink-0"></i>
+                            <div>{{ form.password1.help_text|safe }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="id_password2" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-2">
+                        <i data-feather="shield" class="w-4 h-4"></i>
+                        <span>Confirmar Contraseña</span>
+                    </label>
+                    <input type="password" name="password2" id="id_password2" 
+                           autocomplete="new-password"
+                           class="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/50 text-slate-900 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-slate-800/70" 
+                           required 
+                           placeholder="Confirma tu contraseña">
+                    {% for error in form.password2.errors %}
+                        <div class="text-red-500 text-sm mt-1 flex items-center space-x-1" role="alert">
+                            <i data-feather="alert-circle" class="w-4 h-4"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endfor %}
+                    <div id="password-match-status" class="h-5 mt-2 text-sm" aria-live="polite"></div>
+                </div>
+
+                {% if form.captcha %}
+                <div class="flex justify-center pt-2">
+                    <div>
+                        {{ form.captcha }}
+                        {% for error in form.captcha.errors %}
+                            <p class="text-xs text-red-500 mt-2" role="alert">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-feather="check" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                    <span>Crear Cuenta</span>
+                </button>
+                {{ form.media }}
+            </form>
+
+            <div class="mt-8 text-center">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div class="w-full border-t border-slate-300 dark:border-slate-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-full">
+                            ¿Ya tienes una cuenta?
+                        </span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'accounts:login' %}" class="mt-4 inline-flex items-center space-x-2 font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-300 group">
+                    <span>Inicia sesión</span>
+                    <i data-feather="log-in" class="w-4 h-4 group-hover:scale-110 transition-transform duration-300"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('id_password1');
+    const confirmPasswordInput = document.getElementById('id_password2');
+    const statusDiv = document.getElementById('password-match-status');
+    const submitButton = document.getElementById('submit-btn');
+
+    function validatePasswords() {
+        const pass1 = passwordInput.value;
+        const pass2 = confirmPasswordInput.value;
+
+        if (pass2.length === 0) {
+            statusDiv.innerHTML = '';
+            submitButton.disabled = false;
+            confirmPasswordInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500', 'border-green-500', 'focus:border-green-500', 'focus:ring-green-500');
+            return;
+        }
+
+        if (pass1 === pass2) {
+            statusDiv.innerHTML = `
+                <div class="flex items-center space-x-2 text-green-600 dark:text-green-400 font-medium">
+                    <i data-feather="check-circle" class="w-4 h-4"></i>
+                    <span>Las contraseñas coinciden.</span>
+                </div>
+            `;
+            submitButton.disabled = false; 
+            confirmPasswordInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+            confirmPasswordInput.classList.add('border-green-500', 'focus:border-green-500', 'focus:ring-green-500');
+        } else {
+            statusDiv.innerHTML = `
+                <div class="flex items-center space-x-2 text-red-500 dark:text-red-400 font-medium">
+                    <i data-feather="alert-triangle" class="w-4 h-4"></i>
+                    <span>Las contraseñas no coinciden.</span>
+                </div>
+            `;
+            submitButton.disabled = true;
+            confirmPasswordInput.classList.remove('border-green-500', 'focus:border-green-500', 'focus:ring-green-500');
+            confirmPasswordInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+        }
+        
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+
+    if(passwordInput && confirmPasswordInput && statusDiv && submitButton) {
+        passwordInput.addEventListener('keyup', validatePasswords);
+        confirmPasswordInput.addEventListener('keyup', validatePasswords);
+    }
+});
+</script>
+{% endblock %}

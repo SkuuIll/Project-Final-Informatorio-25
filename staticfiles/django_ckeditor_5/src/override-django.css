@@ -1,0 +1,594 @@
+/**
+ * Enhanced CKEditor 5 Django Integration Styles
+ * Improved version with better organization, accessibility, and maintainability
+ */
+
+/* ==========================================================================
+   Base Editor Styles
+   ========================================================================== */
+
+.ck.ck-editor {
+    position: relative;
+    width: 100%;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.ck.ck-editor:focus-within {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ck-editor-container {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   Editable Content Area
+   ========================================================================== */
+
+.ck.ck-content.ck-editor__editable {
+    min-height: 300px;
+    max-height: 600px;
+    padding: 1rem;
+    line-height: 1.6;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    overflow-y: auto;
+    resize: vertical;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.ck.ck-content.ck-editor__editable:focus {
+    border-color: #007cba;
+    outline: none;
+}
+
+.ck.ck-content.ck-editor__editable:hover {
+    border-color: #bbb;
+}
+
+/* Enhanced placeholder styling */
+.ck.ck-content.ck-editor__editable.ck-placeholder::before {
+    color: #999;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   Typography Overrides
+   ========================================================================== */
+
+.ck h1, .ck h2, .ck h3, .ck h4, .ck h5, .ck h6 {
+    color: inherit;
+    background: inherit;
+    font-weight: bold;
+    margin: 1rem 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.ck h1 { font-size: 2rem; }
+.ck h2 { font-size: 1.75rem; }
+.ck h3 { font-size: 1.5rem; }
+.ck h4 { font-size: 1.25rem; }
+.ck h5 { font-size: 1.125rem; }
+.ck h6 { font-size: 1rem; }
+
+.ck p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.ck blockquote {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-left: 4px solid #007cba;
+    background-color: #f8f9fa;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   List Styles
+   ========================================================================== */
+
+/* Regular lists in Django forms */
+form .aligned .ck ul,
+form .aligned .ck ol {
+    margin-left: 1.5rem;
+    padding-left: 0;
+}
+
+form .aligned .ck ul li,
+form .aligned .ck ol li {
+    list-style: inherit;
+    margin-bottom: 0.25rem;
+}
+
+/* Nested lists */
+form .aligned .ck ul ul,
+form .aligned .ck ol ol,
+form .aligned .ck ul ol,
+form .aligned .ck ol ul {
+    margin-left: 1rem;
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Todo List Styles
+   ========================================================================== */
+
+.ck .todo-list {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+}
+
+.ck .todo-list__item {
+    position: relative;
+    margin-bottom: 0.5rem;
+    padding-left: 2rem;
+    line-height: 1.5;
+}
+
+.ck .todo-list input[type="checkbox"] {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    appearance: none;
+    border: 2px solid #007cba;
+    border-radius: 2px;
+    background: white;
+    transition: all 0.2s ease-in-out;
+}
+
+.ck .todo-list input[type="checkbox"]:checked {
+    background: #007cba;
+    border-color: #007cba;
+}
+
+.ck .todo-list input[type="checkbox"]:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+.ck .todo-list__checkmark {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    pointer-events: none;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    text-align: center;
+}
+
+.ck .todo-list__checkmark::after {
+    content: '✓';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    height: auto !important;
+    width: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.ck .todo-list input[type="checkbox"]:checked + .todo-list__checkmark::after {
+    opacity: 1;
+}
+
+/* Completed todo items */
+.ck .todo-list__item.todo-list__item_completed {
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+/* ==========================================================================
+   Word Count Styles
+   ========================================================================== */
+
+.ck-word-count {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 4px 4px;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.ck-word-count__words {
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+.ck-word-count__characters {
+    font-weight: 500;
+}
+
+/* Word count in compact mode */
+.ck-word-count--compact {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   Table Styles
+   ========================================================================== */
+
+.ck .ck-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid #ddd;
+}
+
+.ck .ck-content table td,
+.ck .ck-content table th {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.ck .ck-content table th {
+    background: #f8f9fa;
+    font-weight: bold;
+}
+
+.ck .ck-content table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* ==========================================================================
+   Code Styles
+   ========================================================================== */
+
+.ck .ck-content code {
+    background: #f1f3f4;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+}
+
+.ck .ck-content pre {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #007cba;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.ck .ck-content pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* ==========================================================================
+   Image Styles
+   ========================================================================== */
+
+.ck .ck-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ck .ck-content figure {
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.ck .ck-content figure figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Link Styles
+   ========================================================================== */
+
+.ck .ck-content a {
+    color: #007cba;
+    text-decoration: underline;
+    transition: color 0.2s ease-in-out;
+}
+
+.ck .ck-content a:hover {
+    color: #005a87;
+    text-decoration: none;
+}
+
+.ck .ck-content a:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Toolbar Enhancements
+   ========================================================================== */
+
+.ck.ck-toolbar {
+    border-radius: 4px 4px 0 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.ck.ck-toolbar .ck-toolbar__separator {
+    background: #dee2e6;
+}
+
+.ck.ck-toolbar .ck-button:not(.ck-disabled):hover {
+    background: #e9ecef;
+}
+
+.ck.ck-toolbar .ck-button.ck-on {
+    background: #007cba;
+    color: white;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .ck.ck-content.ck-editor__editable {
+        min-height: 200px;
+        padding: 0.75rem;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .ck-word-count {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .ck-word-count__words {
+        margin-right: 0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .ck .todo-list__item {
+        padding-left: 1.5rem;
+    }
+    
+    .ck .todo-list input[type="checkbox"],
+    .ck .todo-list__checkmark {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ck.ck-content.ck-editor__editable {
+        min-height: 150px;
+        padding: 0.5rem;
+    }
+    
+    .ck h1 { font-size: 1.5rem; }
+    .ck h2 { font-size: 1.25rem; }
+    .ck h3 { font-size: 1.125rem; }
+    .ck h4 { font-size: 1rem; }
+    .ck h5 { font-size: 0.95rem; }
+    .ck h6 { font-size: 0.9rem; }
+}
+
+/* ==========================================================================
+   Accessibility Improvements
+   ========================================================================== */
+
+.ck.ck-content:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ck.ck-content.ck-editor__editable {
+        border: 2px solid #000;
+    }
+    
+    .ck .todo-list input[type="checkbox"] {
+        border: 2px solid #000;
+    }
+    
+    .ck .todo-list input[type="checkbox"]:checked {
+        background: #000;
+        border-color: #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .ck.ck-editor,
+    .ck.ck-content.ck-editor__editable,
+    .ck .todo-list input[type="checkbox"],
+    .ck .todo-list__checkmark::after {
+        transition: none;
+    }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .ck.ck-editor {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .ck.ck-content.ck-editor__editable {
+        border: none;
+        padding: 0;
+    }
+    
+    .ck-word-count {
+        display: none;
+    }
+    
+    .ck .todo-list input[type="checkbox"] {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .ck.ck-content.ck-editor__editable {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+    
+    .ck.ck-content.ck-editor__editable:focus {
+        border-color: #4a9eff;
+    }
+    
+    .ck blockquote {
+        background-color: #2a2a2a;
+        border-left-color: #4a9eff;
+    }
+    
+    .ck .ck-content code {
+        background: #2a2a2a;
+        color: #e0e0e0;
+    }
+    
+    .ck .ck-content pre {
+        background: #2a2a2a;
+        border-left-color: #4a9eff;
+    }
+    
+    .ck-word-count {
+        background: #2a2a2a;
+        border-color: #444;
+        color: #ccc;
+    }
+    
+    .ck .todo-list input[type="checkbox"] {
+        border-color: #4a9eff;
+        background: #1a1a1a;
+    }
+    
+    .ck .todo-list input[type="checkbox"]:checked {
+        background: #4a9eff;
+        border-color: #4a9eff;
+    }
+}
+
+/* ==========================================================================
+   Legacy Browser Support
+   ========================================================================== */
+
+/* IE11 fallbacks */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    .ck.ck-content.ck-editor__editable {
+        resize: none; /* IE11 doesn't support resize: vertical properly */
+    }
+    
+    .ck-word-count {
+        display: block; /* IE11 flex fallback */
+    }
+    
+    .ck-word-count__words {
+        display: inline-block;
+        margin-right: 1rem;
+    }
+    
+    .ck-word-count__characters {
+        display: inline-block;
+    }
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.ck-editor--compact .ck.ck-content.ck-editor__editable {
+    min-height: 150px;
+}
+
+.ck-editor--large .ck.ck-content.ck-editor__editable {
+    min-height: 500px;
+}
+
+.ck-editor--fullwidth {
+    width: 100%;
+    max-width: none;
+}
+
+.ck-editor--readonly .ck.ck-content.ck-editor__editable {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.ck-editor--focus .ck.ck-content.ck-editor__editable {
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+}
+
+/* ==========================================================================
+   Animation Classes
+   ========================================================================== */
+
+@keyframes ck-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ck-editor--animate {
+    animation: ck-fade-in 0.3s ease-out;
+}
+
+/* ==========================================================================
+   Debug and Development
+   ========================================================================== */
+
+.ck-editor--debug {
+    border: 2px dashed #ff6b6b;
+    position: relative;
+}
+
+.ck-editor--debug::before {
+    content: 'DEBUG MODE';
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    background: #ff6b6b;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    z-index: 1000;
+}

@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Configuración - DevBlog{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 animate-fade-in">
+            <nav class="flex mb-4" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="text-slate-500 hover:text-indigo-600 transition-colors">
+                            <i data-feather="home" class="w-4 h-4 mr-2"></i>
+                            Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i data-feather="chevron-right" class="w-4 h-4 text-slate-400 mx-2"></i>
+                            <span class="text-indigo-600 font-medium">Configuración</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl mb-6 animate-pulse-gentle">
+                    <i data-feather="settings" class="w-10 h-10 text-white"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+                    Configuración de Cuenta
+                </h1>
+                <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                    Personaliza tu perfil, gestiona tu seguridad y controla tus preferencias.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-4 gap-8" x-data="{ tab: 'profile' }">
+            <div class="lg:col-span-1">
+                <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-6 sticky top-8">
+                    <nav class="space-y-2">
+                        <button @click="tab = 'profile'" 
+                                :class="{ 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg': tab === 'profile', 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700': tab !== 'profile' }" 
+                                class="w-full flex items-center px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 group">
+                            <i data-feather="user" class="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform"></i>
+                            Perfil
+                        </button>
+                        <button @click="tab = 'password'" 
+                                :class="{ 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg': tab === 'password', 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700': tab !== 'password' }" 
+                                class="w-full flex items-center px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 group">
+                            <i data-feather="lock" class="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform"></i>
+                            Seguridad
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <div x-show="tab === 'profile'" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-y-4"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform translate-y-4">
+                    
+                    <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
+                                    <i data-feather="user" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">Información Personal</h2>
+                                    <p class="text-indigo-100">Actualiza tu información de perfil</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-8">
+                            <form method="post" enctype="multipart/form-data" action="{% url 'accounts:settings' %}" class="space-y-6">
+                                {% csrf_token %}
+                                {{ user_form|crispy }}
+                                {{ profile_form|crispy }}
+                                <div class="flex justify-end pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    <button type="submit" name="update_profile" 
+                                            class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center space-x-2 group">
+                                        <i data-feather="save" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                                        <span>Guardar Cambios</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="tab === 'password'" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-y-4"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform translate-y-4"
+                     style="display: none;">
+                    
+                    <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                        <div class="bg-gradient-to-r from-red-500 to-pink-600 p-6">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
+                                    <i data-feather="shield" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">Seguridad de la Cuenta</h2>
+                                    <p class="text-red-100">Cambia tu contraseña para mantener tu cuenta segura</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-8">
+                            <div id="password-errors" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6"></div>
+                            <form id="password-change-form" method="post" action="{% url 'accounts:settings' %}" class="space-y-6">
+                                {% csrf_token %}
+                                {{ password_form|crispy }}
+                                <div class="flex justify-end pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    <button type="submit" name="change_password" 
+                                            class="px-8 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center space-x-2 group">
+                                        <i data-feather="lock" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                                        <span>Actualizar Contraseña</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(2px);
+    }
+    .dark .form-control {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+    }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordForm = document.getElementById('password-change-form');
+    const errorContainer = document.getElementById('password-errors');
+
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(passwordForm);
+            formData.append('change_password', 'true');
+
+            fetch(passwordForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                errorContainer.innerHTML = '';
+                errorContainer.classList.add('hidden');
+
+                if (data.success) {
+                    passwordForm.reset();
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-fade-in';
+                    successMessage.innerHTML = '<i data-feather="check-circle" class="w-5 h-5 inline mr-2"></i>' + data.message;
+                    document.body.appendChild(successMessage);
+                    feather.replace();
+                    setTimeout(() => { successMessage.remove(); }, 3000);
+                } else {
+                    const errorList = document.createElement('ul');
+                    errorList.className = 'list-disc pl-5';
+                    for (const field in data.errors) {
+                        data.errors[field].forEach(error => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = error.message;
+                            errorList.appendChild(listItem);
+                        });
+                    }
+                    errorContainer.appendChild(errorList);
+                    errorContainer.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorContainer.textContent = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+                errorContainer.classList.remove('hidden');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

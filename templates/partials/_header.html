@@ -1,0 +1,259 @@
+<header class="glass-effect sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/50 backdrop-blur-xl">
+    <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" aria-label="Navegación Principal">
+        <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white group focus-ring" aria-label="Página de inicio de DevBlog">
+            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-12 shadow-lg group-hover:shadow-glow group-hover:shadow-indigo-500/25">
+                <i data-feather="book-open" class="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110"></i>
+            </div>
+            <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-2xl font-black tracking-tight">DevBlog</span>
+        </a>
+        
+        <div class="flex items-center space-x-6">
+            <div class="hidden md:flex items-center space-x-8">
+                {% include "partials/_nav_links.html" %}
+            </div>
+
+            <div class="hidden md:block ml-4 relative group">
+                <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search">
+                    <label for="desktop-search" class="sr-only">Buscar posts</label>
+                    <input 
+                        type="search" 
+                        name="q" 
+                        id="desktop-search" 
+                        placeholder="Buscar posts..." 
+                        class="w-64 pl-12 pr-4 py-3 rounded-2xl bg-white/10 dark:bg-slate-800/50 border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 focus:ring-opacity-50 transition-all duration-500 text-sm backdrop-blur-sm focus:w-80 focus:bg-white/20 dark:focus:bg-slate-800/80 hover:bg-white/15 dark:hover:bg-slate-800/60"
+                        autocomplete="off"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300 group-focus-within:scale-110" aria-hidden="true">
+                        <i data-feather="search" class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500"></i>
+                    </div>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <div class="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full opacity-0 group-focus-within:opacity-100 transition-all duration-300 animate-pulse"></div>
+                    </div>
+                </form>
+                <div id="search-suggestions" class="search-suggestions hidden absolute top-full mt-2 w-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-2xl"></div>
+            </div>
+
+            <div class="w-px h-8 bg-gradient-to-b from-transparent via-slate-300 to-transparent dark:via-slate-600 hidden md:block opacity-50" aria-hidden="true"></div>
+
+            {% if user.is_authenticated %}
+                <div class="relative group" id="user-menu-dropdown">
+                    <button id="user-menu-button" type="button" class="flex items-center space-x-3 p-2 rounded-2xl hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring group" aria-expanded="false" aria-haspopup="true" aria-controls="user-menu">
+                        {% if user.profile.avatar and user.profile.avatar.url %}
+                            <div class="relative">
+                                <img src="{{ user.profile.avatar.url }}" alt="Avatar de {{ user.username }}" class="w-10 h-10 rounded-full object-cover shadow-lg group-hover:scale-110 transition-transform duration-300 ring-2 ring-white/20 group-hover:ring-indigo-500/50">
+                                <div class="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+                        {% else %}
+                            <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-all duration-300 ring-2 ring-white/20 group-hover:ring-indigo-500/50 group-hover:shadow-glow relative overflow-hidden" aria-hidden="true">
+                                <span class="relative z-10">{{ user.username|first|upper }}</span>
+                                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+                        {% endif %}
+                        <div class="hidden sm:flex items-center space-x-2">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{{ user.username }}</span>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-indigo-500"></i>
+                        </div>
+                        <span class="sr-only">Abrir menú de usuario</span>
+                    </button>
+                    <div id="user-menu" class="absolute hidden right-0 mt-3 w-64 glass-effect rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 origin-top-right transition-all duration-300 animate-fade-in-up backdrop-blur-xl" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                        <div class="p-4 border-b border-white/20 dark:border-slate-700/50 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
+                            <div class="flex items-center space-x-3">
+                                {% if user.profile.avatar and user.profile.avatar.url %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="Avatar de {{ user.username }}" class="w-8 h-8 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <p class="font-semibold text-slate-900 dark:text-white truncate" role="none">{{ user.username }}</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400 truncate" role="none">{{ user.email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2" role="none">
+                            <a href="{% url 'accounts:profile' username=request.user.username %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
+                                <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i data-feather="user" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <span>Mi Perfil</span>
+                            </a>
+                            <a href="{% url 'accounts:notification_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
+                                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative">
+                                    <i data-feather="bell" class="w-4 h-4 text-white"></i>
+                                    {% if unread_notifications_count|default:0 > 0 %}
+                                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">{{ unread_notifications_count }}</span>
+                                    {% endif %}
+                                </div>
+                                <span>Notificaciones</span>
+                            </a>
+                            <a href="{% url 'posts:favorite_list' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
+                                <div class="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i data-feather="bookmark" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <span>Mis Favoritos</span>
+                            </a>
+                            <a href="{% url 'accounts:settings' %}" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
+                                <div class="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i data-feather="settings" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <span>Configuración</span>
+                            </a>
+                        </div>
+                        <div class="border-t border-white/20 dark:border-slate-700/50" role="none"></div>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="p-2" role="none">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-500 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 dark:hover:from-red-900/20 dark:hover:to-pink-900/20 rounded-xl transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform group" role="menuitem">
+                                <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i data-feather="log-out" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <span>Cerrar Sesión</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="hidden sm:flex items-center space-x-4">
+                    <a href="{% url 'accounts:login' %}" class="nav-link font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-6 py-2 rounded-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 focus-ring relative overflow-hidden group">
+                        <span class="relative z-10">Iniciar Sesión</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 transform focus-ring relative overflow-hidden group">
+                        <span class="relative z-10">Registrarse</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </a>
+                </div>
+            {% endif %}
+
+            <button id="theme-toggle" type="button" class="p-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 focus-ring group relative overflow-hidden" aria-label="Cambiar tema">
+                <i id="theme-toggle-dark-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="moon"></i>
+                <i id="theme-toggle-light-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="sun"></i>
+                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+            </button>
+
+            <!-- Removed hamburger menu toggle button as per user request -->
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="hidden md:hidden glass-effect border-t border-white/20 dark:border-slate-700/50 animate-slide-down backdrop-blur-xl">
+        <div class="px-4 py-6 space-y-4">
+            <div class="mb-6">
+                <form action="{% url 'posts:search_results' %}" method="get" class="relative group" role="search">
+                    <label for="mobile-search" class="sr-only">Buscar posts</label>
+                    <input 
+                        type="search" 
+                        name="q" 
+                        id="mobile-search" 
+                        placeholder="Buscar posts..." 
+                        class="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 dark:bg-slate-800/50 border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 focus:ring-opacity-50 transition-all duration-300 text-sm backdrop-blur-sm focus:bg-white/20 dark:focus:bg-slate-800/80"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300 group-focus-within:scale-110" aria-hidden="true">
+                        <i data-feather="search" class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500"></i>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="space-y-2">
+                {% include "partials/_nav_links.html" %}
+            </div>
+            
+            {% if not user.is_authenticated %}
+                <div class="pt-4 border-t border-white/20 dark:border-slate-700/50 space-y-3">
+                    <a href="{% url 'accounts:login' %}" class="w-full flex items-center justify-center px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 font-semibold">
+                        Iniciar Sesión
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="w-full flex items-center justify-center bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg">
+                        Registrarse
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    userMenu.classList.toggle('hidden');
+                });
+
+                // Optional: Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                        userMenuButton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            // ===== LIKE BUTTONS =====
+            document.querySelectorAll('.like-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const icon = this.querySelector('svg');
+                    if (!icon) {
+                        console.error("SVG icon not found inside the button.");
+                        return;
+                    }
+
+                    const username = this.dataset.username;
+                    const slug = this.dataset.slug;
+                    const url = `/post/${username}/${slug}/like/`;
+                    const likesCountSpan = this.querySelector('.likes-count');
+                    
+                    // Verificar si el usuario está autenticado
+                    const csrfToken = window.csrfToken || null;
+                    if (!csrfToken) {
+                        alert('Debes iniciar sesión para dar me gusta');
+                        return;
+                    }
+                    
+                    // Deshabilitar botón temporalmente para evitar clicks múltiples
+                    this.disabled = true;
+                    this.style.opacity = '0.6';
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error del servidor: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.likes_count !== undefined && likesCountSpan) {
+                            likesCountSpan.textContent = data.likes_count;
+                        }
+                        
+                        if (data.liked) {
+                            icon.classList.add('text-red-500', 'fill-current');
+                        } else {
+                            icon.classList.remove('text-red-500', 'fill-current');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al dar me gusta:', error);
+                        alert(error.message || 'Error al procesar la solicitud');
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.style.opacity = '1';
+                    });
+                });
+            });
+        });
+    </script>
+</header>

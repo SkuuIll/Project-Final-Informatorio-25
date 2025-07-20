@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap');
+
+/* === PALETA DE COLORES Y VARIABLES === */
+:root {
+    --font-sans: 'Inter', sans-serif;
+    --font-display: 'Poppins', sans-serif;
+
+    /* Modo Claro */
+    --bg-light: #f8fafc;
+    --text-light: #0f172a;
+    --primary-light: #4f46e5;
+    --card-light: rgba(255, 255, 255, 0.7);
+    --border-light: #e2e8f0;
+    --icon-light: #475569;
+
+    /* Modo Oscuro */
+    --bg-dark: #0f172a;
+    --text-dark: #e2e8f0;
+    --primary-dark: #818cf8;
+    --card-dark: rgba(30, 41, 59, 0.7);
+    --border-dark: #334155;
+    --icon-dark: #94a3b8;
+}
+
+/* === ESTILOS BASE === */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    font-family: var(--font-sans);
+}
+
+.dark body {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+}
+
+/* === EFECTO GLASS === */
+.glass-effect {
+    backdrop-filter: blur(20px);
+    background-color: var(--card-light);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.dark .glass-effect {
+    background-color: var(--card-dark);
+    border: 1px solid var(--border-dark);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* === BARRA DE ACCIONES INFERIOR === */
+.action-bar {
+    background-color: var(--card-light);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+.action-bar button, .action-bar a {
+    color: var(--icon-light);
+}
+.action-bar .separator {
+    background-color: var(--border-light);
+}
+
+.dark .action-bar {
+    background-color: var(--card-dark);
+    border: 1px solid var(--border-dark);
+}
+.dark .action-bar button, .dark .action-bar a {
+    color: var(--icon-dark);
+}
+.dark .action-bar .separator {
+    background-color: var(--border-dark);
+}
+
+/* === ESTILOS PARA POSTS (.prose) === */
+.prose {
+    color: var(--text-light);
+    line-height: 1.75;
+    font-size: 1.125rem;
+}
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: var(--text-light);
+    font-family: var(--font-display);
+}
+.prose h1 { font-size: 3rem; }
+.prose h2 { font-size: 2.5rem; }
+.prose h3 { font-size: 2rem; }
+.prose strong { color: var(--primary-light); }
+.prose a { color: var(--primary-light); text-decoration: underline; }
+.prose blockquote {
+    border-left: 4px solid var(--primary-light);
+    color: #374151;
+    background-color: #f3f4f6;
+    padding: 1rem;
+}
+.prose code {
+    background-color: #e5e7eb;
+    color: #1f2937;
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+}
+.prose pre {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+/* --- Modo Oscuro para .prose --- */
+.dark .prose {
+    color: var(--text-dark);
+}
+.dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4, .dark .prose h5, .dark .prose h6 {
+    color: #ffffff;
+}
+.dark .prose strong {
+    color: var(--primary-dark);
+}
+.dark .prose a {
+    color: var(--primary-dark);
+}
+.dark .prose blockquote {
+    border-left-color: var(--primary-dark);
+    color: var(--text-dark);
+    background-color: #1e293b;
+}
+.dark .prose code {
+    background-color: #334155;
+    color: #e2e8f0;
+}
+.dark .prose pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+/* === FOOTER === */
+footer {
+    border-top: 1px solid var(--border-light);
+}
+.dark footer {
+    border-top: 1px solid var(--border-dark);
+}
+
+/* === OTROS ESTILOS (Animaciones, etc.) === */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+html { scroll-behavior: smooth; }

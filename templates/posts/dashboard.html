@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %} {# <-- Carga la librería para usar 'naturaltime' #}
+
+{% block title %}Dashboard - DevBlog{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8">
+    <section class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 mb-8 animate-fade-in">
+        <div>
+            <h1 class="text-4xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                Dashboard
+            </h1>
+            <p class="text-lg text-slate-600 dark:text-slate-400">
+                Bienvenido de nuevo, <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ user.username }}</span> 👋
+            </p>
+            <div class="flex items-center gap-4 mt-2">
+                <span class="text-sm text-slate-500 dark:text-slate-400">
+                    Última conexión: <span class="font-medium">{{ user.last_login|naturaltime }}</span>
+                </span>
+                <div class="relative">
+                    <a href="{% url 'accounts:notification_list' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-colors">
+                        <i data-feather="bell" class="w-5 h-5"></i>
+                        {% if notification_count > 0 %}
+                        <div class="notification-badge">{{ notification_count }}</div>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            {% if user.profile.can_post %}
+                <a href="{% url 'posts:post_create' %}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
+                    <i data-feather="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"></i>
+                    <span class="font-semibold">Crear Nuevo Post</span>
+                </a>
+            {% elif user.profile.permission_requested %}
+                <button class="bg-gray-400 text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 cursor-not-allowed shadow-lg" disabled>
+                    <i data-feather="clock" class="w-5 h-5"></i>
+                    <span class="font-semibold">Esperando Aprobación</span>
+                </button>
+            {% else %}
+                <a href="{% url 'accounts:request_post_permission' %}" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-yellow-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl group">
+                    <i data-feather="send" class="w-5 h-5"></i>
+                    <span class="font-semibold">Solicitar Permiso para Postear</span>
+                </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 group hover:scale-105 transition-all duration-300 animate-slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                    <i data-feather="edit-3" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ stats.total_posts }}</span>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-1">Posts Publicados</h3>
+        </div>
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 group hover:scale-105 transition-all duration-300 animate-slide-up" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <i data-feather="eye" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ stats.total_views|default:"0" }}</span>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Vistas</h3>
+        </div>
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 group hover:scale-105 transition-all duration-300 animate-slide-up" style="animation-delay: 0.2s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <i data-feather="heart" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ stats.total_likes }}</span>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-1">Total "Me Gusta"</h3>
+        </div>
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50 group hover:scale-105 transition-all duration-300 animate-slide-up" style="animation-delay: 0.3s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <i data-feather="message-circle" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ stats.total_comments }}</span>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300 mb-1">Comentarios</h3>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50">
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6">Vistas en los últimos 30 días</h3>
+            <div class="chart-container" style="height: 250px;">
+                <canvas id="viewsChart" class="w-full h-full"></canvas>
+            </div>
+        </div>
+        <div class="glass-effect rounded-2xl p-6 border border-white/20 dark:border-slate-700/50">
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6">Posts Más Populares</h3>
+            <div class="space-y-4">
+                {% for post in top_posts %}
+                <div class="flex items-center gap-3 p-3 bg-white/30 dark:bg-slate-800/30 rounded-xl">
+                    <div class="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">{{ forloop.counter }}</div>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{{ post.title }}</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">{{ post.views }} vistas</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-slate-500 dark:text-slate-400">Aún no tienes posts populares.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="glass-effect rounded-2xl p-8 border border-white/20 dark:border-slate-700/50">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-3">
+                <i data-feather="file-text" class="w-6 h-6 text-indigo-600"></i>
+                <span>Gestión de Posts</span>
+            </h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-700">
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Título</th>
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Estado</th>
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Vistas</th>
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Fecha</th>
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    {% for post in user_posts %}
+                    <tr class="hover:bg-white/30 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="py-4 px-4">
+                            <h4 class="font-semibold text-slate-800 dark:text-slate-200">{{ post.title }}</h4>
+                        </td>
+                        <td class="py-4 px-4">
+                            {% if post.status == 'published' %}
+                                <span class="px-3 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full">Publicado</span>
+                            {% else %}
+                                <span class="px-3 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded-full">Borrador</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4 font-semibold text-slate-800 dark:text-slate-200">{{ post.views }}</td>
+                        <td class="py-4 px-4 text-slate-600 dark:text-slate-400">{{ post.created_at|date:"d M, Y" }}</td>
+                        <td class="py-4 px-4">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ post.get_absolute_url }}" target="_blank" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" aria-label="Ver post">
+                                    <i data-feather="external-link" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'posts:post_update' username=post.author.username slug=post.slug %}" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" aria-label="Editar post">
+                                    <i data-feather="edit" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'posts:post_delete' username=post.author.username slug=post.slug %}?next={{ request.path }}" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" aria-label="Eliminar post">
+                                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-slate-500 dark:text-slate-400">
+                            Aún no has creado ningún post. ¡Anímate a escribir el primero!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    feather.replace();
+
+    function initChart() {
+        const canvas = document.getElementById('viewsChart');
+        if (!canvas) return;
+
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.offsetHeight);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.3)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0.05)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Vistas',
+                    data: chartData.data,
+                    borderColor: 'rgb(79, 70, 229)',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgb(79, 70, 229)',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 6,
+                    tension: 0.4,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(71, 85, 105, 0.3)' : 'rgba(226, 232, 240, 0.7)',
+                        },
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569',
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569',
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#cbd5e1',
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                }
+            }
+        });
+    }
+
+    initChart();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Favoritos - DevBlog{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="text-center mb-12">
+        <h1 class="text-5xl font-black bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent">
+            Mis Favoritos
+        </h1>
+        <p class="text-lg text-slate-600 dark:text-slate-400 mt-2">
+            Tu colección personal de artículos imperdibles.
+        </p>
+    </header>
+
+    {% comment %} MEJORA: Se usa una sección para agrupar la lista de posts. {% endcomment %}
+    <section aria-labelledby="favorites-heading">
+        <h2 id="favorites-heading" class="sr-only">Lista de artículos favoritos</h2>
+        
+        {% if favorite_posts %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for post in favorite_posts %}
+                    {% comment %} Al incluir la tarjeta de post corregida, heredamos todas sus mejoras. {% endcomment %}
+                    {% include 'posts/post_card.html' with post=post %}
+                {% endfor %}
+            </div>
+        {% else %}
+            {% comment %} MEJORA: El estado vacío es más visual y claro. {% endcomment %}
+            <div class="col-span-full">
+                <div class="text-center py-24 glass-effect rounded-3xl">
+                    <div class="w-24 h-24 bg-gradient-to-r from-pink-100 to-red-100 dark:from-pink-900/30 dark:to-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-feather="heart" class="w-12 h-12 text-red-500 dark:text-red-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                        Tu lista de favoritos está vacía
+                    </h3>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
+                        Explora nuestros artículos y guarda los que más te gusten para leerlos más tarde.
+                    </p>
+                    <a href="{% url 'posts:post_list' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i data-feather="compass" class="w-5 h-5"></i>
+                        <span class="font-semibold">Explorar Artículos</span>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+{% comment %}
+    CORRECCIÓN: Se eliminó el bloque <style>.
+    La clase 'glass-effect' ya está definida globalmente en base.html.
+{% endcomment %}
+{% endblock %}
