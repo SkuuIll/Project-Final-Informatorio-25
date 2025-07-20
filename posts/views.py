@@ -75,16 +75,28 @@ class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 12
+    paginate_by = 6
 
     def get_queryset(self):
         return Post.objects.filter(status="published").order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        latest_posts = Post.objects.order_by('-created_at').values_list('tags', flat=True)
-        used_tags = Tag.objects.filter(id__in=latest_posts).distinct()
-        context['all_tags'] = used_tags[:6]
+        # Get the IDs of the most recent posts that have tags
+        tagged_posts = Post.objects.filter(status="published", tags__isnull=False).order_by('-created_at')
+        # Get the tags from those posts, preserving order and uniqueness
+        tag_ids = []
+        for post in tagged_posts:
+            for tag in post.tags.all():
+                if tag.id not in tag_ids:
+                    tag_ids.append(tag.id)
+                if len(tag_ids) >= 6:
+                    break
+            if len(tag_ids) >= 6:
+                break
+        
+        # Fetch the actual Tag objects
+        context['all_tags'] = Tag.objects.filter(id__in=tag_ids).order_by('-post__created_at').distinct()[:6]
         return context
 
 
@@ -92,7 +104,7 @@ class PostListByTagView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 12
+    paginate_by = 6
 
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
@@ -101,9 +113,21 @@ class PostListByTagView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        latest_posts = Post.objects.order_by('-created_at').values_list('tags', flat=True)
-        used_tags = Tag.objects.filter(id__in=latest_posts).distinct()
-        context['all_tags'] = used_tags[:6]
+        # Get the IDs of the most recent posts that have tags
+        tagged_posts = Post.objects.filter(status="published", tags__isnull=False).order_by('-created_at')
+        # Get the tags from those posts, preserving order and uniqueness
+        tag_ids = []
+        for post in tagged_posts:
+            for tag in post.tags.all():
+                if tag.id not in tag_ids:
+                    tag_ids.append(tag.id)
+                if len(tag_ids) >= 6:
+                    break
+            if len(tag_ids) >= 6:
+                break
+        
+        # Fetch the actual Tag objects
+        context['all_tags'] = Tag.objects.filter(id__in=tag_ids).order_by('-post__created_at').distinct()[:6]
         return context
 
 
