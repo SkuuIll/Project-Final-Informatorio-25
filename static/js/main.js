@@ -4,7 +4,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -21,10 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function setLoadingState(button, isLoading) {
         if (isLoading) {
             button.classList.add('opacity-50', 'pointer-events-none');
-            button.style.transform = 'scale(0.95)';
+            button.disabled = true;
         } else {
             button.classList.remove('opacity-50', 'pointer-events-none');
-            button.style.transform = 'scale(1)';
+            button.disabled = false;
         }
     }
 
@@ -37,6 +36,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 200);
     }
 
+    // Utility function to show error messages
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 3000);
+    }
+
+    // Utility function to show success messages
+    function showSuccess(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        successDiv.textContent = message;
+        document.body.appendChild(successDiv);
+        setTimeout(() => {
+            successDiv.remove();
+        }, 2000);
+    }
+
     // Handle post like buttons
     const likeButtons = document.querySelectorAll('.like-button');
     likeButtons.forEach(button => {
@@ -45,11 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const username = this.dataset.username;
             const slug = this.dataset.slug;
-            const url = `/post/${username}/${slug}/like/`;
+            const url = this.dataset.url || `/post/${username}/${slug}/like/`;
             const icon = this.querySelector('.like-icon');
             const countSpan = this.querySelector('.likes-count');
 
-            // Prevent multiple clicks
             if (this.classList.contains('processing')) return;
             
             setLoadingState(this, true);
@@ -65,9 +85,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'same-origin'
             })
             .then(response => {
-                if (response.status === 302 || response.status === 401 || response.redirected) {
-                    // Handle authentication redirect
-                    window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                if (response.status === 401 || response.status === 403) {
+                    showError('Debes iniciar sesión para dar like');
+                    setTimeout(() => {
+                        window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                    }, 1500);
                     return;
                 }
                 if (!response.ok) {
@@ -77,45 +99,24 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data && data.success) {
-                    // Update visual state with animation
+                    // Update visual state
                     if (data.liked) {
                         icon.classList.add('text-red-500', 'fill-current');
-                        icon.style.transform = 'scale(1.2)';
-                        setTimeout(() => {
-                            icon.style.transform = 'scale(1)';
-                        }, 150);
+                        this.classList.add('liked');
                     } else {
                         icon.classList.remove('text-red-500', 'fill-current');
+                        this.classList.remove('liked');
                     }
                     
-                    // Animate count change
                     animateLikeCount(countSpan, data.likes_count);
-                    
-                    // Add success feedback
-                    this.style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
+                    showSuccess(data.message || 'Like actualizado');
                 } else {
                     throw new Error(data.error || 'Error desconocido');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Show user-friendly error
-                const errorMsg = error.message.includes('Failed to fetch') 
-                    ? 'Error de conexión. Por favor, intenta de nuevo.' 
-                    : 'Error al procesar el like. Intenta nuevamente.';
-                
-                // Create temporary error message
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                errorDiv.textContent = errorMsg;
-                document.body.appendChild(errorDiv);
-                
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 3000);
+                showError(error.message || 'Error al procesar el like');
             })
             .finally(() => {
                 setLoadingState(this, false);
@@ -131,11 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const commentId = this.dataset.commentId;
-            const url = `/comment/${commentId}/like/`;
+            const url = this.dataset.url || `/comment/${commentId}/like/`;
             const icon = this.querySelector('.like-icon');
             const countSpan = this.querySelector('.likes-count');
 
-            // Prevent multiple clicks
             if (this.classList.contains('processing')) return;
             
             setLoadingState(this, true);
@@ -151,8 +151,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'same-origin'
             })
             .then(response => {
-                if (response.status === 302 || response.status === 401 || response.redirected) {
-                    window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                if (response.status === 401 || response.status === 403) {
+                    showError('Debes iniciar sesión para dar like');
+                    setTimeout(() => {
+                        window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                    }, 1500);
                     return;
                 }
                 if (!response.ok) {
@@ -162,43 +165,23 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data && data.success) {
-                    // Update visual state with animation
                     if (data.liked) {
                         icon.classList.add('text-red-500', 'fill-current');
-                        icon.style.transform = 'scale(1.2)';
-                        setTimeout(() => {
-                            icon.style.transform = 'scale(1)';
-                        }, 150);
+                        this.classList.add('liked');
                     } else {
                         icon.classList.remove('text-red-500', 'fill-current');
+                        this.classList.remove('liked');
                     }
                     
-                    // Animate count change
                     animateLikeCount(countSpan, data.likes_count);
-                    
-                    // Add success feedback
-                    this.style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
+                    showSuccess(data.message || 'Like actualizado');
                 } else {
                     throw new Error(data.error || 'Error desconocido');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                const errorMsg = error.message.includes('Failed to fetch') 
-                    ? 'Error de conexión. Por favor, intenta de nuevo.' 
-                    : 'Error al procesar el like. Intenta nuevamente.';
-                
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                errorDiv.textContent = errorMsg;
-                document.body.appendChild(errorDiv);
-                
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 3000);
+                showError(error.message || 'Error al procesar el like');
             })
             .finally(() => {
                 setLoadingState(this, false);
@@ -219,6 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .likes-count {
             transition: all 0.2s ease-in-out;
             display: inline-block;
+        }
+        .liked {
+            background-color: rgba(239, 68, 68, 0.1);
         }
     `;
     document.head.appendChild(style);
