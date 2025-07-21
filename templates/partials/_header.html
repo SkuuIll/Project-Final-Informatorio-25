@@ -191,69 +191,6 @@
                     }
                 });
             }
-
-            // ===== LIKE BUTTONS =====
-            document.querySelectorAll('.like-button').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const icon = this.querySelector('svg');
-                    if (!icon) {
-                        console.error("SVG icon not found inside the button.");
-                        return;
-                    }
-
-                    const username = this.dataset.username;
-                    const slug = this.dataset.slug;
-                    const url = `/post/${username}/${slug}/like/`;
-                    const likesCountSpan = this.querySelector('.likes-count');
-                    
-                    // Verificar si el usuario está autenticado
-                    const csrfToken = window.csrfToken || null;
-                    if (!csrfToken) {
-                        alert('Debes iniciar sesión para dar me gusta');
-                        return;
-                    }
-                    
-                    // Deshabilitar botón temporalmente para evitar clicks múltiples
-                    this.disabled = true;
-                    this.style.opacity = '0.6';
-
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Error del servidor: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.likes_count !== undefined && likesCountSpan) {
-                            likesCountSpan.textContent = data.likes_count;
-                        }
-                        
-                        if (data.liked) {
-                            icon.classList.add('text-red-500', 'fill-current');
-                        } else {
-                            icon.classList.remove('text-red-500', 'fill-current');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al dar me gusta:', error);
-                        alert(error.message || 'Error al procesar la solicitud');
-                    })
-                    .finally(() => {
-                        this.disabled = false;
-                        this.style.opacity = '1';
-                    });
-                });
-            });
         });
     </script>
 </header>

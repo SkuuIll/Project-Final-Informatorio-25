@@ -369,40 +369,66 @@ def dashboard_view(request):
 
 
 
+@login_required
+@csrf_exempt
 def like_post(request, username, slug):
-    # Verificar si es una petición AJAX
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # Para peticiones AJAX, verificar autenticación manualmente
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Debes iniciar sesión para dar me gusta'}, status=401)
-    else:
-        # Para peticiones normales, usar el decorador login_required
-        if not request.user.is_authenticated:
-            from django.contrib.auth.views import redirect_to_login
-            return redirect_to_login(request.get_full_path())
+    """Handle post likes with proper authentication."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
     
     post = get_object_or_404(Post, author__username=username, slug=slug)
     
-    if request.user in post.likes.all():
-        post.likes.remove(request.user)
-        liked = False
-    else:
-        post.likes.add(request.user)
-        liked = True
-    
-    return JsonResponse({'liked': liked, 'likes_count': post.likes.count()})
+    try:
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
+        
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'likes_count': post.likes.count(),
+            'message': 'Like actualizado correctamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 @login_required
+@csrf_exempt
 def like_comment(request, pk):
+    """Handle comment likes with proper authentication."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
     comment = get_object_or_404(Comment, pk=pk)
-    if request.user in comment.likes.all():
-        comment.likes.remove(request.user)
-        liked = False
-    else:
-        comment.likes.add(request.user)
-        liked = True
-    return JsonResponse({'liked': liked, 'likes_count': comment.likes.count()})
+    
+    try:
+        if request.user in comment.likes.all():
+            comment.likes.remove(request.user)
+            liked = False
+        else:
+            comment.likes.add(request.user)
+            liked = True
+        
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'likes_count': comment.likes.count(),
+            'message': 'Like actualizado correctamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 @login_required

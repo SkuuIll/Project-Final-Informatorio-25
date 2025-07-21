@@ -88,7 +88,13 @@ class PostViewTest(TestCase):
         """Prueba que el autor puede editar su propio post."""
         self.client.login(username="testuser", password="password")
         response = self.client.get(
-            reverse("posts:post_update", kwargs={"slug": self.published_post.slug})
+            reverse(
+                "posts:post_update",
+                kwargs={
+                    "username": self.published_post.author.username,
+                    "slug": self.published_post.slug,
+                },
+            )
         )
         self.assertEqual(response.status_code, 200)
 
@@ -96,7 +102,13 @@ class PostViewTest(TestCase):
         """Prueba que un usuario que no es el autor no puede editar."""
         self.client.login(username="otheruser", password="password")
         response = self.client.get(
-            reverse("posts:post_update", kwargs={"slug": self.published_post.slug})
+            reverse(
+                "posts:post_update",
+                kwargs={
+                    "username": self.published_post.author.username,
+                    "slug": self.published_post.slug,
+                },
+            )
         )
         self.assertEqual(response.status_code, 403)  # Prohibido
 
@@ -104,12 +116,18 @@ class PostViewTest(TestCase):
         """Prueba que un usuario puede dar like a un post."""
         self.client.login(username="testuser", password="password")
         response = self.client.post(
-            reverse("posts:like_post", kwargs={"slug": self.published_post.slug})
+            reverse(
+                "posts:like_post",
+                kwargs={
+                    "username": self.published_post.author.username,
+                    "slug": self.published_post.slug,
+                },
+            )
         )
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
-        self.assertTrue(json_response['liked'])
-        self.assertEqual(json_response['likes_count'], 1)
+        self.assertTrue(json_response["liked"])
+        self.assertEqual(json_response["likes_count"], 1)
         self.published_post.refresh_from_db()
         self.assertTrue(self.user in self.published_post.likes.all())
 

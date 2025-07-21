@@ -107,6 +107,10 @@ def view_log(request):
 
 @login_required
 def settings_view(request):
+    user_form = UserUpdateForm(instance=request.user)
+    profile_form = ProfileUpdateForm(instance=request.user.profile)
+    password_form = PasswordChangeForm(request.user)
+
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             user_form = UserUpdateForm(request.POST, instance=request.user)
@@ -124,10 +128,6 @@ def settings_view(request):
                 return JsonResponse({'success': True, 'message': '¡Contraseña cambiada con éxito!'})
             else:
                 return JsonResponse({'success': False, 'errors': password_form.errors}, status=400)
-    else:
-        user_form = UserUpdateForm(instance=request.user)
-        profile_form = ProfileUpdateForm(instance=request.user.profile)
-        password_form = PasswordChangeForm(request.user)
     
     context = {
         'user_form': user_form,
