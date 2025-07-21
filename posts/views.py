@@ -16,8 +16,7 @@ from django.views.generic import (
 )
 from django.views.generic.dates import ArchiveIndexView
 from django.utils import timezone
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
+from django.db import models
 from .models import Post, Comment
 from .forms import CommentForm, PostForm, AiPostGeneratorForm
 from taggit.models import Tag
@@ -25,7 +24,7 @@ from accounts.models import Notification
 from django.contrib import messages
 from .ai_generator import extract_content_from_url, rewrite_content_with_ai, generate_tags_with_ai, generate_complete_post
 
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, F
 from rest_framework import viewsets
 from .serializers import PostSerializer
 
@@ -79,7 +78,7 @@ class PostListView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return Post.objects.filter(status="published").order_by("-created_at")
+        return Post.objects.filter(status="published").select_related('author', 'author__profile').prefetch_related('tags', 'likes', 'comments').order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -192,9 +191,15 @@ class PostDetailView(DetailView):
     def get_object(self, queryset=None):
         username = self.kwargs.get('username')
         slug = self.kwargs.get('slug')
-        post = get_object_or_404(Post, author__username=username, slug=slug)
-        post.views += 1
-        post.save(update_fields=["views"])
+        post = get_object_or_404(
+            Post.objects.select_related('author', 'author__profile')
+                       .prefetch_related('tags', 'likes', 'favorites', 'comments__author', 'comments__likes'),
+            author__username=username, 
+            slug=slug
+        )
+        # Increment views atomically to avoid race conditions
+        Post.objects.filter(pk=post.pk).update(views=F('views') + 1)
+        post.refresh_from_db(fields=['views'])
         return post
 
     def get_context_data(self, **kwargs):
@@ -373,62 +378,90 @@ def dashboard_view(request):
 @login_required
 @csrf_exempt
 def like_post(request, username, slug):
-    """Handle post likes with proper authentication."""
+    """Handle post likes with proper authentication and error handling."""
     if request.method != 'POST':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-    
-    post = get_object_or_404(Post, author__username=username, slug=slug)
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
     try:
-        if request.user in post.likes.all():
+        post = get_object_or_404(Post, author__username=username, slug=slug)
+        
+        # Check if user already liked the post (more efficient)
+        user_liked = post.likes.filter(id=request.user.id).exists()
+        
+        if user_liked:
             post.likes.remove(request.user)
             liked = False
+            message = 'Like removido correctamente'
         else:
             post.likes.add(request.user)
             liked = True
+            message = 'Like agregado correctamente'
         
         return JsonResponse({
             'success': True,
             'liked': liked,
             'likes_count': post.likes.count(),
-            'message': 'Me Gusta'
+            'message': message
         })
         
-    except Exception as e:
+    except Post.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': 'Post no encontrado'
+        }, status=404)
+    except Exception as e:
+        # Log error properly
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in like_post: {e}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Error interno del servidor'
         }, status=500)
 
 
 @login_required
 @csrf_exempt
 def like_comment(request, pk):
-    """Handle comment likes with proper authentication."""
+    """Handle comment likes with proper authentication and error handling."""
     if request.method != 'POST':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
-    
-    comment = get_object_or_404(Comment, pk=pk)
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
     try:
-        if request.user in comment.likes.all():
+        comment = get_object_or_404(Comment, pk=pk)
+        
+        # Check if user already liked the comment (more efficient)
+        user_liked = comment.likes.filter(id=request.user.id).exists()
+        
+        if user_liked:
             comment.likes.remove(request.user)
             liked = False
+            message = 'Like removido del comentario'
         else:
             comment.likes.add(request.user)
             liked = True
+            message = 'Like agregado al comentario'
         
         return JsonResponse({
             'success': True,
             'liked': liked,
             'likes_count': comment.likes.count(),
-            'message': 'Me Gusta'
+            'message': message
         })
         
-    except Exception as e:
+    except Comment.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': 'Comentario no encontrado'
+        }, status=404)
+    except Exception as e:
+        # Log error properly
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in like_comment: {e}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Error interno del servidor'
         }, status=500)
 
 
@@ -495,10 +528,96 @@ class PostArchiveView(ArchiveIndexView):
     def get_queryset(self):
         return Post.objects.filter(status="published").order_by("-created_at")
 
+def _check_post_permission(user):
+    """Helper function to check if user has posting permissions"""
+    return user.is_authenticated and user.profile.can_post
+
+def _create_ai_post(title, content, tags_list, author):
+    """Helper function to create AI-generated post"""
+    # Handle tags properly
+    if isinstance(tags_list, list):
+        tags_string = ', '.join(tags_list)
+    else:
+        tags_string = str(tags_list)
+    
+    # Create the post
+    post = Post.objects.create(
+        title=title,
+        content=content,
+        status='draft',
+        author=author
+    )
+    
+    # Add tags if they exist
+    if tags_string.strip():
+        # Split tags and add them properly
+        tag_names = [tag.strip() for tag in tags_string.split(',') if tag.strip()]
+        for tag_name in tag_names:
+            post.tags.add(tag_name)
+    
+    return post
+
+def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
+    """Helper function to generate AI content from URL"""
+    # Extract content from URL
+    url_data = extract_content_from_url(url)
+    
+    if not url_data or not url_data.get('content'):
+        return None, 'No se pudo extraer contenido de la URL proporcionada.'
+    
+    try:
+        # Check if using advanced generation
+        prompt_type = form_data.get('prompt_type', 'simple') if form_data else 'simple'
+        
+        if prompt_type == 'complete' and form_data and hasattr(form_data, 'extract_images'):
+            # Use advanced function if available
+            extract_images = form_data.get('extract_images', False)
+            max_images = form_data.get('max_images', 5)
+            
+            result = generate_complete_post(
+                url=url,
+                rewrite_prompt=rewrite_prompt,
+                extract_images=extract_images,
+                max_images=max_images
+            )
+            
+            if result['success']:
+                return {
+                    'title': result['title'],
+                    'content': result['content'],
+                    'tags': result['tags']
+                }, None
+            else:
+                return None, f'Error al generar el post: {result.get("error", "Error desconocido")}'
+        
+        else:
+            # Traditional method
+            content_text = url_data['content'] if isinstance(url_data, dict) else url_data
+            
+            # Generate title and content
+            title, content = rewrite_content_with_ai(content_text, rewrite_prompt)
+            
+            # Generate tags separately
+            tags_list = generate_tags_with_ai(content_text, tag_prompt)
+            
+            return {
+                'title': title,
+                'content': content,
+                'tags': tags_list
+            }, None
+            
+    except Exception as e:
+        return None, f'Error al procesar el contenido: {str(e)}'
+
+@login_required
 def ai_post_generator_view(request):
     """
-    Vista para generar posts con IA - Compatible con tu código existente
+    Vista para generar posts con IA - Refactorizada y optimizada
     """
+    if not _check_post_permission(request.user):
+        messages.error(request, 'No tienes permisos para crear posts. Solicita permisos al administrador.')
+        return redirect('posts:post_list')
+    
     if request.method == 'POST':
         form = AiPostGeneratorForm(request.POST)
         if form.is_valid():
@@ -507,71 +626,45 @@ def ai_post_generator_view(request):
                 rewrite_prompt = form.cleaned_data['rewrite_prompt']
                 tag_prompt = form.cleaned_data['tag_prompt']
                 
-                # Extraer contenido de la URL
-                url_data = extract_content_from_url(url)
+                # Generate AI content using helper function
+                result, error = _generate_ai_content(url, rewrite_prompt, tag_prompt, form.cleaned_data)
                 
-                if not url_data or not url_data.get('content'):
-                    messages.error(request, 'No se pudo extraer contenido de la URL proporcionada.')
+                if error:
+                    messages.error(request, error)
                     return render(request, 'posts/ai_generator.html', {'form': form})
                 
-                # Verificar si usa el prompt completo o simple
-                prompt_type = form.cleaned_data.get('prompt_type', 'complete')
-                
-                if prompt_type == 'complete' and hasattr(form.cleaned_data, 'extract_images'):
-                    # Usar la función avanzada si está disponible
-                    extract_images = form.cleaned_data.get('extract_images', False)
-                    max_images = form.cleaned_data.get('max_images', 5)
-                    
-                    result = generate_complete_post(
-                        url=url,
-                        rewrite_prompt=rewrite_prompt,
-                        extract_images=extract_images,
-                        max_images=max_images
-                    )
-                    
-                    if result['success']:
-                        title = result['title']
-                        content = result['content']
-                        tags_list = result['tags']
-                    else:
-                        messages.error(request, f'Error al generar el post: {result.get("error", "Error desconocido")}')
-                        return render(request, 'posts/ai_generator.html', {'form': form})
-                
-                else:
-                    # Método tradicional - compatible con código existente
-                    content_text = url_data['content'] if isinstance(url_data, dict) else url_data
-                    
-                    # Generar título y contenido
-                    title, content = rewrite_content_with_ai(content_text, rewrite_prompt)
-                    
-                    # Generar tags por separado
-                    tags_list = generate_tags_with_ai(content_text, tag_prompt)
-                
-                # Crear el post
-                post = Post.objects.create(
-                    title=title,
-                    content=content,
-                    tags=', '.join(tags_list) if isinstance(tags_list, list) else tags_list,
-                    status='draft',  # Crear como borrador inicialmente
-                    author=request.user  # Si tienes campo author
+                # Create post using helper function
+                post = _create_ai_post(
+                    result['title'],
+                    result['content'],
+                    result['tags'],
+                    request.user
                 )
                 
-                messages.success(request, f'Post "{title}" generado exitosamente!')
-                return redirect('post_detail', pk=post.pk)  # Ajusta según tu URL
+                messages.success(request, f'Post "{result["title"]}" generado exitosamente!')
+                return redirect('posts:post_detail', username=request.user.username, slug=post.slug)
                 
             except Exception as e:
                 messages.error(request, f'Ocurrió un error: {str(e)}')
-                print(f"Error detallado: {e}")  # Para debugging
+                # Log error properly
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error in AI post generation: {e}", exc_info=True)
                 return render(request, 'posts/ai_generator.html', {'form': form})
     else:
         form = AiPostGeneratorForm()
     
     return render(request, 'posts/ai_generator.html', {'form': form})
 
+@login_required
 def ai_post_generator_simple_view(request):
     """
-    Vista simplificada que garantiza compatibilidad con código existente
+    Vista simplificada usando funciones helper refactorizadas
     """
+    if not _check_post_permission(request.user):
+        messages.error(request, 'No tienes permisos para crear posts. Solicita permisos al administrador.')
+        return redirect('posts:post_list')
+    
     if request.method == 'POST':
         form = AiPostGeneratorForm(request.POST)
         if form.is_valid():
@@ -580,33 +673,23 @@ def ai_post_generator_simple_view(request):
                 rewrite_prompt = form.cleaned_data['rewrite_prompt']
                 tag_prompt = form.cleaned_data['tag_prompt']
                 
-                # Paso 1: Extraer contenido
-                content = extract_content_from_url(url)
+                # Generate AI content using helper function (simple mode)
+                result, error = _generate_ai_content(url, rewrite_prompt, tag_prompt)
                 
-                if not content:
-                    messages.error(request, 'No se pudo extraer contenido de la URL.')
+                if error:
+                    messages.error(request, error)
                     return render(request, 'posts/ai_generator.html', {'form': form})
                 
-                # Manejar tanto dict como string
-                content_text = content.get('content', content) if isinstance(content, dict) else content
-                
-                # Paso 2: Reescribir contenido (función original que devuelve tupla)
-                title, rewritten_content = rewrite_content_with_ai(content_text, rewrite_prompt)
-                
-                # Paso 3: Generar tags
-                tags = generate_tags_with_ai(content_text, tag_prompt)
-                tags_string = ', '.join(tags) if isinstance(tags, list) else str(tags)
-                
-                # Paso 4: Crear post
-                post = Post.objects.create(
-                    title=title,
-                    content=rewritten_content,
-                    tags=tags_string,
-                    status='draft'
+                # Create post using helper function
+                post = _create_ai_post(
+                    result['title'],
+                    result['content'],
+                    result['tags'],
+                    request.user
                 )
                 
                 messages.success(request, 'Post generado exitosamente!')
-                return redirect('post_detail', pk=post.pk)
+                return redirect('posts:post_detail', username=request.user.username, slug=post.slug)
                 
             except ValueError as e:
                 if "too many values to unpack" in str(e):
@@ -615,7 +698,10 @@ def ai_post_generator_simple_view(request):
                     messages.error(request, f'Error: {str(e)}')
             except Exception as e:
                 messages.error(request, f'Error inesperado: {str(e)}')
-                print(f"Error completo: {e}")  # Para debugging
+                # Log error properly
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error in simple AI post generation: {e}", exc_info=True)
     else:
         form = AiPostGeneratorForm()
     
