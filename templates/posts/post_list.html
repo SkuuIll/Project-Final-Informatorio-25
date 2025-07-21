@@ -260,10 +260,10 @@
                     feather.replace();
                 }
 
-                // Re-attach like handlers
-                const script = document.createElement('script');
-                script.src = "{% static 'js/likes-working.js' %}";
-                document.body.appendChild(script);
+                // Re-initialize Feather icons
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
                 
                 hideLoading();
             }, 150);

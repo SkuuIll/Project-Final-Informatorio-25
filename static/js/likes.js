@@ -53,8 +53,6 @@
         // Handle post likes
         document.body.addEventListener('click', handleLikeClick);
         document.body.setAttribute('data-like-initialized', 'true');
-        
-        console.log('Like system initialized');
     }
 
     function handleLikeClick(e) {
@@ -63,7 +61,6 @@
         if (postLikeButton) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Post like button clicked:', postLikeButton);
             handlePostLike(postLikeButton);
             return;
         }
@@ -73,7 +70,6 @@
         if (commentLikeButton) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Comment like button clicked:', commentLikeButton);
             handleCommentLike(commentLikeButton);
             return;
         }
