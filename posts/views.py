@@ -391,7 +391,7 @@ def like_post(request, username, slug):
             'success': True,
             'liked': liked,
             'likes_count': post.likes.count(),
-            'message': 'Like actualizado correctamente'
+            'message': 'Me Gusta'
         })
         
     except Exception as e:
@@ -422,7 +422,7 @@ def like_comment(request, pk):
             'success': True,
             'liked': liked,
             'likes_count': comment.likes.count(),
-            'message': 'Like actualizado correctamente'
+            'message': 'Me Gusta'
         })
         
     except Exception as e:

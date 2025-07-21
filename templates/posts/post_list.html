@@ -191,7 +191,9 @@
     }
 </style>
 
+{% load static %}
 <script src="https://unpkg.com/feather-icons"></script>
+<script src="{% static 'js/likes.js' %}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -257,6 +259,11 @@
                 if (typeof feather !== 'undefined') {
                     feather.replace();
                 }
+
+                // Re-attach like handlers
+                const script = document.createElement('script');
+                script.src = "{% static 'js/likes-working.js' %}";
+                document.body.appendChild(script);
                 
                 hideLoading();
             }, 150);

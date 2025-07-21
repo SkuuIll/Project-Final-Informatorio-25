@@ -108,6 +108,23 @@
                         </div>
                     </div>
                     <p class="text-slate-700 dark:text-slate-300">{{ comment.content }}</p>
+                    
+                    <!-- Comment like button -->
+                    <div class="flex items-center mt-3 space-x-4">
+                        {% if user.is_authenticated %}
+                        <button data-comment-id="{{ comment.id }}" 
+                                class="comment-like-button flex items-center space-x-1 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" 
+                                aria-label="Dar me gusta a este comentario">
+                            <i data-feather="heart" class="like-icon w-4 h-4 {% if user in comment.likes.all %}text-red-500 fill-current{% endif %}"></i>
+                            <span class="likes-count text-sm">{{ comment.likes.count }}</span>
+                        </button>
+                        {% else %}
+                        <div class="flex items-center space-x-1 text-slate-400">
+                            <i data-feather="heart" class="w-4 h-4"></i>
+                            <span class="text-sm">{{ comment.likes.count }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% empty %}
@@ -202,5 +219,6 @@
 
 {% block extra_js %}
 {% load static %}
-<script src="{% static 'js/likes-fix.js' %}"></script>
+<script src="{% static 'js/likes.js' %}"></script>
+<script src="{% static 'js/test-likes.js' %}"></script>
 {% endblock %}
