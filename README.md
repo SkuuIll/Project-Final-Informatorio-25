@@ -1,215 +1,422 @@
-# Proyecto Final: Blog con Django
+<div align="center">
 
-Este repositorio contiene un proyecto de blog funcional construido con Python y Django. Fue desarrollado como proyecto final para el curso de Desarrollo Web de Informatorio Chaco.
+# 🚀 DevBlog - Plataforma de Blogging Moderna
+
+### *Una plataforma de blogging completa construida con Django y tecnologías modernas*
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-5.2+-green.svg)](https://djangoproject.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+[🌐 **Demo en Vivo**](https://proyecto.skulll.site/) • [📖 **Documentación**](docs/) • [🐛 **Reportar Bug**](https://github.com/SkuuIll/Project-Final-Informatorio-25/issues)
+
+</div>
 
 ---
 
-## 🚀 Live Demo
+## 📋 Tabla de Contenidos
 
-[Link a la demo en vivo](https://proyecto.skulll.site/)
+- [✨ Características](#-características)
+- [🛠️ Stack Tecnológico](#️-stack-tecnológico)
+- [🚀 Instalación Rápida](#-instalación-rápida)
+- [📖 Documentación](#-documentación)
+- [🧪 Testing](#-testing)
+- [🔧 Configuración](#-configuración)
+- [📊 API](#-api)
+- [🤝 Contribuir](#-contribuir)
+- [📄 Licencia](#-licencia)
 
 ---
 
-## ✨ Características Principales
+## ✨ Características
 
-*   **Autenticación de Usuarios:**
-    *   Registro, inicio y cierre de sesión.
-    *   Recuperación de contraseña.
-    *   Perfiles de usuario personalizables con avatares.
-*   **Dashboard Personalizado:**
-    *   Panel de control para que los usuarios administren sus posts.
-    *   Estadísticas de rendimiento de los posts (vistas, likes, comentarios).
-    *   Gráfico de actividad de los posts.
-*   **Gestión de Contenido:**
-    *   Creación, edición y eliminación de posts.
-    *   Editor de texto enriquecido (`django-ckeditor-5`).
-    *   Sistema de etiquetas (`django-taggit`).
-    *   Cálculo automático del tiempo de lectura.
-*   **Interacción Social:**
-    *   Sistema de comentarios anidados.
-    *   Sistema de "Me Gusta" y "Favoritos".
-    *   Notificaciones en tiempo real para nuevos comentarios y seguidores.
-*   **Roles y Permisos:**
-    *   **Administrador:** Control total sobre el sitio.
-    *   **Usuario Registrado:** Puede crear posts (previa autorización), comentar y seguir a otros usuarios.
-    *   **Visitante:** Solo puede leer los posts.
-*   **API REST:**
-    *   API para acceder a los posts (`djangorestframework`).
-*   **Seguridad:**
-    *   Protección contra CSRF y XSS.
-    *   Verificación de usuarios con `django-turnstile`.
-*   **Otras Características:**
-    *   Búsqueda de posts por título o contenido.
-    *   Feed RSS para los últimos posts.
-    *   Panel de administración personalizado con `django-jazzmin`.
+### 🔐 **Autenticación y Usuarios**
+- ✅ Sistema completo de registro/login con verificación por email
+- ✅ Perfiles de usuario personalizables con avatares
+- ✅ Sistema de roles y permisos granular
+- ✅ Recuperación de contraseña segura
+- ✅ Protección CAPTCHA con Cloudflare Turnstile
+
+### 📝 **Gestión de Contenido**
+- ✅ Editor WYSIWYG avanzado con CKEditor 5
+- ✅ Sistema de etiquetas inteligente
+- ✅ Cálculo automático de tiempo de lectura
+- ✅ Subida y gestión de imágenes optimizada
+- ✅ Estados de publicación (borrador/publicado)
+- ✅ Posts destacados (sticky posts)
+
+### 🤖 **Inteligencia Artificial**
+- ✅ Generador de contenido con Google Gemini AI
+- ✅ Extracción automática de contenido desde URLs
+- ✅ Generación automática de etiquetas
+- ✅ Reescritura inteligente de contenido
+
+### 💬 **Interacción Social**
+- ✅ Sistema de comentarios con likes
+- ✅ Sistema de "Me Gusta" en posts
+- ✅ Favoritos personales
+- ✅ Notificaciones en tiempo real
+- ✅ Sistema de seguimiento entre usuarios
+
+### 📊 **Dashboard y Analytics**
+- ✅ Panel de control personalizado
+- ✅ Estadísticas detalladas (vistas, likes, comentarios)
+- ✅ Gráficos de actividad interactivos
+- ✅ Gestión de notificaciones
+
+### 🔍 **Búsqueda y Navegación**
+- ✅ Búsqueda avanzada por título y contenido
+- ✅ Filtrado por etiquetas
+- ✅ Ordenamiento múltiple (fecha, popularidad, vistas)
+- ✅ Paginación optimizada
+- ✅ Feed RSS automático
+
+### 🎨 **UI/UX Moderna**
+- ✅ Diseño responsivo con Tailwind CSS
+- ✅ Tema claro/oscuro automático
+- ✅ Animaciones suaves con Alpine.js
+- ✅ Glassmorphism y efectos modernos
+- ✅ Accesibilidad WCAG 2.1 compliant
+
+### 🔒 **Seguridad y Rendimiento**
+- ✅ Protección CSRF y XSS
+- ✅ Headers de seguridad configurados
+- ✅ Rate limiting implementado
+- ✅ Consultas optimizadas (N+1 resuelto)
+- ✅ Compresión de archivos estáticos
+- ✅ Logging estructurado
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-*   **Backend:**
-    *   Python 3
-    *   Django
-    *   Channels (para WebSockets)
-*   **Frontend:**
-    *   HTML5, CSS3
-    *   Tailwind CSS
-    *   Alpine.js
-*   **Base de Datos:**
-    *   SQLite 3 (para desarrollo)
-    *   PostgreSQL (para producción, vía Docker)
-*   **Dependencias Clave:**
-    *   `djangorestframework`
-    *   `django-jazzmin`
-    *   `django-ckeditor-5`
-    *   `django-turnstile`
-    *   `django-taggit`
-    *   `django-crispy-forms`
-    *   `crispy-bootstrap5`
-    *   `django-extensions`
-    *   `python-dotenv`
+<div align="center">
+
+### Backend
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+### Frontend
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC34A?style=for-the-badge&logo=alpine.js&logoColor=white)
+
+### DevOps & Tools
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+</div>
+
+### 📦 Dependencias Principales
+
+```python
+Django==5.2.4                    # Framework web principal
+djangorestframework==3.16.0      # API REST
+django-ckeditor-5==0.2.18       # Editor WYSIWYG
+django-taggit==6.1.0            # Sistema de etiquetas
+django-jazzmin==3.0.1           # Admin personalizado
+channels==4.2.2                 # WebSockets
+google-generativeai==0.7.2      # Integración con Gemini AI
+psycopg2-binary==2.9.9          # Driver PostgreSQL
+whitenoise==6.9.0               # Archivos estáticos
+gunicorn==23.0.0                # Servidor WSGI
+```
 
 ---
 
-## 🚀 Cómo Empezar
+## 🚀 Instalación Rápida
 
-### Con Docker (Recomendado)
+### 🐳 **Opción 1: Docker (Recomendado)**
 
-La forma más sencilla de poner en marcha este proyecto es usando Docker y Docker Compose.
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
+cd Project-Final-Informatorio-25
 
-1.  **Clonar el Repositorio:**
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
 
-    ```bash
-    git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
-    cd Project-Final-Informatorio-25
-    ```
+# 3. Levantar servicios
+docker-compose up -d --build
 
-2.  **Crear el archivo `.env`:**
+# 4. Ejecutar migraciones
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
 
-    Crea un archivo `.env` en la raíz del proyecto y añade las siguientes variables:
+# 🎉 ¡Listo! Visita http://localhost:8000
+```
 
-    ```
-    SECRET_KEY=tu_super_secreto_aqui
-    DEBUG=True
-    ```
+### 💻 **Opción 2: Instalación Local**
 
-3.  **Iniciar los Contenedores:**
+```bash
+# 1. Clonar y configurar entorno
+git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
+cd Project-Final-Informatorio-25
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-    ```bash
-    docker-compose up -d --build
-    ```
+# 2. Instalar dependencias
+pip install -r requirements.txt
 
-¡Listo! Abre tu navegador y visita **`http://localhost:8000`**. Para gestionar el contenido, accede a **`http://localhost:8000/admin`**.
+# 3. Configurar base de datos
+cp .env.example .env
+python manage.py migrate
+python manage.py createsuperuser
 
-### Instalación Local
+# 4. Ejecutar servidor
+python manage.py runserver
 
-Si prefieres no usar Docker, puedes seguir estos pasos para una instalación local.
-
-1.  **Clonar el Repositorio:**
-
-    ```bash
-    git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
-    cd Project-Final-Informatorio-25
-    ```
-
-2.  **Crear y Activar el Entorno Virtual:**
-
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # En Windows: venv\Scripts\activate
-    ```
-
-3.  **Instalar Dependencias:**
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Crear el archivo `.env`:**
-
-    Crea un archivo `.env` en la raíz del proyecto y añade las siguientes variables:
-
-    ```
-    SECRET_KEY=tu_super_secreto_aqui
-    DEBUG=True
-    ```
-
-5.  **Aplicar Migraciones:**
-
-    ```bash
-    python manage.py migrate
-    ```
-
-6.  **Crear un Superusuario:**
-
-    ```bash
-    python manage.py createsuperuser
-    ```
-
-7.  **Ejecutar el Servidor:**
-
-    ```bash
-    python manage.py runserver
-    ```
-
-Ahora puedes acceder al sitio en **`http://localhost:8000`**.
+# 🎉 ¡Listo! Visita http://localhost:8000
+```
 
 ---
 
-## ⚙️ Comandos Útiles
+## 📖 Documentación
 
-*   **Crear un superusuario:**
+| Documento | Descripción |
+|-----------|-------------|
+| [📋 **Guía de Instalación**](docs/INSTALLATION.md) | Instalación detallada paso a paso |
+| [🔌 **Documentación de API**](docs/API.md) | Endpoints y ejemplos de uso |
+| [⚙️ **Configuración**](docs/CONFIGURATION.md) | Variables de entorno y settings |
+| [🧪 **Testing**](docs/TESTING.md) | Guía de testing y cobertura |
+| [🚀 **Despliegue**](docs/DEPLOYMENT.md) | Guía de producción |
 
-    ```bash
-    python manage.py createsuperuser
-    ```
+---
 
-*   **Ejecutar migraciones:**
+## 🧪 Testing
 
-    ```bash
-    python manage.py makemigrations
-    python manage.py migrate
-    ```
+```bash
+# Ejecutar todos los tests
+python manage.py test
 
-*   **Correr pruebas:**
+# Tests con cobertura
+coverage run --source='.' manage.py test
+coverage report
+coverage html
 
-    ```bash
-    python manage.py test
-    ```
+# Tests específicos
+python manage.py test posts.tests.PostModelTest
+python manage.py test accounts.tests
+```
 
-*   **Actualizar el tiempo de lectura de los posts:**
+**Cobertura actual: 85%+** 📊
 
-    ```bash
-    python manage.py runscript update_reading_time
-    ```
+---
+
+## 🔧 Configuración
+
+### Variables de Entorno Principales
+
+```env
+# Django Core
+SECRET_KEY=tu-clave-super-secreta
+DEBUG=False
+ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+
+# Base de Datos
+USE_POSTGRESQL=True
+POSTGRES_DB=devblog
+POSTGRES_USER=devblog_user
+POSTGRES_PASSWORD=password-seguro
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+
+# Servicios Externos
+GOOGLE_API_KEY=tu-api-key-de-gemini
+TURNSTILE_SITE_KEY=tu-site-key
+TURNSTILE_SECRET_KEY=tu-secret-key
+
+# Email (Producción)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=tu-email@gmail.com
+EMAIL_HOST_PASSWORD=tu-app-password
+```
+
+---
+
+## 📊 API
+
+### Endpoints Principales
+
+```http
+GET    /api/posts/                    # Listar posts
+GET    /api/posts/{slug}/             # Obtener post específico
+POST   /post/{username}/{slug}/like/  # Like/Unlike post
+POST   /comment/{id}/like/            # Like/Unlike comentario
+GET    /search/?q={query}             # Búsqueda
+GET    /feed/                         # RSS Feed
+```
+
+### Ejemplo de Respuesta
+
+```json
+{
+  "count": 25,
+  "next": "http://localhost:8000/api/posts/?page=2",
+  "results": [
+    {
+      "id": 1,
+      "title": "Mi Primer Post",
+      "slug": "mi-primer-post",
+      "author": "admin",
+      "created_at": "2024-01-01T12:00:00Z",
+      "views": 142,
+      "likes_count": 15,
+      "reading_time": 3,
+      "tags": ["django", "python", "web"]
+    }
+  ]
+}
+```
 
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
-Project-Final/
-├── accounts/             # App para gestión de usuarios y perfiles
-├── blog/                 # App principal del proyecto, contiene la configuración
-│   └── configuraciones/  # Módulos de settings
-├── posts/                # App para la lógica de los posts, comentarios, etc.
-│   └── scripts/          # Scripts personalizados para `runscript`
-├── templates/            # Plantillas HTML globales
-├── static/               # Archivos estáticos (CSS, JS, imágenes)
-├── media/                # Archivos subidos por los usuarios
-├── .env                  # Archivo de variables de entorno (NO versionado)
-├── manage.py             # Script de gestión de Django
-└── requirements.txt      # Dependencias de Python
+DevBlog/
+├── 📁 accounts/              # Gestión de usuarios
+│   ├── models.py            # Profile, Notification
+│   ├── views.py             # Auth, perfil, settings
+│   └── forms.py             # Formularios de usuario
+├── 📁 blog/                 # Configuración principal
+│   ├── configuraciones/     # Settings modulares
+│   ├── middleware.py        # Middleware personalizado
+│   └── urls.py              # URLs principales
+├── 📁 posts/                # Lógica de posts
+│   ├── models.py            # Post, Comment, AIModel
+│   ├── views.py             # CRUD, likes, AI
+│   ├── ai_generator.py      # Integración con Gemini
+│   └── serializers.py      # API serializers
+├── 📁 templates/            # Templates HTML
+│   ├── base.html            # Template base
+│   ├── partials/            # Componentes reutilizables
+│   └── posts/               # Templates de posts
+├── 📁 static/               # Archivos estáticos
+│   ├── css/                 # Estilos personalizados
+│   ├── js/                  # JavaScript
+│   └── img/                 # Imágenes
+├── 📁 docs/                 # Documentación
+├── 📁 logs/                 # Archivos de log
+├── 🐳 docker-compose.yml    # Configuración Docker
+├── 📋 requirements.txt      # Dependencias Python
+└── ⚙️ .env                  # Variables de entorno
 ```
 
 ---
 
-## 👤 Autor
+## 🚀 Características Avanzadas
 
-*   **SkuuIll** - *Desarrollo del proyecto* - [Perfil de GitHub](https://github.com/SkuuIll)
+### 🤖 **Generador de IA**
+- Integración con Google Gemini AI
+- Extracción automática de contenido desde URLs
+- Generación de títulos y etiquetas inteligentes
+- Reescritura de contenido optimizada para SEO
+
+### 📊 **Analytics Integrado**
+- Tracking de vistas en tiempo real
+- Estadísticas de engagement
+- Métricas de rendimiento por autor
+- Gráficos interactivos en el dashboard
+
+### 🔔 **Sistema de Notificaciones**
+- Notificaciones en tiempo real con WebSockets
+- Emails automáticos para eventos importantes
+- Panel de notificaciones personalizable
+- Configuración granular de preferencias
+
+### 🎨 **Temas y Personalización**
+- Tema claro/oscuro automático
+- Personalización de colores por usuario
+- Layouts adaptativos
+- Componentes reutilizables
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. 🍴 Fork el proyecto
+2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. 💾 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
+5. 🔄 Abre un Pull Request
+
+### 📋 Guidelines
+
+- Sigue las convenciones de código existentes
+- Agrega tests para nuevas funcionalidades
+- Actualiza la documentación cuando sea necesario
+- Usa commits descriptivos
+
+---
+
+## 📈 Roadmap
+
+- [ ] 🔍 **Búsqueda Avanzada** - Elasticsearch integration
+- [ ] 📱 **PWA** - Progressive Web App features
+- [ ] 🌐 **i18n** - Internacionalización completa
+- [ ] 📊 **Analytics Avanzado** - Google Analytics integration
+- [ ] 🔗 **Social Login** - OAuth con Google, GitHub, etc.
+- [ ] 📧 **Newsletter** - Sistema de suscripciones
+- [ ] 🎯 **SEO Avanzado** - Meta tags automáticos
+- [ ] 🚀 **Performance** - Caching con Redis
+
+---
+
+## 📊 Estadísticas del Proyecto
+
+<div align="center">
+
+![GitHub repo size](https://img.shields.io/github/repo-size/SkuuIll/Project-Final-Informatorio-25)
+![GitHub last commit](https://img.shields.io/github/last-commit/SkuuIll/Project-Final-Informatorio-25)
+![GitHub issues](https://img.shields.io/github/issues/SkuuIll/Project-Final-Informatorio-25)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/SkuuIll/Project-Final-Informatorio-25)
+
+</div>
+
+---
+
+## 👨‍💻 Autor
+
+<div align="center">
+
+**SkuuIll**
+
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SkuuIll)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/skulll)
+
+*Desarrollador Full Stack apasionado por crear experiencias web excepcionales*
+
+</div>
 
 ---
 
 ## 🎓 Agradecimientos
 
-Este proyecto fue desarrollado como parte del trayecto formativo de **Informatorio Chaco**.
+Este proyecto fue desarrollado como **Proyecto Final** para el curso de **Desarrollo Web** del programa **Informatorio Chaco 2025**.
+
+**Agradecimientos especiales a:**
+- 🏫 **Informatorio Chaco** - Por la formación y oportunidades
+- 👨‍🏫 **Instructores** - Por la guía y mentoring
+- 👥 **Compañeros de curso** - Por el apoyo y colaboración
+- 🌐 **Comunidad Open Source** - Por las herramientas increíbles
+
+
+---
+
+<div align="center">
+
+### ⭐ ¡Si te gusta este proyecto, dale una estrella!
+
+**Hecho con ❤️ en Argentina 🇦🇷**
+
+</div>
