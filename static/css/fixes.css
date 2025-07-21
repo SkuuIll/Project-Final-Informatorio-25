@@ -287,38 +287,17 @@ button:disabled:hover {
     box-shadow: none;
 }
 
-/* Corrección para legibilidad del footer en modo claro */
+/* Footer adaptativo que cambia con el tema */
 footer {
-    background: rgba(15, 23, 42, 0.95) !important;
-    color: #f1f5f9 !important;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-footer .text-slate-400 {
-    color: #cbd5e1 !important;
+/* Fondo adaptativo para el body */
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #dbeafe 100%);
+    transition: background 0.3s ease;
 }
 
-footer .text-slate-500 {
-    color: #94a3b8 !important;
-}
-
-footer .text-slate-200 {
-    color: #f1f5f9 !important;
-}
-
-footer .text-white {
-    color: #ffffff !important;
-}
-
-footer a {
-    color: #cbd5e1 !important;
-}
-
-footer a:hover {
-    color: #ffffff !important;
-}
-
-/* Asegurar que el footer sea legible en ambos modos */
-.dark footer {
-    background: rgba(15, 23, 42, 0.95) !important;
-    color: #f1f5f9 !important;
+.dark body {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%);
 }

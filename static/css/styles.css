@@ -29,6 +29,7 @@ body {
     background-color: var(--bg-light);
     color: var(--text-light);
     font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .dark body {
@@ -42,6 +43,7 @@ body {
     background-color: var(--card-light);
     border: 1px solid var(--border-light);
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dark .glass-effect {
@@ -136,12 +138,7 @@ body {
 }
 
 /* === FOOTER === */
-footer {
-    border-top: 1px solid var(--border-light);
-}
-.dark footer {
-    border-top: 1px solid var(--border-dark);
-}
+/* Footer styles are now handled by Tailwind classes in the template */
 
 /* === OTROS ESTILOS (Animaciones, etc.) === */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

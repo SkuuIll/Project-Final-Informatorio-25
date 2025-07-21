@@ -1,67 +1,66 @@
 {% comment %}
-Este es el pie de página compacto, modificado para ser menos espacioso.
-He reducido los paddings, márgenes y tamaños de fuente, y he ajustado la disposición de las columnas.
+Footer adaptativo que cambia de color según el tema (claro/oscuro)
 {% endcomment %}
-<footer class="glass-effect border-t border-white/20 dark:border-slate-700/50 mt-auto">
+<footer class="border-t border-slate-200 dark:border-slate-700 mt-auto bg-white dark:bg-slate-900 backdrop-blur-xl transition-all duration-300">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="grid grid-cols-2 md:grid-cols-5 gap-8 py-8">
             
             <div class="col-span-2 md:col-span-2">
-                 <a href="/" class="flex items-center space-x-2 mb-2">
-                    <span class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-xl shadow-lg">
+                 <a href="/" class="flex items-center space-x-2 mb-2 group">
+                    <span class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
                         <i data-feather="book-open" class="w-4 h-4 text-white"></i>
                     </span>
-                    <span class="text-xl font-bold text-white">DevBlog</span>
+                    <span class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">DevBlog</span>
                 </a>
-<p class="text-slate-400 dark:text-slate-200 text-sm">
-    Proyecto Final Blog con Django
-</p>
+                <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    Proyecto Final Blog con Django
+                </p>
             </div>
 
             <div>
-                <h3 class="text-sm font-semibold text-slate-200 tracking-wider uppercase mb-3">Navegación</h3>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-wider uppercase mb-3">Navegación</h3>
                 <ul class="space-y-2">
-                    <li><a href="{% url 'posts:post_list' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Artículos</a></li>
-                    <li><a href="{% url 'posts:tag_list' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Etiquetas</a></li>
-                    <li><a href="{% url 'posts:archive_list' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Archivo</a></li>
+                    <li><a href="{% url 'posts:post_list' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Artículos</a></li>
+                    <li><a href="{% url 'posts:tag_list' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Etiquetas</a></li>
+                    <li><a href="{% url 'posts:archive_list' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Archivo</a></li>
                 </ul>
             </div>
 
             <div>
-                <h3 class="text-sm font-semibold text-slate-200 tracking-wider uppercase mb-3">Comunidad</h3>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-wider uppercase mb-3">Comunidad</h3>
                 <ul class="space-y-2">
-                    <li><a href="{% url 'about' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Acerca de</a></li>
-                    <li><a href="{% url 'contact' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Contacto</a></li>
-                    <li><a href="{% url 'collaborate' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Colabora</a></li>
+                    <li><a href="{% url 'about' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Acerca de</a></li>
+                    <li><a href="{% url 'contact' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Contacto</a></li>
+                    <li><a href="{% url 'collaborate' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Colabora</a></li>
                 </ul>
             </div>
 
             <div>
-                <h3 class="text-sm font-semibold text-slate-200 tracking-wider uppercase mb-3">Legal</h3>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-wider uppercase mb-3">Legal</h3>
                 <ul class="space-y-2">
-                    <li><a href="{% url 'privacy' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Privacidad</a></li>
-                    <li><a href="{% url 'terms' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Términos</a></li>
-                    <li><a href="{% url 'cookies' %}" class="text-sm text-slate-400 hover:text-white transition-colors">Cookies</a></li>
+                    <li><a href="{% url 'privacy' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Privacidad</a></li>
+                    <li><a href="{% url 'terms' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Términos</a></li>
+                    <li><a href="{% url 'cookies' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 hover:translate-x-1 transform">Cookies</a></li>
                 </ul>
             </div>
         </div>
 
-        <div class="border-t border-slate-800/50 py-4 flex flex-col sm:flex-row items-center justify-between">
-            <p class="text-xs text-slate-500 order-2 sm:order-1 mt-4 sm:mt-0">
+        <div class="border-t border-slate-200/50 dark:border-slate-700/50 py-4 flex flex-col sm:flex-row items-center justify-between">
+            <p class="text-xs text-slate-500 dark:text-slate-400 order-2 sm:order-1 mt-4 sm:mt-0">
                 &copy; {% now "Y" %} DevBlog. Todos los derechos reservados.
             </p>
             <div class="flex space-x-4 order-1 sm:order-2">
-                <a href="https://github.com/SkuuIll" class="text-slate-500 hover:text-white transition-colors" aria-label="GitHub">
+                <a href="https://github.com/SkuuIll" class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:scale-110 transition-all duration-300" aria-label="GitHub">
                     <i data-feather="github" class="w-4 h-4"></i>
                 </a>
-                <a href="#" class="text-slate-500 hover:text-white transition-colors" aria-label="Twitter">
+                <a href="#" class="text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:scale-110 transition-all duration-300" aria-label="Twitter">
                     <i data-feather="twitter" class="w-4 h-4"></i>
                 </a>
-                <a href="#" class="text-slate-500 hover:text-white transition-colors" aria-label="LinkedIn">
+                <a href="#" class="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 transition-all duration-300" aria-label="LinkedIn">
                     <i data-feather="linkedin" class="w-4 h-4"></i>
                 </a>
-                <a href="#" class="text-slate-500 hover:text-white transition-colors" aria-label="RSS Feed">
+                <a href="#" class="text-slate-500 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 hover:scale-110 transition-all duration-300" aria-label="RSS Feed">
                     <i data-feather="rss" class="w-4 h-4"></i>
                 </a>
             </div>

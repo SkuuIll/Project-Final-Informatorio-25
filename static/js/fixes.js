@@ -20,8 +20,34 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('devblog-theme', theme);
         updateThemeIcon();
         
+        // Actualizar elementos dinámicamente
+        updateThemeElements(isDark);
+        
         // Mostrar toast de confirmación
         showToast(isDark ? 'Tema oscuro activado' : 'Tema claro activado', 'success');
+    }
+
+    function updateThemeElements(isDark) {
+        // Actualizar meta theme-color para navegadores móviles
+        let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (!themeColorMeta) {
+            themeColorMeta = document.createElement('meta');
+            themeColorMeta.name = 'theme-color';
+            document.head.appendChild(themeColorMeta);
+        }
+        themeColorMeta.content = isDark ? '#0f172a' : '#f8fafc';
+        
+        // Actualizar favicon si existe uno específico para tema oscuro
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) {
+            // Opcional: cambiar favicon según el tema
+            // favicon.href = isDark ? '/static/img/favicon-dark.svg' : '/static/img/favicon.svg';
+        }
+        
+        // Trigger evento personalizado para otros scripts
+        document.dispatchEvent(new CustomEvent('themeChanged', { 
+            detail: { theme: isDark ? 'dark' : 'light', isDark } 
+        }));
     }
 
     function updateThemeIcon() {
@@ -30,7 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lightIcon.classList.toggle('hidden', !isDark);
     }
     
-    updateThemeIcon();
+    // Inicializar tema al cargar la página
+    const initialTheme = getTheme();
+    setTheme(initialTheme);
     
     themeToggleBtn.addEventListener('click', () => {
         const currentTheme = getTheme();
