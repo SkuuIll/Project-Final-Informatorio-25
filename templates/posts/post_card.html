@@ -103,7 +103,7 @@
                     </div>
                 </a>
 
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                         
                         <div class="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
@@ -125,13 +125,15 @@
                         <button data-slug="{{ post.slug }}" 
                                 data-username="{{ post.author.username }}"
                                 class="like-button group/like flex items-center gap-1.5 p-2.5 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all duration-300 hover:scale-110" 
-                                aria-label="Dar me gusta a {{ post.title }}">
-                            <i data-feather="heart" class="like-icon w-5 h-5 {% if user in post.likes.all %}text-red-500 fill-current{% endif %} group-hover/like:scale-110 transition-transform duration-300"></i>
-                            <span class="likes-count text-sm font-medium">{{ post.likes.count }}</span>
+                                aria-label="{% if user in post.likes.all %}Quitar me gusta de {{ post.title }}{% else %}Dar me gusta a {{ post.title }}{% endif %}"
+                                aria-pressed="{% if user in post.likes.all %}true{% else %}false{% endif %}"
+                                role="button">
+                            <i data-feather="heart" class="like-icon w-5 h-5 {% if user in post.likes.all %}text-red-500 fill-current{% endif %} group-hover/like:scale-110 transition-transform duration-300" aria-hidden="true"></i>
+                            <span class="likes-count text-sm font-medium" aria-label="{{ post.likes.count }} me gusta">{{ post.likes.count }}</span>
                         </button>
                         {% else %}
-                        <div class="flex items-center gap-1.5 p-2.5 text-slate-400">
-                            <i data-feather="heart" class="w-5 h-5"></i>
+                        <div class="flex items-center gap-1.5 p-2.5 text-slate-400" aria-label="{{ post.likes.count }} me gusta - Inicia sesión para dar me gusta">
+                            <i data-feather="heart" class="w-5 h-5" aria-hidden="true"></i>
                             <span class="text-sm font-medium">{{ post.likes.count }}</span>
                         </div>
                         {% endif %}

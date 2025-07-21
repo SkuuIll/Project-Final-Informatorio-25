@@ -150,3 +150,103 @@ class PostViewTest(TestCase):
         self.assertContains(response, self.published_post.title)
         self.assertNotContains(response, post_with_other_tag.title)
         self.assertTemplateUsed(response, "posts/post_list.html")
+
+    def test_search_view(self):
+        """Prueba la funcionalidad de búsqueda."""
+        response = self.client.get(reverse("posts:search_results"), {"q": "Publicado"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.published_post.title)
+        self.assertNotContains(response, self.draft_post.title)
+
+    def test_comment_creation(self):
+        """Prueba la creación de comentarios."""
+        self.client.login(username="testuser", password="password")
+        response = self.client.post(
+            self.published_post.get_absolute_url(),
+            {"content": "Este es un comentario de prueba."}
+        )
+        self.assertEqual(response.status_code, 302)  # Redirección después del POST
+        self.published_post.refresh_from_db()
+        self.assertEqual(self.published_post.comments.count(), 1)
+        comment = self.published_post.comments.first()
+        self.assertEqual(comment.content, "Este es un comentario de prueba.")
+        self.assertEqual(comment.author, self.user)
+
+    def test_favorite_post(self):
+        """Prueba la funcionalidad de favoritos."""
+        self.client.login(username="testuser", password="password")
+        response = self.client.post(
+            reverse(
+                "posts:favorite_post",
+                kwargs={
+                    "username": self.published_post.author.username,
+                    "slug": self.published_post.slug,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        json_response = response.json()
+        self.assertTrue(json_response["success"])
+        self.assertTrue(json_response["favorited"])
+        self.published_post.refresh_from_db()
+        self.assertTrue(self.user in self.published_post.favorites.all())
+
+    def test_reading_time_calculation(self):
+        """Prueba el cálculo del tiempo de lectura."""
+        # Crear un post con contenido conocido
+        long_content = " ".join(["palabra"] * 400)  # 400 palabras
+        long_post = Post.objects.create(
+            author=self.user,
+            title="Post Largo",
+            content=long_content,
+            status="published",
+        )
+        # 400 palabras / 200 palabras por minuto = 2 minutos
+        self.assertEqual(long_post.reading_time, 2)
+
+    def test_post_slug_uniqueness(self):
+        """Prueba que los slugs duplicados se manejan correctamente."""
+        # Crear dos posts con el mismo título
+        post1 = Post.objects.create(
+            author=self.user,
+            title="Título Duplicado",
+            content="Contenido 1",
+            status="published",
+        )
+        post2 = Post.objects.create(
+            author=self.user,
+            title="Título Duplicado",
+            content="Contenido 2",
+            status="published",
+        )
+        
+        self.assertNotEqual(post1.slug, post2.slug)
+        self.assertTrue(post2.slug.endswith("-1"))
+
+class AIGeneratorTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="testuser", password="password")
+        self.user.profile.can_post = True
+        self.user.profile.save()
+
+    def test_ai_generator_view_requires_login(self):
+        """Prueba que la vista de generador de IA requiere login."""
+        response = self.client.get(reverse("posts:ai_post_generator"))
+        self.assertEqual(response.status_code, 302)  # Redirección al login
+
+    def test_ai_generator_view_requires_permission(self):
+        """Prueba que la vista de generador de IA requiere permisos."""
+        # Crear usuario sin permisos
+        user_no_perm = User.objects.create_user(
+            username="noperm", password="password"
+        )
+        self.client.login(username="noperm", password="password")
+        response = self.client.get(reverse("posts:ai_post_generator"))
+        self.assertEqual(response.status_code, 302)  # Redirección
+
+    def test_ai_generator_view_with_permission(self):
+        """Prueba que usuarios con permisos pueden acceder al generador de IA."""
+        self.client.login(username="testuser", password="password")
+        response = self.client.get(reverse("posts:ai_post_generator"))
+        self.assertEqual(response.status_code, 200)

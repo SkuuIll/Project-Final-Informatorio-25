@@ -1,5 +1,5 @@
 <header class="glass-effect sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/50 backdrop-blur-xl">
-    <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" aria-label="Navegación Principal">
+    <nav id="navigation" class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20" role="navigation" aria-label="Navegación Principal">
         <a href="{% url 'posts:post_list' %}" class="flex items-center space-x-3 text-xl font-bold text-slate-900 dark:text-white group focus-ring" aria-label="Página de inicio de DevBlog">
             <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-12 shadow-lg group-hover:shadow-glow group-hover:shadow-indigo-500/25">
                 <i data-feather="book-open" class="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110"></i>
@@ -7,14 +7,14 @@
             <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-2xl font-black tracking-tight">DevBlog</span>
         </a>
         
-        <div class="flex items-center space-x-6">
-            <div class="hidden md:flex items-center space-x-8">
+        <div class="flex items-center space-x-4 lg:space-x-6">
+            <div class="hidden lg:flex items-center space-x-8">
                 {% include "partials/_nav_links.html" %}
             </div>
 
-            <div class="hidden md:block ml-4 relative group">
-                <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search">
-                    <label for="desktop-search" class="sr-only">Buscar posts</label>
+            <div class="hidden lg:block ml-4 relative group">
+                <form action="{% url 'posts:search_results' %}" method="get" class="relative" role="search" aria-label="Buscar en el blog">
+                    <label for="desktop-search" class="sr-only">Buscar posts en el blog</label>
                     <input 
                         type="search" 
                         name="q" 
@@ -22,6 +22,7 @@
                         placeholder="Buscar posts..." 
                         class="w-64 pl-12 pr-4 py-3 rounded-2xl bg-white/10 dark:bg-slate-800/50 border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 focus:ring-opacity-50 transition-all duration-500 text-sm backdrop-blur-sm focus:w-80 focus:bg-white/20 dark:focus:bg-slate-800/80 hover:bg-white/15 dark:hover:bg-slate-800/60"
                         autocomplete="off"
+                        aria-describedby="search-help"
                     >
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300 group-focus-within:scale-110" aria-hidden="true">
                         <i data-feather="search" class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500"></i>
@@ -125,10 +126,11 @@
                 </div>
             {% endif %}
 
-            <button id="theme-toggle" type="button" class="p-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 focus-ring group relative overflow-hidden" aria-label="Cambiar tema">
-                <i id="theme-toggle-dark-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="moon"></i>
-                <i id="theme-toggle-light-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="sun"></i>
+            <button id="theme-toggle" type="button" class="p-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-110 focus-ring group relative overflow-hidden" aria-label="Cambiar tema" aria-describedby="theme-toggle-description">
+                <i id="theme-toggle-dark-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="moon" aria-hidden="true"></i>
+                <i id="theme-toggle-light-icon" class="hidden w-5 h-5 transition-transform duration-300 group-hover:rotate-12" data-feather="sun" aria-hidden="true"></i>
                 <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+                <span id="theme-toggle-description" class="sr-only">Alternar entre tema claro y oscuro</span>
             </button>
 
             <!-- Removed hamburger menu toggle button as per user request -->

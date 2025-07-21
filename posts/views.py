@@ -109,7 +109,7 @@ class PostListByTagView(ListView):
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
         tag = get_object_or_404(Tag, slug=tag_slug)
-        return Post.objects.filter(tags__in=[tag], status="published").order_by("-created_at")
+        return Post.objects.filter(tags__in=[tag], status="published").select_related('author', 'author__profile').prefetch_related('tags', 'likes', 'comments').order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -466,15 +466,47 @@ def like_comment(request, pk):
 
 
 @login_required
-def favorite_post(request, slug):
-    post = get_object_or_404(Post, slug=slug)
-    if request.user in post.favorites.all():
-        post.favorites.remove(request.user)
-        favorited = False
-    else:
-        post.favorites.add(request.user)
-        favorited = True
-    return JsonResponse({'favorited': favorited})
+def favorite_post(request, username, slug):
+    """Handle post favorites with consistent URL pattern."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+    
+    try:
+        post = get_object_or_404(Post, author__username=username, slug=slug)
+        
+        # Check if user already favorited the post
+        user_favorited = post.favorites.filter(id=request.user.id).exists()
+        
+        if user_favorited:
+            post.favorites.remove(request.user)
+            favorited = False
+            message = 'Removido de favoritos'
+        else:
+            post.favorites.add(request.user)
+            favorited = True
+            message = 'Agregado a favoritos'
+        
+        return JsonResponse({
+            'success': True,
+            'favorited': favorited,
+            'favorites_count': post.favorites.count(),
+            'message': message
+        })
+        
+    except Post.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Post no encontrado'
+        }, status=404)
+    except Exception as e:
+        # Log error properly
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in favorite_post: {e}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Error interno del servidor'
+        }, status=500)
 
 
 @login_required
@@ -494,8 +526,9 @@ class SearchResultsView(ListView):
         query = self.request.GET.get("q")
         if query:
             return Post.objects.filter(
-                Q(title__icontains=query) | Q(content__icontains=query)
-            ).distinct()
+                Q(title__icontains=query) | Q(content__icontains=query),
+                status="published"
+            ).select_related('author', 'author__profile').prefetch_related('tags', 'likes', 'comments').distinct().order_by('-created_at')
         return Post.objects.none()
 
     def get_context_data(self, **kwargs):

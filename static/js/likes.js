@@ -160,9 +160,11 @@
                 if (data.liked) {
                     icon.classList.add('text-red-500', 'fill-current');
                     button.classList.add('liked');
+                    button.setAttribute('aria-pressed', 'true');
                 } else {
                     icon.classList.remove('text-red-500', 'fill-current');
                     button.classList.remove('liked');
+                    button.setAttribute('aria-pressed', 'false');
                 }
 
                 // Update likes count with animation
