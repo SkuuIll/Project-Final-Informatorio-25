@@ -466,6 +466,7 @@ def like_comment(request, pk):
 
 
 @login_required
+@csrf_exempt
 def favorite_post(request, username, slug):
     """Handle post favorites with consistent URL pattern."""
     if request.method != 'POST':
