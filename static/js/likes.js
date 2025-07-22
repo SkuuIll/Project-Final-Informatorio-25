@@ -222,12 +222,18 @@
 
     // Re-initialize on page changes (for SPA-like behavior)
     window.addEventListener('load', function() {
-        initializeLikeSystem();
-        // Re-initialize Feather icons after DOM changes
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
+        // Small delay to ensure all elements are loaded
+        setTimeout(() => {
+            initializeLikeSystem();
+            // Re-initialize Feather icons after DOM changes
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }, 100);
     });
+
+    // Debug: Log initialization
+    console.log('Likes system script loaded');
 
 })();
 

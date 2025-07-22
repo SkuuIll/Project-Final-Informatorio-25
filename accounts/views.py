@@ -13,11 +13,32 @@ from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, Lo
 import os
 from django.conf import settings
 from django.urls import reverse, reverse_lazy
+from blog.decorators import sensitive_post_limit, user_action_limit
+from blog.ratelimit import get_client_ip
+import logging
+from django.utils.decorators import method_decorator
+
+logger = logging.getLogger('django.security')
 
 
 class CustomLoginView(LoginView):
     form_class = LoginForm
     template_name = "accounts/login.html"
+    
+    @method_decorator(sensitive_post_limit(group='login', rate='5/m'))
+    def post(self, request, *args, **kwargs):
+        # Registrar intento de inicio de sesión
+        ip = get_client_ip(request)
+        username = request.POST.get('username', '')
+        logger.info(
+            f"Intento de inicio de sesión: usuario={username}, ip={ip}",
+            extra={
+                'username': username,
+                'ip': ip,
+                'path': request.path,
+            }
+        )
+        return super().post(request, *args, **kwargs)
 
 User = get_user_model()
 

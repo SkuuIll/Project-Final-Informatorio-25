@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Cuenta Bloqueada{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-lock me-2"></i>Cuenta Bloqueada</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-lock fa-4x text-danger mb-3"></i>
+                        <h5 class="card-title">Tu cuenta ha sido bloqueada temporalmente</h5>
+                        <p class="card-text">
+                            Hemos detectado demasiados intentos fallidos de inicio de sesión.
+                            Por motivos de seguridad, tu cuenta ha sido bloqueada temporalmente.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tiempo restante:</strong> Aproximadamente {{ minutes_remaining }} minutos.
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>¿Qué puedo hacer?</h6>
+                        <ul>
+                            <li>Espera {{ minutes_remaining }} minutos e intenta nuevamente.</li>
+                            <li>Si olvidaste tu contraseña, puedes <a href="{% url 'accounts:password_reset' %}">restablecerla aquí</a>.</li>
+                            <li>Si crees que esto es un error, contacta al <a href="{% url 'contact' %}">soporte técnico</a>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-1"></i> Volver al inicio
+                        </a>
+                        <a href="{% url 'accounts:password_reset' %}" class="btn btn-primary">
+                            <i class="fas fa-key me-1"></i> Restablecer contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

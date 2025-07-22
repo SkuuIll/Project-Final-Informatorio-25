@@ -7,6 +7,14 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django_ckeditor_5 import views as ckeditor_views
+from blog.ratelimit import (
+    api_rate_limit, search_rate_limit, user_action_limit as write_rate_limit,
+    api_rate_limit as sensitive_rate_limit, login_rate_limit as auth_rate_limit
+)
+from blog.ratelimit import get_client_ip
+import logging
+
+logger = logging.getLogger('django.security')
 from django.views.generic import (
     ListView,
     DetailView,
@@ -38,29 +46,42 @@ from django.core.files.storage import default_storage
 
 
 @login_required
+@write_rate_limit(rate='20/minute')
 def upload_image_view(request):
     """
-    Vista para manejar la subida de imágenes desde CKEditor.
+    Vista para manejar la subida de imágenes desde CKEditor con seguridad avanzada.
     """
     if request.method == 'POST' and request.FILES.get('upload'):
         uploaded_file = request.FILES['upload']
         
-        # Validación básica del archivo
-        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-        ext = os.path.splitext(uploaded_file.name)[1].lower()
-        if ext not in allowed_extensions:
-            return JsonResponse({'error': {'message': 'Tipo de archivo no permitido.'}}, status=400)
-            
-        if uploaded_file.size > 8 * 1024 * 1024: # Límite de 8MB
-            return JsonResponse({'error': {'message': 'El archivo es demasiado grande (máx 8MB).'}}, status=400)
-
-        # Guardar el archivo y obtener la URL
-        try:
-            file_path = default_storage.save(f'uploads/posts_content/{uploaded_file.name}', uploaded_file)
-            file_url = default_storage.url(file_path)
+        # Usar el validador seguro
+        from blog.file_utils import SecureFileValidator, secure_save_uploaded_file
+        
+        # Registrar intento de subida
+        ip = get_client_ip(request)
+        logger.info(
+            f"Intento de subida de imagen: {uploaded_file.name}, tamaño={uploaded_file.size}, ip={ip}",
+            extra={
+                'user_id': request.user.id,
+                'ip': ip,
+                'filename': uploaded_file.name,
+                'filesize': uploaded_file.size,
+            }
+        )
+        
+        # Guardar archivo de forma segura
+        success, result = secure_save_uploaded_file(
+            uploaded_file,
+            'uploads/posts_content',
+            validate_func=SecureFileValidator.validate_image,
+            optimize=True
+        )
+        
+        if success:
+            file_url = default_storage.url(result)
             return JsonResponse({'url': file_url})
-        except Exception as e:
-            return JsonResponse({'error': {'message': f'Error al guardar el archivo: {e}'}}, status=500)
+        else:
+            return JsonResponse({'error': {'message': result}}, status=400)
     
     return JsonResponse({'error': {'message': 'Petición no válida.'}}, status=400)
 
@@ -78,12 +99,18 @@ class PostListView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return Post.objects.filter(status="published").select_related('author', 'author__profile').prefetch_related('tags', 'likes', 'comments').order_by("-created_at")
+        # Usar el manager optimizado para eliminar consultas N+1
+        queryset = Post.optimized.get_queryset().published().with_relations().with_stats()
+        
+        # Ordenar con sticky posts primero
+        return queryset.extra(
+            select={'is_sticky_int': 'CASE WHEN is_sticky THEN 0 ELSE 1 END'}
+        ).order_by('is_sticky_int', '-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Get the IDs of the most recent posts that have tags
-        tagged_posts = Post.objects.filter(status="published", tags__isnull=False).order_by('-created_at')
+        tagged_posts = Post.optimized.published().filter(tags__isnull=False).order_by('-created_at')
         # Get the tags from those posts, preserving order and uniqueness
         tag_ids = []
         for post in tagged_posts:
@@ -108,8 +135,8 @@ class PostListByTagView(ListView):
 
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        return Post.objects.filter(tags__in=[tag], status="published").select_related('author', 'author__profile').prefetch_related('tags', 'likes', 'comments').order_by("-created_at")
+        # Usar el manager optimizado para posts con tag específico
+        return Post.optimized.with_tag(tag_slug).with_stats().order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -148,9 +175,12 @@ class TagListView(ListView):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
     lookup_field = "slug"
+    
+    def get_queryset(self):
+        # Usar el manager optimizado para API
+        return Post.objects.filter(status='published').select_related('author').prefetch_related('tags')
 
 
 
@@ -377,13 +407,29 @@ def dashboard_view(request):
 
 @login_required
 @csrf_exempt
+@write_rate_limit(rate='30/minute')
 def like_post(request, username, slug):
     """Handle post likes with proper authentication and error handling."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
+    # Validate user is authenticated (extra check)
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': 'Debes iniciar sesión para dar like'
+        }, status=401)
+    
     try:
-        post = get_object_or_404(Post, author__username=username, slug=slug)
+        # Get post with proper error handling
+        post = get_object_or_404(Post, author__username=username, slug=slug, status='published')
+        
+        # Prevent users from liking their own posts (optional business rule)
+        if post.author == request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'No puedes dar like a tu propio post'
+            }, status=400)
         
         # Check if user already liked the post (more efficient)
         user_liked = post.likes.filter(id=request.user.id).exists()
@@ -396,6 +442,9 @@ def like_post(request, username, slug):
             post.likes.add(request.user)
             liked = True
             message = 'Like agregado correctamente'
+        
+        # Log the action for analytics
+        logger.info(f"User {request.user.username} {'liked' if liked else 'unliked'} post {post.slug}")
         
         return JsonResponse({
             'success': True,
@@ -411,9 +460,7 @@ def like_post(request, username, slug):
         }, status=404)
     except Exception as e:
         # Log error properly
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error in like_post: {e}", exc_info=True)
+        logger.error(f"Error in like_post for user {request.user.username}: {e}", exc_info=True)
         return JsonResponse({
             'success': False,
             'error': 'Error interno del servidor'
@@ -422,13 +469,21 @@ def like_post(request, username, slug):
 
 @login_required
 @csrf_exempt
+@write_rate_limit(rate='30/minute')
 def like_comment(request, pk):
     """Handle comment likes with proper authentication and error handling."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
+    # Validate user is authenticated (extra check)
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': 'Debes iniciar sesión para dar like'
+        }, status=401)
+    
     try:
-        comment = get_object_or_404(Comment, pk=pk)
+        comment = get_object_or_404(Comment, pk=pk, active=True)
         
         # Check if user already liked the comment (more efficient)
         user_liked = comment.likes.filter(id=request.user.id).exists()
@@ -456,8 +511,6 @@ def like_comment(request, pk):
         }, status=404)
     except Exception as e:
         # Log error properly
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Error in like_comment: {e}", exc_info=True)
         return JsonResponse({
             'success': False,
@@ -467,13 +520,21 @@ def like_comment(request, pk):
 
 @login_required
 @csrf_exempt
+@write_rate_limit(rate='30/minute')
 def favorite_post(request, username, slug):
     """Handle post favorites with consistent URL pattern."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
+    # Validate user is authenticated (extra check)
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': 'Debes iniciar sesión para agregar favoritos'
+        }, status=401)
+    
     try:
-        post = get_object_or_404(Post, author__username=username, slug=slug)
+        post = get_object_or_404(Post, author__username=username, slug=slug, status='published')
         
         # Check if user already favorited the post
         user_favorited = post.favorites.filter(id=request.user.id).exists()
@@ -501,8 +562,6 @@ def favorite_post(request, username, slug):
         }, status=404)
     except Exception as e:
         # Log error properly
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Error in favorite_post: {e}", exc_info=True)
         return JsonResponse({
             'success': False,
@@ -521,6 +580,24 @@ def favorite_list(request):
 class SearchResultsView(ListView):
     model = Post
     template_name = "posts/search_results.html"
+    
+    @method_decorator(search_rate_limit(rate='30/m'))
+    def get(self, request, *args, **kwargs):
+        # Registrar búsqueda
+        query = request.GET.get('q', '')
+        ip = get_client_ip(request)
+        
+        if query:
+            logger.info(
+                f"Búsqueda realizada: query='{query}', ip={ip}",
+                extra={
+                    'query': query,
+                    'ip': ip,
+                    'user_id': getattr(request.user, 'id', None),
+                }
+            )
+        
+        return super().get(request, *args, **kwargs)
     context_object_name = "posts"
 
     def get_queryset(self):

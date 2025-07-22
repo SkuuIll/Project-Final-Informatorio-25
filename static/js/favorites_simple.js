@@ -120,6 +120,11 @@
                     'Post removido de favoritos');
                 showToast(message, 'success');
 
+                // Re-initialize Feather icons if available
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+
             } else {
                 throw new Error(data.error || 'Error desconocido');
             }
@@ -139,7 +144,13 @@
 
     // Initialize the system
     function init() {
+        // Remove any existing listeners to prevent duplicates
+        if (document.body.hasAttribute('data-favorites-initialized')) {
+            return;
+        }
+        
         document.addEventListener('click', handleFavoriteClick);
+        document.body.setAttribute('data-favorites-initialized', 'true');
         console.log('Simple favorites system initialized');
     }
 
@@ -149,5 +160,12 @@
     } else {
         init();
     }
+
+    // Re-initialize on page changes
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            init();
+        }, 100);
+    });
 
 })();

@@ -11,6 +11,7 @@ from .views import (
     request_post_permission,
     delete_notifications,
 )
+from .axes_views import locked_out, reset_lockout_view as unlock_user
 
 app_name = "accounts"
 
@@ -72,4 +73,8 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("", include("django.contrib.auth.urls")),
+    
+    # Django-axes URLs
+    path("locked/", locked_out, name="locked_out"),
+    path("unlock/<str:username>/", unlock_user, name="unlock_user"),
 ]

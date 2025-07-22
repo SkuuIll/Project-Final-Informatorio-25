@@ -58,7 +58,10 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "django_extensions",
+    "django_prometheus",
+    "axes",
     # Mis apps
+    "blog",
     "posts",
     "accounts",
 ]
@@ -69,15 +72,40 @@ TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "blog.middleware.SecurityHeadersMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "blog.middleware.ErrorHandlingMiddleware",
+    "django_ratelimit.middleware.RatelimitMiddleware",
+    "axes.middleware.AxesMiddleware",
+    # Middleware de caché después de AuthenticationMiddleware
+    "blog.middleware.cache_middleware.SmartCacheMiddleware",
+    "blog.middleware.cache_middleware.APIResponseCacheMiddleware",
 ]
+
+# Configuración de monitoreo de base de datos
+SLOW_QUERY_THRESHOLD_MS = 100  # Umbral para consultas lentas en ms
+QUERY_COUNT_THRESHOLD = 20     # Umbral para detectar problemas N+1
+MONITOR_DB_QUERIES = not DEBUG  # Monitorear en producción
+
+# Configuración de PgBouncer
+USE_PGBOUNCER = os.environ.get('USE_PGBOUNCER', 'False').lower() in ('true', '1', 't')
+PGBOUNCER_HOST = os.environ.get('PGBOUNCER_HOST', 'localhost')
+PGBOUNCER_PORT = os.environ.get('PGBOUNCER_PORT', '6432')
+
+# Añadir middleware de monitoreo de consultas
+MIDDLEWARE.append("blog.query_monitoring.ComprehensiveQueryMonitoringMiddleware")
+
+# Añadir middleware adicional en modo DEBUG
+if DEBUG:
+    MIDDLEWARE.append("blog.db_middleware.QueryCountDebugMiddleware")
+    MIDDLEWARE.append("blog.db_middleware.SlowQueryLogMiddleware")
+    
+    # Configuración para consultas lentas
+    SLOW_QUERY_THRESHOLD = 0.1  # 100ms
 
 ROOT_URLCONF = "blog.urls"
 
@@ -115,9 +143,51 @@ if os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't'):
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             "OPTIONS": {
                 "charset": "utf8",
+                "connect_timeout": 10,
+                "application_name": "devblog",
+                "client_encoding": "UTF8",
             },
+            # Configuración de conexión optimizada
+            "CONN_MAX_AGE": 60,  # Mantener conexiones abiertas por 60 segundos
+            "CONN_HEALTH_CHECKS": True,  # Verificar salud de conexiones
         }
     }
+    
+    # Configure PgBouncer if enabled
+    if USE_PGBOUNCER:
+        # Override database connection settings to use PgBouncer
+        DATABASES["default"]["HOST"] = PGBOUNCER_HOST
+        DATABASES["default"]["PORT"] = PGBOUNCER_PORT
+        
+        # PgBouncer in transaction pooling mode requires these settings
+        DATABASES["default"]["OPTIONS"]["prepared_statements"] = False
+        
+        # Log that we're using PgBouncer
+        import logging
+        logging.getLogger('django.db.backends').info(
+            f"Using PgBouncer for database connection pooling: {PGBOUNCER_HOST}:{PGBOUNCER_PORT}"
+        )
+    
+    # Configuración para múltiples bases de datos (lectura/escritura)
+    if os.environ.get("POSTGRES_READ_HOST"):
+        DATABASES["read_replica"] = {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "devblog"),
+            "USER": os.environ.get("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRES_READ_HOST"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+            "OPTIONS": {
+                "charset": "utf8",
+            },
+            "CONN_MAX_AGE": 60,
+            "TEST": {
+                "MIRROR": "default",
+            },
+        }
+        
+        # Router de base de datos para separar lecturas/escrituras
+        DATABASE_ROUTERS = ["blog.db_router.ReadReplicaRouter"]
 else:
     # Default to SQLite for development
     DATABASES = {
@@ -158,6 +228,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Configuración de Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Reiniciar worker después de 1000 tareas
+
 
 
 STATIC_URL = "/static/"
@@ -174,6 +253,28 @@ STATICFILES_FINDERS = [
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = DEBUG
 
+# Configuración de caché (necesario para rate limiting)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'devblog',
+        'TIMEOUT': 300,
+    }
+}
+
+# Fallback a cache local si Redis no está disponible
+if not os.environ.get('REDIS_URL'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -189,10 +290,50 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
+    "axes.backends.AxesStandaloneBackend",
 )
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 8388608  # 8 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 8388608  # 8 MB
+
+# Configuración de Rate Limiting
+RATELIMIT_ENABLE = True
+RATELIMIT_USE_CACHE = "default"
+
+# Configuración de protección DDoS
+DDOS_THRESHOLD = os.environ.get('DDOS_THRESHOLD', '100/m')
+DDOS_BLOCK_DURATION = int(os.environ.get('DDOS_BLOCK_DURATION', '3600'))  # 1 hora
+
+# IPs en whitelist para rate limiting
+RATE_LIMIT_WHITELIST_IPS = [
+    '127.0.0.1',
+    '::1',
+]
+
+# User-Agents permitidos (bots legítimos)
+ALLOWED_USER_AGENTS = [
+    'googlebot', 'bingbot', 'slurp', 'duckduckbot',
+    'baiduspider', 'yandexbot', 'facebookexternalhit',
+    'twitterbot', 'linkedinbot'
+]
+
+# User-Agents sospechosos
+SUSPICIOUS_USER_AGENTS = [
+    'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
+    'python-requests', 'python-urllib', 'scrapy', 'mechanize'
+]
+
+# Configuración de django-axes (actualizada para versión 8.0+)
+AXES_FAILURE_LIMIT = 5  # Número de intentos fallidos antes de bloquear
+AXES_COOLOFF_TIME = 1  # Tiempo de bloqueo en horas
+AXES_LOCKOUT_URL = "/accounts/locked/"
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_CALLABLE = 'accounts.axes_views.locked_out'
+AXES_ENABLE_ADMIN = True
+AXES_VERBOSE = True
+AXES_HANDLER = 'axes.handlers.database.AxesDatabaseHandler'
+# Configuración moderna para django-axes 8.0+
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
 
 LOGGING = {
     "version": 1,
@@ -205,6 +346,10 @@ LOGGING = {
         "simple": {
             "format": "{levelname} {message}",
             "style": "{",
+        },
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s %(pathname)s %(lineno)s",
         },
     },
     "handlers": {
@@ -229,6 +374,22 @@ LOGGING = {
             "backupCount": 5,
             "formatter": "verbose",
         },
+        "db_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "db_queries.log"),
+            "maxBytes": 1024*1024*10,  # 10 MB
+            "backupCount": 5,
+            "formatter": "json",
+        },
+        "slow_queries": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "slow_queries.log"),
+            "maxBytes": 1024*1024*5,  # 5 MB
+            "backupCount": 5,
+            "formatter": "json",
+        },
     },
     "root": {
         "handlers": ["console"],
@@ -243,6 +404,16 @@ LOGGING = {
         "django.request": {
             "handlers": ["console", "error_file"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["db_file", "slow_queries"],
+            "level": "DEBUG" if DEBUG else "WARNING",
+            "propagate": False,
+        },
+        "blog.db_monitoring": {
+            "handlers": ["db_file", "slow_queries", "console"],
+            "level": "DEBUG" if DEBUG else "WARNING",
             "propagate": False,
         },
         "posts": {
@@ -435,4 +606,34 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
+}
+
+# Configuración de Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/minute',
+        'anon': '30/minute',
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
 }
