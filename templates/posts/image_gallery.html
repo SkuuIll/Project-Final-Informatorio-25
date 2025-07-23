@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Galería de Imágenes - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .image-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background: white;
+    }
+    
+    .image-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    
+    .image-info {
+        padding: 0.75rem;
+    }
+    
+    .image-filename {
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        word-break: break-all;
+    }
+    
+    .image-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .image-badges {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+    
+    .badge-suitable {
+        background-color: #28a745;
+    }
+    
+    .stats-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-section {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .image-modal .modal-body {
+        padding: 0;
+    }
+    
+    .image-modal img {
+        width: 100%;
+        height: auto;
+    }
+    
+    .select-image-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .image-card:hover .select-image-btn {
+        opacity: 1;
+    }
+    
+    .selected-image {
+        border: 3px solid #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-images"></i> Galería de Imágenes</h1>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="refreshGallery()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ stats.total_images }}</h4>
+                            <small class="text-muted">Total de imágenes</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ stats.suitable_for_cover }}</h4>
+                            <small class="text-muted">Aptas para portada</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">{{ stats.total_size_mb }} MB</h4>
+                            <small class="text-muted">Tamaño total</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">{{ categories|length }}</h4>
+                            <small class="text-muted">Carpetas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtros -->
+            <div class="filter-section">
+                <form method="get" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Buscar</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search_query }}" placeholder="Buscar por nombre...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="folder" class="form-label">Carpeta</label>
+                            <select class="form-control" id="folder" name="folder">
+                                <option value="">Todas las carpetas</option>
+                                {% for folder_name, folder_images in categories.items %}
+                                <option value="{{ folder_name }}" {% if folder_filter == folder_name %}selected{% endif %}>
+                                    {{ folder_name }} ({{ folder_images|length }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="suitable_only" 
+                                       name="suitable_only" value="true" {% if suitable_only %}checked{% endif %}>
+                                <label class="form-check-label" for="suitable_only">
+                                    Solo aptas para portada
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Spinner de carga -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando imágenes...</p>
+            </div>
+            
+            <!-- Galería de imágenes -->
+            {% if images %}
+            <div class="image-gallery" id="imageGallery">
+                {% for image in images %}
+                <div class="image-card" data-image-path="{{ image.path }}">
+                    <div class="position-relative">
+                        <img src="{{ image.url }}" alt="{{ image.filename }}" 
+                             class="image-preview" onclick="showImageModal('{{ image.url }}', '{{ image.filename }}')">
+                        
+                        <button class="btn btn-sm btn-primary select-image-btn" 
+                                onclick="selectImage('{{ image.path }}', '{{ image.url }}', '{{ image.filename }}')">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="image-info">
+                        <div class="image-filename">{{ image.filename }}</div>
+                        <div class="image-meta">
+                            {{ image.dimensions }} • {{ image.size_mb }} MB
+                        </div>
+                        <div class="image-badges">
+                            {% if image.is_suitable_for_cover %}
+                            <span class="badge badge-suitable">Apta para portada</span>
+                            {% endif %}
+                            <span class="badge badge-secondary">{{ image.folder }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginación -->
+            {% if images.has_other_pages %}
+            <nav aria-label="Paginación de imágenes" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if images.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ images.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if folder_filter %}&folder={{ folder_filter }}{% endif %}{% if suitable_only %}&suitable_only=true{% endif %}">
+                            Anterior
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in images.paginator.page_range %}
+                    {% if images.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if folder_filter %}&folder={{ folder_filter }}{% endif %}{% if suitable_only %}&suitable_only=true{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if images.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ images.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if folder_filter %}&folder={{ folder_filter }}{% endif %}{% if suitable_only %}&suitable_only=true{% endif %}">
+                            Siguiente
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-images fa-3x mb-3"></i>
+                <h4>No se encontraron imágenes</h4>
+                <p class="text-muted">
+                    {% if search_query or folder_filter or suitable_only %}
+                    Intenta ajustar los filtros de búsqueda.
+                    {% else %}
+                    No hay imágenes disponibles en las carpetas de AI posts.
+                    {% endif %}
+                </p>
+                {% if not search_query and not folder_filter and not suitable_only %}
+                <p class="text-muted">
+                    Las imágenes se guardan automáticamente cuando generas posts con IA.
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para vista previa de imagen -->
+<div class="modal fade image-modal" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalTitle">Vista previa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <img id="imageModalImg" src="" alt="" class="img-fluid">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="selectFromModal">
+                    <i class="fas fa-check"></i> Seleccionar esta imagen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedImagePath = null;
+let selectedImageUrl = null;
+
+function showImageModal(imageUrl, filename) {
+    document.getElementById('imageModalImg').src = imageUrl;
+    document.getElementById('imageModalTitle').textContent = filename;
+    
+    // Configurar botón de selección
+    document.getElementById('selectFromModal').onclick = function() {
+        const imagePath = document.querySelector(`img[src="${imageUrl}"]`).closest('.image-card').dataset.imagePath;
+        selectImage(imagePath, imageUrl, filename);
+        bootstrap.Modal.getInstance(document.getElementById('imageModal')).hide();
+    };
+    
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+
+function selectImage(imagePath, imageUrl, filename) {
+    // Remover selección anterior
+    document.querySelectorAll('.image-card').forEach(card => {
+        card.classList.remove('selected-image');
+    });
+    
+    // Marcar nueva selección
+    const imageCard = document.querySelector(`[data-image-path="${imagePath}"]`);
+    if (imageCard) {
+        imageCard.classList.add('selected-image');
+    }
+    
+    selectedImagePath = imagePath;
+    selectedImageUrl = imageUrl;
+    
+    // Si estamos en un contexto de selección (modal), notificar al padre
+    if (window.parent && window.parent.onImageSelected) {
+        window.parent.onImageSelected({
+            path: imagePath,
+            url: imageUrl,
+            filename: filename
+        });
+    }
+    
+    // Mostrar notificación
+    showNotification(`Imagen seleccionada: ${filename}`, 'success');
+}
+
+function refreshGallery() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('imageGallery').style.opacity = '0.5';
+    
+    // Recargar la página manteniendo los filtros actuales
+    window.location.reload();
+}
+
+function showNotification(message, type = 'info') {
+    // Crear notificación toast
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto-remover después de 3 segundos
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
+
+// Auto-submit del formulario de filtros con debounce
+let searchTimeout;
+document.getElementById('search').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
+
+// Submit inmediato para otros filtros
+document.getElementById('folder').addEventListener('change', function() {
+    document.getElementById('filterForm').submit();
+});
+
+document.getElementById('suitable_only').addEventListener('change', function() {
+    document.getElementById('filterForm').submit();
+});
+
+// Función para obtener la imagen seleccionada (para uso externo)
+function getSelectedImage() {
+    return {
+        path: selectedImagePath,
+        url: selectedImageUrl
+    };
+}
+</script>
+{% endblock %}

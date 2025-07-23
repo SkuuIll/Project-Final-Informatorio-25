@@ -17,6 +17,8 @@ from .config import ImageGenerationConfig, config
 from .service_registry import ImageGenerationServiceRegistry, registry
 from .gemini_generator import GeminiImageGenerator
 from .openai_generator import OpenAIImageGenerator
+from .prompt_builder import CoverImagePromptBuilder
+from .image_selector import ImageSelector
 
 __all__ = [
     'ImageGenerationService', 
@@ -31,5 +33,7 @@ __all__ = [
     'ImageGenerationServiceRegistry',
     'registry',
     'GeminiImageGenerator',
-    'OpenAIImageGenerator'
+    'OpenAIImageGenerator',
+    'CoverImagePromptBuilder',
+    'ImageSelector'
 ]

@@ -22,6 +22,23 @@ from .views import (
     ai_post_generator_view,
     ai_post_generator_simple_view,
 )
+# from .views.image_views import (
+#     image_gallery_view,
+#     api_get_images,
+#     api_validate_image,
+#     image_selector_modal,
+#     image_preview,
+# )
+# from .prompt_views import (
+#     prompt_list_view,
+#     prompt_create_view,
+#     prompt_edit_view,
+#     prompt_delete_view,
+#     prompt_set_default_view,
+#     prompt_preview_view,
+#     prompt_ajax_get,
+#     prompt_duplicate_view,
+# )
 
 app_name = "posts"
 
@@ -52,4 +69,21 @@ urlpatterns = [
     
     path('generate-ai-post/', ai_post_generator_view, name='ai_post_generator'),
     path('generate-ai-post-simple/', ai_post_generator_simple_view, name='ai_post_generator_simple'),
+    
+    # URLs para gestión de prompts (comentadas temporalmente)
+    # path('admin/prompts/', prompt_list_view, name='prompt_list'),
+    # path('admin/prompts/create/', prompt_create_view, name='prompt_create'),
+    # path('admin/prompts/<int:prompt_id>/edit/', prompt_edit_view, name='prompt_edit'),
+    # path('admin/prompts/<int:prompt_id>/delete/', prompt_delete_view, name='prompt_delete'),
+    # path('admin/prompts/<int:prompt_id>/set-default/', prompt_set_default_view, name='prompt_set_default'),
+    # path('admin/prompts/<int:prompt_id>/duplicate/', prompt_duplicate_view, name='prompt_duplicate'),
+    # path('admin/prompts/preview/', prompt_preview_view, name='prompt_preview'),
+    # path('admin/prompts/ajax/<int:prompt_id>/', prompt_ajax_get, name='prompt_ajax_get'),
+    
+    # URLs para gestión de imágenes (comentadas temporalmente)
+    # path('images/', image_gallery_view, name='image_gallery'),
+    # path('api/images/', api_get_images, name='api_get_images'),
+    # path('api/validate-image/', api_validate_image, name='api_validate_image'),
+    # path('image-selector-modal/', image_selector_modal, name='image_selector_modal'),
+    # path('image-preview/<path:image_path>/', image_preview, name='image_preview'),
 ]

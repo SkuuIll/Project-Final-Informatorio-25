@@ -35,7 +35,12 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE(f'Procesando URL: {url}'))
 
         self.stdout.write(self.style.NOTICE('Generando post completo con IA, incluyendo imágenes...'))
-        result = generate_complete_post(url, COMPLETE_POST_PROMPT, extract_images=True)
+        result = generate_complete_post(
+            url=url, 
+            rewrite_prompt=COMPLETE_POST_PROMPT, 
+            extract_images=True,
+            generate_cover=True
+        )
 
         if not result.get('success'):
             raise CommandError(f"No se pudo generar el post: {result.get('error', 'Error desconocido')}")

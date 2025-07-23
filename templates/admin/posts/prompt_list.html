@@ -1,0 +1,307 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .prompt-list-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .prompt-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #5b9bd5;
+        }
+        
+        .prompt-header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .prompt-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #5b9bd5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4a8ac9;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .filters {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .filters select, .filters input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .prompt-table {
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .prompt-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .prompt-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .prompt-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .prompt-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .prompt-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .prompt-type-content {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .prompt-type-tags {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .prompt-type-image {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .default-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            margin: 0 2px;
+            text-decoration: none;
+            border: 1px solid #dee2e6;
+            color: #5b9bd5;
+        }
+        
+        .pagination .current {
+            background: #5b9bd5;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' 'posts' %}">Posts</a>
+    &rsaquo; <span>Gestión de Prompts de IA</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="prompt-list-container">
+    <div class="prompt-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px; vertical-align: text-bottom;">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 16.5L5 12l1.41-1.41L9.5 13.67l7.59-7.59L18.5 7.5 9.5 16.5z"/>
+            </svg>
+            Gestión de Prompts de IA
+        </h1>
+        <div class="prompt-actions">
+            <a href="{% url 'posts:prompt_preview' %}" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+                Previsualizar
+            </a>
+            <a href="{% url 'posts:prompt_create' %}" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Nuevo Prompt
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="filters">
+        <form method="get" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+            <div>
+                <label for="type">Tipo:</label>
+                <select name="type" id="type" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    {% for value, label in prompt_types %}
+                        <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="flex: 1;">
+                <label for="search">Buscar:</label>
+                <input type="text" name="search" id="search" value="{{ search }}" placeholder="Nombre del prompt...">
+            </div>
+            
+            <button type="submit" class="btn btn-secondary btn-sm">Filtrar</button>
+            {% if current_type or search %}
+                <a href="{% url 'posts:prompt_list' %}" class="btn btn-secondary btn-sm">Limpiar</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Tabla de prompts -->
+    <div class="prompt-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Creado por</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prompt in page_obj %}
+                <tr>
+                    <td>
+                        <strong>{{ prompt.name }}</strong>
+                        {% if prompt.is_default %}
+                            <span class="default-badge">POR DEFECTO</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="prompt-type-badge prompt-type-{{ prompt.prompt_type }}">
+                            {{ prompt.get_prompt_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ prompt.description|truncatechars:50 }}</td>
+                    <td>{{ prompt.created_by.username }}</td>
+                    <td>{{ prompt.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="{% url 'posts:prompt_edit' prompt.id %}" class="btn btn-primary btn-sm">Editar</a>
+                            <a href="{% url 'posts:prompt_duplicate' prompt.id %}" class="btn btn-secondary btn-sm">Duplicar</a>
+                            {% if not prompt.is_default %}
+                                <form method="post" action="{% url 'posts:prompt_set_default' prompt.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">Hacer Defecto</button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'posts:prompt_delete' prompt.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                        No se encontraron prompts.
+                        <br><br>
+                        <a href="{% url 'posts:prompt_create' %}" class="btn btn-primary">Crear el primer prompt</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">&laquo; Primera</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">Anterior</a>
+        {% endif %}
+        
+        <span class="current">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">Siguiente</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">Última &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

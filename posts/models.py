@@ -164,3 +164,43 @@ class AIModel(models.Model):
     class Meta:
         verbose_name = "Modelo de IA"
         verbose_name_plural = "Modelos de IA"
+
+
+class AIPromptTemplate(models.Model):
+    PROMPT_TYPES = [
+        ('content', 'Generación de Contenido'),
+        ('tags', 'Generación de Tags'),
+        ('image', 'Generación de Imagen'),
+    ]
+    
+    name = models.CharField(max_length=100, verbose_name="Nombre del Template")
+    prompt_type = models.CharField(max_length=20, choices=PROMPT_TYPES, verbose_name="Tipo de Prompt")
+    template = models.TextField(verbose_name="Template del Prompt")
+    description = models.TextField(blank=True, verbose_name="Descripción")
+    is_default = models.BooleanField(default=False, verbose_name="Por Defecto")
+    is_active = models.BooleanField(default=True, verbose_name="Activo")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Creado por")
+
+    def __str__(self):
+        return f"{self.name} ({self.get_prompt_type_display()})"
+
+    def save(self, *args, **kwargs):
+        # Solo puede haber un template por defecto por tipo
+        if self.is_default:
+            AIPromptTemplate.objects.filter(
+                prompt_type=self.prompt_type, 
+                is_default=True
+            ).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Template de Prompt de IA"
+        verbose_name_plural = "Templates de Prompts de IA"
+        unique_together = ['name', 'prompt_type']
+        indexes = [
+            models.Index(fields=['prompt_type', 'is_default'], name='prompt_type_default'),
+            models.Index(fields=['is_active'], name='prompt_active'),
+        ]

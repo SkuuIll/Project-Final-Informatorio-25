@@ -56,7 +56,13 @@ class PostAdmin(admin.ModelAdmin):
                 max_images = form.cleaned_data.get('max_images', 5)
 
                 try:
-                    result = generate_complete_post(url, rewrite_prompt, extract_images=extract_images, max_images=max_images)
+                    result = generate_complete_post(
+                        url=url, 
+                        rewrite_prompt=rewrite_prompt, 
+                        extract_images=extract_images, 
+                        max_images=max_images,
+                        generate_cover=True
+                    )
                     if not result.get('success'):
                         self.message_user(request, f"No se pudo generar el post: {result.get('error', 'Error desconocido')}", level=messages.ERROR)
                         return redirect(".")

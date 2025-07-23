@@ -29,7 +29,7 @@ class ImageGenerationConfig:
     # Service-specific default configurations
     SERVICE_DEFAULTS = {
         'gemini': {
-            'model': 'gemini-1.5-flash',
+            'model': 'gemini-2.0-flash-exp',
             'size': '1024x1024',
             'style': 'professional',
         },

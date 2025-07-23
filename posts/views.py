@@ -831,6 +831,8 @@ def _create_ai_post(title, content, tags_list, author, cover_image_url=None):
 
 def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
     """Helper function to generate AI content from URL"""
+    from .prompt_manager import PromptManager
+    
     # Extract content from URL
     url_data = extract_content_from_url(url)
     
@@ -841,6 +843,39 @@ def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
         # Check if using advanced generation
         prompt_type = form_data.get('prompt_type', 'simple') if form_data else 'simple'
         
+        # Debug: mostrar datos del formulario
+        print(f"🔍 Datos del formulario recibidos:")
+        if form_data:
+            for key, value in form_data.items():
+                print(f"   {key}: {value}")
+        
+        # Obtener prompts desde la base de datos si están especificados
+        if form_data:
+            content_template_id = form_data.get('content_prompt_template')
+            tag_template_id = form_data.get('tag_prompt_template')
+            
+            # Usar prompt personalizado para contenido si está especificado
+            if content_template_id:
+                try:
+                    content_template = PromptManager.get_prompt_by_id(int(content_template_id))
+                    rewrite_prompt = content_template.template
+                    print(f"✅ Usando prompt personalizado para contenido: {content_template.name}")
+                except (ValueError, Exception) as e:
+                    # Usar el prompt por defecto si hay error
+                    rewrite_prompt = PromptManager.get_default_prompt('content')
+                    print(f"⚠️ Error con prompt personalizado, usando por defecto: {e}")
+            
+            # Usar prompt personalizado para tags si está especificado
+            if tag_template_id:
+                try:
+                    tag_template = PromptManager.get_prompt_by_id(int(tag_template_id))
+                    tag_prompt = tag_template.template
+                    print(f"✅ Usando prompt personalizado para tags: {tag_template.name}")
+                except (ValueError, Exception) as e:
+                    # Usar el prompt por defecto si hay error
+                    tag_prompt = PromptManager.get_default_prompt('tags')
+                    print(f"⚠️ Error con prompt personalizado, usando por defecto: {e}")
+        
         if prompt_type == 'complete' and form_data:
             # Use advanced function with new image generation options
             extract_images = form_data.get('extract_images', False)
@@ -848,19 +883,22 @@ def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
             
             # New image generation parameters
             generate_cover = form_data.get('generate_cover_image', False)
-            image_service = form_data.get('image_service', 'gemini')
-            image_style = form_data.get('image_style', 'professional')
-            image_size = form_data.get('image_size', '1024x1024')
+            image_style = form_data.get('cover_image_style', 'professional')
+            title = form_data.get('title')
+            
+            print(f"🎨 Parámetros de imagen extraídos:")
+            print(f"   - generate_cover: {generate_cover}")
+            print(f"   - image_style: {image_style}")
+            print(f"   - title: {title}")
             
             result = generate_complete_post(
                 url=url,
                 rewrite_prompt=rewrite_prompt,
                 extract_images=extract_images,
                 max_images=max_images,
+                title=title,
                 generate_cover=generate_cover,
-                image_service=image_service,
-                image_style=image_style,
-                image_size=image_size
+                image_style=image_style
             )
             
             if result['success']:

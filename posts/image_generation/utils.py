@@ -179,13 +179,16 @@ class ImageStorage:
         return f"{prefix}_{unique_id}{ext}"
     
     @classmethod
-    def save_image_from_url(cls, image_url: str, folder: str = None) -> Optional[str]:
+    def save_image_from_url(cls, image_url: str, folder: str = None, min_width: int = 300, min_height: int = 300) -> Optional[str]:
         """
         Download and save an image from URL.
+        Only saves images that meet minimum size requirements.
         
         Args:
             image_url: URL of the image to download
             folder: Storage folder (defaults to DEFAULT_FOLDER)
+            min_width: Minimum image width in pixels
+            min_height: Minimum image height in pixels
             
         Returns:
             Local URL of saved image or None if failed
@@ -200,6 +203,25 @@ class ImageStorage:
             }
             response = requests.get(image_url, headers=headers, timeout=30)
             response.raise_for_status()
+            
+            # Verify image size before saving
+            try:
+                import io
+                image_content = io.BytesIO(response.content)
+                with Image.open(image_content) as img:
+                    width, height = img.size
+                    
+                    # Check minimum size requirements
+                    if width < min_width or height < min_height:
+                        logger.info(f"Image discarded due to insufficient size: {width}x{height} (min: {min_width}x{min_height}) - {image_url}")
+                        return None
+                    
+                    logger.info(f"Valid image found: {width}x{height} - {image_url}")
+                    
+            except Exception as e:
+                logger.warning(f"Could not verify image dimensions for {image_url}: {e}")
+                # Continue with download if we can't verify dimensions
+                pass
             
             # Generate unique filename
             parsed_url = urlparse(image_url)

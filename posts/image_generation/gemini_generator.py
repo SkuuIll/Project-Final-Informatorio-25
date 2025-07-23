@@ -37,7 +37,7 @@ class GeminiImageGenerator(ImageGenerationService):
     def _setup_service(self):
         """Setup Gemini service with API key and model configuration."""
         self.api_key = self.config.get('api_key') or os.getenv('GOOGLE_API_KEY')
-        self.model_name = self.config.get('model', 'gemini-1.5-flash')
+        self.model_name = self.config.get('model', 'gemini-2.0-flash-exp')
         
         if not self.api_key:
             logger.warning("Google API key not configured for image generation")
@@ -295,8 +295,8 @@ class GeminiImageGenerator(ImageGenerationService):
             },
             'model': {
                 'type': 'string',
-                'default': 'gemini-1.5-flash',
-                'options': ['gemini-1.5-flash', 'gemini-1.5-pro'],
+                'default': 'gemini-2.0-flash-exp',
+                'options': ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash'],
                 'description': 'Gemini model to use'
             }
         }

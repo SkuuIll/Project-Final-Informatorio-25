@@ -1,7 +1,8 @@
 from django import forms
-from .models import Post, Comment, AIModel
+from .models import Post, Comment, AIModel, AIPromptTemplate
 from django_ckeditor_5.widgets import CKEditor5Widget
 from .image_generation import registry
+from .prompt_manager import PromptManager
 
 class PostForm(forms.ModelForm):
     class Meta:
@@ -196,6 +197,47 @@ class AiPostGeneratorForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        # Obtener prompts disponibles dinámicamente
+        content_prompts = PromptManager.get_available_prompts('content')
+        tag_prompts = PromptManager.get_available_prompts('tags')
+        
+        # Crear choices para prompts de contenido
+        content_choices = []
+        for prompt in content_prompts:
+            label = f"{prompt.name}"
+            if prompt.is_default:
+                label += " (Por defecto)"
+            content_choices.append((prompt.id, label))
+        
+        # Crear choices para prompts de tags
+        tag_choices = []
+        for prompt in tag_prompts:
+            label = f"{prompt.name}"
+            if prompt.is_default:
+                label += " (Por defecto)"
+            tag_choices.append((prompt.id, label))
+        
+        # Agregar campos de selección de prompts
+        if content_choices:
+            default_content = next((p.id for p in content_prompts if p.is_default), content_choices[0][0])
+            self.fields['content_prompt_template'] = forms.ChoiceField(
+                label="Template de prompt para contenido",
+                choices=content_choices,
+                initial=default_content,
+                required=False,
+                widget=forms.Select(attrs={'class': 'form-control'})
+            )
+        
+        if tag_choices:
+            default_tag = next((p.id for p in tag_prompts if p.is_default), tag_choices[0][0])
+            self.fields['tag_prompt_template'] = forms.ChoiceField(
+                label="Template de prompt para tags",
+                choices=tag_choices,
+                initial=default_tag,
+                required=False,
+                widget=forms.Select(attrs={'class': 'form-control'})
+            )
+        
         # Obtener servicios disponibles dinámicamente
         available_services = registry.get_available_services()
         service_choices = []
@@ -264,3 +306,62 @@ class AiPostGeneratorForm(forms.Form):
             )
         
         return cleaned_data
+
+
+class AIPromptTemplateForm(forms.ModelForm):
+    """Formulario para crear/editar templates de prompts."""
+    
+    class Meta:
+        model = AIPromptTemplate
+        fields = ['name', 'prompt_type', 'template', 'description', 'is_default']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'prompt_type': forms.Select(attrs={'class': 'form-control'}),
+            'template': forms.Textarea(attrs={'class': 'form-control', 'rows': 15}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'is_default': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Agregar ayuda contextual
+        self.fields['template'].help_text = """
+        Variables disponibles según el tipo:
+        • Contenido: {content}, {urls}
+        • Tags: {content}
+        • Imagen: {title}, {keywords}, {style}, {size}
+        """
+        
+        self.fields['is_default'].help_text = "Si se marca, este será el prompt por defecto para su tipo"
+
+
+class PromptPreviewForm(forms.Form):
+    """Formulario para previsualizar prompts con datos de prueba."""
+    
+    template = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 10}),
+        label="Template del Prompt"
+    )
+    
+    # Campos de prueba
+    test_content = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        label="Contenido de prueba",
+        required=False,
+        initial="Este es un artículo sobre inteligencia artificial y machine learning..."
+    )
+    
+    test_title = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label="Título de prueba",
+        required=False,
+        initial="Introducción a la Inteligencia Artificial"
+    )
+    
+    test_keywords = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label="Keywords de prueba",
+        required=False,
+        initial="inteligencia artificial, machine learning, tecnología"
+    )

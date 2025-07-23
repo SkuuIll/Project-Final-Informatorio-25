@@ -1,0 +1,303 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .prompt-form-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #5b9bd5;
+        }
+        
+        .prompt-header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-row label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        
+        .form-row input,
+        .form-row textarea,
+        .form-row select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-row input:focus,
+        .form-row textarea:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: #5b9bd5;
+            box-shadow: 0 0 0 4px rgba(91, 155, 213, 0.2);
+        }
+        
+        .form-row textarea {
+            resize: vertical;
+            min-height: 300px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-row input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #5b9bd5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4a8ac9;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .variables-help {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .variables-help h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        
+        .variables-help ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .variables-help li {
+            margin-bottom: 5px;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .template-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' 'posts' %}">Posts</a>
+    &rsaquo; <a href="{% url 'posts:prompt_list' %}">Gestión de Prompts</a>
+    &rsaquo; <span>{{ title }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="prompt-form-container">
+    <div class="prompt-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px; vertical-align: text-bottom;">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            {{ title }}
+        </h1>
+        <a href="{% url 'posts:prompt_list' %}" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Volver al Listado
+        </a>
+    </div>
+    
+    {% if form.errors %}
+        <div class="error-message">
+            <strong>Por favor corrige los siguientes errores:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                {% for field in form %}
+                    {% if field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ field.errors|join:", " }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3 style="margin-top: 0; color: #5b9bd5;">Información Básica</h3>
+            
+            <div class="form-row">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.help_text %}
+                    <div class="help-text">{{ form.name.help_text }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row">
+                <label for="{{ form.prompt_type.id_for_label }}">{{ form.prompt_type.label }}</label>
+                {{ form.prompt_type }}
+                {% if form.prompt_type.help_text %}
+                    <div class="help-text">{{ form.prompt_type.help_text }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.help_text %}
+                    <div class="help-text">{{ form.description.help_text }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row checkbox-row">
+                {{ form.is_default }}
+                <label for="{{ form.is_default.id_for_label }}">{{ form.is_default.label }}</label>
+                {% if form.is_default.help_text %}
+                    <div class="help-text">{{ form.is_default.help_text }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3 style="margin-top: 0; color: #5b9bd5;">Template del Prompt</h3>
+            
+            <div class="variables-help">
+                <h4>Variables Disponibles</h4>
+                <ul>
+                    <li><strong>Contenido:</strong> {content}, {urls}</li>
+                    <li><strong>Tags:</strong> {content}</li>
+                    <li><strong>Imagen:</strong> {title}, {keywords}, {style}, {size}</li>
+                </ul>
+                <p style="margin: 10px 0 0 0; font-size: 12px;">
+                    <strong>Nota:</strong> Las variables disponibles dependen del tipo de prompt seleccionado.
+                </p>
+            </div>
+            
+            <div class="form-row">
+                <label for="{{ form.template.id_for_label }}">{{ form.template.label }}</label>
+                {{ form.template }}
+                {% if form.template.help_text %}
+                    <div class="help-text">{{ form.template.help_text }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px;">
+            <button type="submit" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                </svg>
+                {{ action }} Prompt
+            </button>
+            <a href="{% url 'posts:prompt_list' %}" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const promptTypeField = document.getElementById('{{ form.prompt_type.id_for_label }}');
+    const templateField = document.getElementById('{{ form.template.id_for_label }}');
+    
+    // Actualizar ayuda de variables cuando cambie el tipo
+    promptTypeField.addEventListener('change', function() {
+        // Aquí podrías agregar lógica para mostrar diferentes variables según el tipo
+        console.log('Tipo de prompt cambiado a:', this.value);
+    });
+    
+    // Auto-resize del textarea
+    templateField.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+});
+</script>
+{% endblock %}
