@@ -264,8 +264,77 @@
             <div class="form-section">
                 <div class="form-section-title">{% translate 'Configuración del Contenido' %}</div>
                 
+            <!-- Nueva sección para generación de imagen de portada -->
             <div class="form-section">
-                <div class="form-section-title">{% translate 'Opciones de Imágenes' %}</div>
+                <div class="form-section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                    {% translate 'Generación de Imagen de Portada' %}
+                </div>
+                
+                <div class="enhanced-form-row" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="{{ form.generate_cover_image.id_for_label }}" style="margin: 0; font-weight: 600; color: #444; display: flex; align-items: center; gap: 8px;">
+                        {{ form.generate_cover_image }}
+                        {{ form.generate_cover_image.label }}
+                        {% if form.generate_cover_image.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                    </label>
+                </div>
+                {% if form.generate_cover_image.help_text %}
+                    <div class="field-help-text" style="margin-left: 30px;">{{ form.generate_cover_image.help_text }}</div>
+                {% endif %}
+                
+                <!-- Opciones de configuración de imagen (se muestran solo si está habilitado) -->
+                <div id="cover-image-options" style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 6px; border-left: 4px solid #5b9bd5;">
+                    <div class="enhanced-form-row">
+                        <label for="{{ form.image_service.id_for_label }}" {% if form.image_service.field.required %}class="required"{% endif %}>
+                            {{ form.image_service.label }}
+                            {% if form.image_service.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                        </label>
+                        {{ form.image_service }}
+                        {% if form.image_service.help_text %}
+                            <div class="field-help-text">{{ form.image_service.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="enhanced-form-row">
+                        <label for="{{ form.image_style.id_for_label }}" {% if form.image_style.field.required %}class="required"{% endif %}>
+                            {{ form.image_style.label }}
+                            {% if form.image_style.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                        </label>
+                        {{ form.image_style }}
+                        {% if form.image_style.help_text %}
+                            <div class="field-help-text">{{ form.image_style.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.image_size %}
+                    <div class="enhanced-form-row">
+                        <label for="{{ form.image_size.id_for_label }}" {% if form.image_size.field.required %}class="required"{% endif %}>
+                            {{ form.image_size.label }}
+                            {% if form.image_size.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                        </label>
+                        {{ form.image_size }}
+                        {% if form.image_size.help_text %}
+                            <div class="field-help-text">{{ form.image_size.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="field-help-text" style="margin-top: 10px; padding: 10px; background: #e8f4fd; border-radius: 4px;">
+                        <strong>💡 Consejo:</strong> La imagen de portada se generará automáticamente basándose en el título y contenido del post. 
+                        El estilo seleccionado influirá en el aspecto visual de la imagen generada.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    {% translate 'Extracción de Imágenes del Contenido' %}
+                </div>
                 <div class="enhanced-form-row" style="display: flex; align-items: center; gap: 10px;">
                     <label for="{{ form.extract_images.id_for_label }}" style="margin: 0; font-weight: 600; color: #444; display: flex; align-items: center; gap: 8px;">
                         {{ form.extract_images }}
@@ -340,6 +409,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const spinner = generateBtn.querySelector('.loading-spinner');
     const btnText = generateBtn.querySelector('.btn-text');
     
+    // Manejo de la visibilidad de opciones de imagen de portada
+    const generateCoverCheckbox = document.getElementById('{{ form.generate_cover_image.id_for_label }}');
+    const coverImageOptions = document.getElementById('cover-image-options');
+    
+    function toggleCoverImageOptions() {
+        if (generateCoverCheckbox && coverImageOptions) {
+            if (generateCoverCheckbox.checked) {
+                coverImageOptions.style.display = 'block';
+                coverImageOptions.style.animation = 'fadeIn 0.3s ease-in';
+            } else {
+                coverImageOptions.style.display = 'none';
+            }
+        }
+    }
+    
+    // Configurar estado inicial
+    toggleCoverImageOptions();
+    
+    // Escuchar cambios en el checkbox
+    if (generateCoverCheckbox) {
+        generateCoverCheckbox.addEventListener('change', toggleCoverImageOptions);
+    }
+    
+    // Manejo del envío del formulario
     form.addEventListener('submit', function(e) {
         // Mostrar estado de carga
         generateBtn.disabled = true;
@@ -360,6 +453,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Validación específica para imagen de portada
+        if (generateCoverCheckbox && generateCoverCheckbox.checked) {
+            const imageService = document.getElementById('{{ form.image_service.id_for_label }}');
+            if (imageService && imageService.value === 'none') {
+                hasErrors = true;
+                imageService.style.borderColor = '#dc3545';
+                
+                // Mostrar mensaje de error específico
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = '<strong>Error:</strong> No se puede generar imagen de portada sin un servicio configurado. Configura al menos un servicio (Gemini, OpenAI, etc.) en las variables de entorno.';
+                form.insertBefore(errorDiv, form.firstChild);
+                
+                // Scroll al error
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
         if (hasErrors) {
             e.preventDefault();
             // Restaurar estado del botón
@@ -369,6 +480,40 @@ document.addEventListener('DOMContentLoaded', function() {
             generateBtn.style.opacity = '1';
         }
     });
+    
+    // Agregar animación CSS para el fade in
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #cover-image-options {
+            transition: all 0.3s ease;
+        }
+        
+        .service-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        
+        .service-status.available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .service-status.unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>
 {% endblock %}

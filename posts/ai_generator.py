@@ -276,7 +276,16 @@ def process_images_in_content(content: str, images_data: list[dict]) -> str:
     
     return re.sub(image_comment_pattern, replace_image_comment, content)
 
-def generate_complete_post(url: str, rewrite_prompt: str, extract_images: bool = True, max_images: int = 5) -> dict:
+def generate_complete_post(
+    url: str, 
+    rewrite_prompt: str, 
+    extract_images: bool = True, 
+    max_images: int = 5,
+    generate_cover: bool = False,
+    image_service: str = 'gemini',
+    image_style: str = 'professional',
+    image_size: str = '1024x1024'
+) -> dict:
     """
     Función principal que combina toda la funcionalidad para generar un post completo.
     """
@@ -309,11 +318,43 @@ def generate_complete_post(url: str, rewrite_prompt: str, extract_images: bool =
     # Procesar imágenes en el contenido
     final_content = process_images_in_content(ai_result['content'], images_data)
     
+    # Generar imagen de portada si está habilitado
+    cover_image_url = None
+    if generate_cover:
+        try:
+            from .image_generation import registry
+            
+            # Obtener el servicio de generación de imágenes
+            service = registry.get_service(image_service)
+            if service and service.is_available():
+                # Crear prompt para imagen de portada
+                cover_prompt = f"Create a professional blog post cover image about: {ai_result['title']}"
+                
+                # Generar imagen
+                success, image_url, error = service.generate_image(
+                    cover_prompt,
+                    style=image_style,
+                    size=image_size
+                )
+                
+                if success and image_url:
+                    cover_image_url = image_url
+                    print(f"Cover image generated successfully: {image_url}")
+                else:
+                    print(f"Failed to generate cover image: {error}")
+            else:
+                print(f"Image service '{image_service}' not available")
+                
+        except Exception as e:
+            print(f"Error generating cover image: {e}")
+            # Continue without cover image
+    
     return {
         'success': True,
         'title': ai_result['title'],
         'content': final_content,
         'tags': ai_result['tags'],
+        'cover_image_url': cover_image_url,
         'original_url': url,
         'extracted_links': url_data['links'],
         'images': images_data,

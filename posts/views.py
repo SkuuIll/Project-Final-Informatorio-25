@@ -763,7 +763,7 @@ def _check_post_permission(user):
     """Helper function to check if user has posting permissions"""
     return user.is_authenticated and user.profile.can_post
 
-def _create_ai_post(title, content, tags_list, author):
+def _create_ai_post(title, content, tags_list, author, cover_image_url=None):
     """Helper function to create AI-generated post"""
     # Handle tags properly
     if isinstance(tags_list, list):
@@ -778,6 +778,47 @@ def _create_ai_post(title, content, tags_list, author):
         status='draft',
         author=author
     )
+    
+    # Handle cover image if provided
+    if cover_image_url:
+        try:
+            from django.core.files.base import ContentFile
+            from django.core.files.storage import default_storage
+            import requests
+            import os
+            from urllib.parse import urlparse
+            
+            # If it's a local URL, convert to file path
+            if cover_image_url.startswith('/media/'):
+                # It's already saved locally, just update the field
+                # Remove /media/ prefix to get the relative path
+                relative_path = cover_image_url.replace('/media/', '')
+                post.header_image = relative_path
+                post.save()
+            else:
+                # It's an external URL, download and save
+                response = requests.get(cover_image_url, timeout=30)
+                response.raise_for_status()
+                
+                # Generate filename
+                parsed_url = urlparse(cover_image_url)
+                filename = f"ai_cover_{post.id}_{os.path.basename(parsed_url.path)}"
+                if not filename.endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                    filename += '.jpg'
+                
+                # Save the image
+                image_content = ContentFile(response.content)
+                saved_path = default_storage.save(f'post_images/{filename}', image_content)
+                
+                # Update post with image
+                post.header_image = saved_path
+                post.save()
+                
+        except Exception as e:
+            # Log error but don't fail the post creation
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error saving cover image for post {post.id}: {e}")
     
     # Add tags if they exist
     if tags_string.strip():
@@ -800,23 +841,34 @@ def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
         # Check if using advanced generation
         prompt_type = form_data.get('prompt_type', 'simple') if form_data else 'simple'
         
-        if prompt_type == 'complete' and form_data and hasattr(form_data, 'extract_images'):
-            # Use advanced function if available
+        if prompt_type == 'complete' and form_data:
+            # Use advanced function with new image generation options
             extract_images = form_data.get('extract_images', False)
             max_images = form_data.get('max_images', 5)
+            
+            # New image generation parameters
+            generate_cover = form_data.get('generate_cover_image', False)
+            image_service = form_data.get('image_service', 'gemini')
+            image_style = form_data.get('image_style', 'professional')
+            image_size = form_data.get('image_size', '1024x1024')
             
             result = generate_complete_post(
                 url=url,
                 rewrite_prompt=rewrite_prompt,
                 extract_images=extract_images,
-                max_images=max_images
+                max_images=max_images,
+                generate_cover=generate_cover,
+                image_service=image_service,
+                image_style=image_style,
+                image_size=image_size
             )
             
             if result['success']:
                 return {
                     'title': result['title'],
                     'content': result['content'],
-                    'tags': result['tags']
+                    'tags': result['tags'],
+                    'cover_image_url': result.get('cover_image_url')
                 }, None
             else:
                 return None, f'Error al generar el post: {result.get("error", "Error desconocido")}'
@@ -834,7 +886,8 @@ def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
             return {
                 'title': title,
                 'content': content,
-                'tags': tags_list
+                'tags': tags_list,
+                'cover_image_url': None
             }, None
             
     except Exception as e:
@@ -869,7 +922,8 @@ def ai_post_generator_view(request):
                     result['title'],
                     result['content'],
                     result['tags'],
-                    request.user
+                    request.user,
+                    result.get('cover_image_url')
                 )
                 
                 messages.success(request, f'Post "{result["title"]}" generado exitosamente!')
@@ -916,7 +970,8 @@ def ai_post_generator_simple_view(request):
                     result['title'],
                     result['content'],
                     result['tags'],
-                    request.user
+                    request.user,
+                    result.get('cover_image_url')
                 )
                 
                 messages.success(request, 'Post generado exitosamente!')
