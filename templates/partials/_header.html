@@ -133,7 +133,9 @@
                 <span id="theme-toggle-description" class="sr-only">Alternar entre tema claro y oscuro</span>
             </button>
 
-            <!-- Removed hamburger menu toggle button as per user request -->
+            <button id="mobile-menu-toggle" type="button" class="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 focus-ring" aria-expanded="false" aria-controls="mobile-menu" aria-label="Abrir menú de navegación">
+                <i data-feather="menu" class="w-6 h-6" aria-hidden="true"></i>
+            </button>
         </div>
     </nav>
 
@@ -161,38 +163,17 @@
             
             {% if not user.is_authenticated %}
                 <div class="pt-4 border-t border-white/20 dark:border-slate-700/50 space-y-3">
-                    <a href="{% url 'accounts:login' %}" class="w-full flex items-center justify-center px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 font-semibold">
+                    <a href="{% url 'accounts:login' %}" class="w-full flex items-center justify-center px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-slate-800/50 font-semibold border border-slate-300 dark:border-slate-600">
+                        <i data-feather="log-in" class="w-4 h-4 mr-2"></i>
                         Iniciar Sesión
                     </a>
                     <a href="{% url 'accounts:register' %}" class="w-full flex items-center justify-center bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg">
+                        <i data-feather="user-plus" class="w-4 h-4 mr-2"></i>
                         Registrarse
                     </a>
                 </div>
             {% endif %}
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
 
-            if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
-                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
-                    userMenu.classList.toggle('hidden');
-                });
-
-                // Optional: Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
-                        userMenu.classList.add('hidden');
-                        userMenuButton.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            }
-        });
-    </script>
 </header>

@@ -97,20 +97,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
 
-    mobileMenuToggle.addEventListener('click', () => {
-        const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
-        mobileMenu.classList.toggle('hidden');
-        mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
-        
-        // Animar el icono
-        const icon = mobileMenuToggle.querySelector('i');
-        if (isExpanded) {
-            icon.setAttribute('data-feather', 'menu');
-        } else {
-            icon.setAttribute('data-feather', 'x');
-        }
-        feather.replace();
-    });
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+            mobileMenu.classList.toggle('hidden');
+            mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
+            
+            // Animar el icono
+            const icon = mobileMenuToggle.querySelector('i');
+            if (isExpanded) {
+                icon.setAttribute('data-feather', 'menu');
+            } else {
+                icon.setAttribute('data-feather', 'x');
+            }
+            feather.replace();
+        });
+
+        // Cerrar menú móvil al hacer clic fuera
+        document.addEventListener('click', (event) => {
+            if (!mobileMenu.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.setAttribute('data-feather', 'menu');
+                feather.replace();
+            }
+        });
+
+        // Cerrar menú móvil con ESC
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && mobileMenuToggle.getAttribute('aria-expanded') === 'true') {
+                mobileMenu.classList.add('hidden');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.setAttribute('data-feather', 'menu');
+                feather.replace();
+                mobileMenuToggle.focus();
+            }
+        });
+    }
 
     // ===== MENÚ DE USUARIO =====
     const userMenuDropdown = document.getElementById('user-menu-dropdown');
