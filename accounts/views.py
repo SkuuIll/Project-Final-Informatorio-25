@@ -25,7 +25,6 @@ class CustomLoginView(LoginView):
     form_class = LoginForm
     template_name = "accounts/login.html"
     
-    @method_decorator(sensitive_post_limit(group='login', rate='5/m'))
     def post(self, request, *args, **kwargs):
         # Registrar intento de inicio de sesión
         ip = get_client_ip(request)

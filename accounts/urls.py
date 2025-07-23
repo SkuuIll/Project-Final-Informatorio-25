@@ -15,8 +15,10 @@ from .axes_views import locked_out, reset_lockout_view as unlock_user
 
 app_name = "accounts"
 
+from blog.decorators import sensitive_post_limit
+
 urlpatterns = [
-    path("login/", CustomLoginView.as_view(), name="login"),
+    path("login/", sensitive_post_limit(group='login', rate='5/m')(CustomLoginView.as_view()), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
     path("@<str:username>/", ProfileView.as_view(), name="profile"),
     path("settings/", settings_view, name="settings"),

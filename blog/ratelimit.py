@@ -12,7 +12,10 @@ from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.core.cache import cache
 from django.conf import settings
+from django.utils.decorators import sync_and_async_middleware
+from asgiref.sync import iscoroutinefunction, markcoroutinefunction
 from blog.ratelimit_config import get_rate_limit, RATELIMIT_TIMEOUTS, PROGRESSIVE_RATELIMIT
+
 
 logger = logging.getLogger('django.security')
 
@@ -85,9 +88,11 @@ def get_cache_key(group, request):
     key = f"ratelimit:{group}:{identifier}"
     return key
 
-def api_rate_limit(group='api_default', rate=None):
+@sync_and_async_middleware
+def api_rate_limit(get_response=None, *, group='api_default', rate=None):
     """
     Decorador para limitar la tasa de solicitudes a endpoints de API.
+    Compatible con vistas síncronas y asíncronas.
     
     Args:
         group: Grupo de rate limiting (para separar límites por tipo de operación)
@@ -95,98 +100,113 @@ def api_rate_limit(group='api_default', rate=None):
               Ejemplos: "100/m" (100 por minuto), "5/s" (5 por segundo)
               Si es None, se usa la configuración del grupo
     """
-    def decorator(view_func):
-        @wraps(view_func)
-        def wrapped_view(request, *args, **kwargs):
-            # Determinar la tasa según el usuario y grupo
-            effective_rate = rate or get_rate_limit(group, request.user)
-            
-            # Parsear la tasa
-            count, period = effective_rate.split('/')
-            count = int(count)
-            
-            # Determinar duración en segundos
-            if period == 's':
-                duration = 1
-            elif period == 'm':
-                duration = 60
-            elif period == 'h':
-                duration = 3600
-            elif period == 'd':
-                duration = 86400
-            else:
-                raise ValueError(f"Unidad de tiempo no válida: {period}")
-            
-            # Generar clave de caché
-            cache_key = get_cache_key(group, request)
-            
-            # Obtener contador actual
-            now = time.time()
-            window_start = int(now - duration)
-            
-            # Estructura en caché: {timestamp1: count1, timestamp2: count2, ...}
-            request_history = cache.get(cache_key, {})
-            
-            # Limpiar entradas antiguas
-            request_history = {ts: count for ts, count in request_history.items() if int(ts) > window_start}
-            
-            # Contar solicitudes en la ventana actual
-            current_count = sum(request_history.values())
-            
-            # Verificar si se excede el límite
-            if current_count >= count:
-                # Verificar si es abuso repetido
-                abuse_key = f"abuse:{group}:{get_client_ip(request)}"
-                abuse_count = cache.get(abuse_key, 0)
-                
-                # Incrementar contador de abuso
-                cache.set(abuse_key, abuse_count + 1, 86400)  # 24 horas
-                
-                # Determinar tiempo de bloqueo según nivel de abuso
-                if PROGRESSIVE_RATELIMIT['enabled']:
-                    # Bloqueo progresivo
-                    block_time = min(
-                        PROGRESSIVE_RATELIMIT['base_timeout'] * (PROGRESSIVE_RATELIMIT['multiplier'] ** abuse_count),
-                        PROGRESSIVE_RATELIMIT['max_timeout']
-                    )
-                else:
-                    # Bloqueo fijo según nivel de abuso
-                    if abuse_count > 5:
-                        block_time = RATELIMIT_TIMEOUTS.get('severe_abuse', 3600)
-                    elif abuse_count > 2:
-                        block_time = RATELIMIT_TIMEOUTS.get('repeated_abuse', 300)
-                    else:
-                        block_time = RATELIMIT_TIMEOUTS.get('default', 60)
-                
-                logger.warning(
-                    f"Rate limit excedido para {group}: {current_count}/{count} solicitudes (abuso #{abuse_count+1})",
-                    extra={
-                        'ip': get_client_ip(request),
-                        'user_id': getattr(request.user, 'id', None),
-                        'group': group,
-                        'path': request.path,
-                        'abuse_count': abuse_count + 1,
-                        'block_time': block_time,
-                    }
-                )
-                return ratelimit_view(request, block_time=block_time)
-            
-            # Actualizar contador
-            current_timestamp = str(int(now))
-            if current_timestamp in request_history:
-                request_history[current_timestamp] += 1
-            else:
-                request_history[current_timestamp] = 1
-            
-            # Guardar en caché
-            cache.set(cache_key, request_history, duration * 2)  # Doble duración para mantener historial
-            
-            # Ejecutar vista
-            return view_func(request, *args, **kwargs)
+    if get_response is None:
+        # Si se usa como decorador con argumentos
+        def decorator(view_func):
+            return api_rate_limit(view_func, group=group, rate=rate)
+        return decorator
+
+    def _check_rate_limit(request):
+        """Función auxiliar para verificar el rate limit"""
+        # Determinar la tasa según el usuario y grupo
+        effective_rate = rate or get_rate_limit(group, getattr(request, 'user', None))
         
-        return wrapped_view
-    
-    return decorator
+        # Parsear la tasa
+        count, period = effective_rate.split('/')
+        count = int(count)
+        
+        # Determinar duración en segundos
+        if period == 's':
+            duration = 1
+        elif period == 'm':
+            duration = 60
+        elif period == 'h':
+            duration = 3600
+        elif period == 'd':
+            duration = 86400
+        else:
+            raise ValueError(f"Unidad de tiempo no válida: {period}")
+        
+        # Generar clave de caché
+        cache_key = get_cache_key(group, request)
+        
+        # Obtener contador actual
+        now = time.time()
+        window_start = int(now - duration)
+        
+        # Estructura en caché: {timestamp1: count1, timestamp2: count2, ...}
+        request_history = cache.get(cache_key, {})
+        
+        # Limpiar entradas antiguas
+        request_history = {ts: count for ts, count in request_history.items() if int(ts) > window_start}
+        
+        # Contar solicitudes en la ventana actual
+        current_count = sum(request_history.values())
+        
+        # Verificar si se excede el límite
+        if current_count >= count:
+            # Verificar si es abuso repetido
+            abuse_key = f"abuse:{group}:{get_client_ip(request)}"
+            abuse_count = cache.get(abuse_key, 0)
+            
+            # Incrementar contador de abuso
+            cache.set(abuse_key, abuse_count + 1, 86400)  # 24 horas
+            
+            # Determinar tiempo de bloqueo según nivel de abuso
+            if PROGRESSIVE_RATELIMIT['enabled']:
+                # Bloqueo progresivo
+                block_time = min(
+                    PROGRESSIVE_RATELIMIT['base_timeout'] * (PROGRESSIVE_RATELIMIT['multiplier'] ** abuse_count),
+                    PROGRESSIVE_RATELIMIT['max_timeout']
+                )
+            else:
+                # Bloqueo fijo según nivel de abuso
+                if abuse_count > 5:
+                    block_time = RATELIMIT_TIMEOUTS.get('severe_abuse', 3600)
+                elif abuse_count > 2:
+                    block_time = RATELIMIT_TIMEOUTS.get('repeated_abuse', 300)
+                else:
+                    block_time = RATELIMIT_TIMEOUTS.get('default', 60)
+            
+            logger.warning(
+                f"Rate limit excedido para {group}: {current_count}/{count} solicitudes (abuso #{abuse_count+1})",
+                extra={
+                    'ip': get_client_ip(request),
+                    'user_id': getattr(request.user, 'id', None),
+                    'group': group,
+                    'path': request.path,
+                    'abuse_count': abuse_count + 1,
+                    'block_time': block_time,
+                }
+            )
+            return ratelimit_view(request, block_time=block_time)
+        
+        # Actualizar contador
+        current_timestamp = str(int(now))
+        if current_timestamp in request_history:
+            request_history[current_timestamp] += 1
+        else:
+            request_history[current_timestamp] = 1
+        
+        # Guardar en caché
+        cache.set(cache_key, request_history, duration * 2)  # Doble duración para mantener historial
+
+    if iscoroutinefunction(get_response):
+        async def middleware(request):
+            response = _check_rate_limit(request)
+            if response:
+                return response
+            return await get_response(request)
+    else:
+        def middleware(request):
+            response = _check_rate_limit(request)
+            if response:
+                return response
+            return get_response(request)
+
+    markcoroutinefunction(middleware)
+    return middleware
+
 
 def search_rate_limit(group='search', rate=None):
     """
