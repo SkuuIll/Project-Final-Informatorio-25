@@ -96,13 +96,9 @@ USE_PGBOUNCER = os.environ.get('USE_PGBOUNCER', 'False').lower() in ('true', '1'
 PGBOUNCER_HOST = os.environ.get('PGBOUNCER_HOST', 'localhost')
 PGBOUNCER_PORT = os.environ.get('PGBOUNCER_PORT', '6432')
 
-# Añadir middleware de monitoreo de consultas
-MIDDLEWARE.append("blog.query_monitoring.ComprehensiveQueryMonitoringMiddleware")
-
-# Añadir middleware adicional en modo DEBUG
-if DEBUG:
-    MIDDLEWARE.append("blog.db_middleware.QueryCountDebugMiddleware")
-    MIDDLEWARE.append("blog.db_middleware.SlowQueryLogMiddleware")
+# Añadir middleware de monitoreo de consultas (versión compatible con async/sync)
+if DEBUG or MONITOR_DB_QUERIES:
+    MIDDLEWARE.append("blog.middleware.async_safe_monitoring.AsyncSafeQueryMonitoringMiddleware")
     
     # Configuración para consultas lentas
     SLOW_QUERY_THRESHOLD = 0.1  # 100ms

@@ -71,11 +71,14 @@
         })
         .then(response => {
             if (response.status === 401 || response.status === 403) {
-                showToast('Debes iniciar sesión para agregar favoritos', 'warning');
-                setTimeout(() => {
-                    window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
-                }, 1500);
-                return Promise.reject('User not authenticated');
+                return response.json().then(data => {
+                    showToast(data.error || 'Debes iniciar sesión para agregar favoritos', 'warning');
+                    setTimeout(() => {
+                        const redirectUrl = data.redirect || '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                    return Promise.reject('User not authenticated');
+                });
             }
             if (!response.ok) {
                 return response.json().then(err => Promise.reject(err.error || 'Server error'));

@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from blog.decorators import ajax_required
 from django_ckeditor_5 import views as ckeditor_views
 from blog.ratelimit import (
     api_rate_limit, search_rate_limit, user_action_limit as write_rate_limit,
@@ -405,31 +406,16 @@ def dashboard_view(request):
 
 
 
-@login_required
+@ajax_required
 @csrf_exempt
-@write_rate_limit(rate='30/minute')
 def like_post(request, username, slug):
     """Handle post likes with proper authentication and error handling."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-    
-    # Validate user is authenticated (extra check)
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            'success': False,
-            'error': 'Debes iniciar sesión para dar like'
-        }, status=401)
     
     try:
         # Get post with proper error handling
         post = get_object_or_404(Post, author__username=username, slug=slug, status='published')
         
-        # Prevent users from liking their own posts (optional business rule)
-        if post.author == request.user:
-            return JsonResponse({
-                'success': False,
-                'error': 'No puedes dar like a tu propio post'
-            }, status=400)
+        # Note: Allowing users to like their own posts for flexibility
         
         # Check if user already liked the post (more efficient)
         user_liked = post.likes.filter(id=request.user.id).exists()
@@ -467,20 +453,10 @@ def like_post(request, username, slug):
         }, status=500)
 
 
-@login_required
+@ajax_required
 @csrf_exempt
-@write_rate_limit(rate='30/minute')
 def like_comment(request, pk):
     """Handle comment likes with proper authentication and error handling."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-    
-    # Validate user is authenticated (extra check)
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            'success': False,
-            'error': 'Debes iniciar sesión para dar like'
-        }, status=401)
     
     try:
         comment = get_object_or_404(Comment, pk=pk, active=True)
@@ -518,20 +494,10 @@ def like_comment(request, pk):
         }, status=500)
 
 
-@login_required
+@ajax_required
 @csrf_exempt
-@write_rate_limit(rate='30/minute')
 def favorite_post(request, username, slug):
     """Handle post favorites with consistent URL pattern."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-    
-    # Validate user is authenticated (extra check)
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            'success': False,
-            'error': 'Debes iniciar sesión para agregar favoritos'
-        }, status=401)
     
     try:
         post = get_object_or_404(Post, author__username=username, slug=slug, status='published')
