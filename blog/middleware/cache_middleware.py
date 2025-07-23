@@ -57,6 +57,10 @@ class SmartCacheMiddleware(MiddlewareMixin):
         if any(request.path.startswith(path) for path in self.no_cache_paths):
             return None
         
+        # No cachear archivos de media
+        if request.path.startswith('/media/'):
+            return None
+        
         # No cachear solicitudes POST
         if request.method != 'GET':
             return None
@@ -112,24 +116,37 @@ class SmartCacheMiddleware(MiddlewareMixin):
         if request.method != 'GET':
             return response
         
+        # No cachear archivos de media (imágenes, etc.)
+        if request.path.startswith('/media/'):
+            return response
+        
+        # No cachear FileResponse (archivos estáticos y media)
+        from django.http import FileResponse
+        if isinstance(response, FileResponse):
+            return response
+        
         # Determinar tiempo de caché
         cache_timeout = self._get_cache_timeout(request.path)
         
         if cache_timeout > 0:
-            # Generar clave de caché
-            cache_key = self._get_cache_key(request)
-            
-            # Preparar datos para caché
-            cache_data = {
-                'content': response.content.decode('utf-8'),
-                'content_type': response.get('Content-Type', 'text/html'),
-                'status_code': response.status_code,
-                'headers': dict(response.items()),
-                'timestamp': time.time(),
-            }
-            
-            # Almacenar en caché
-            cache_page_data(cache_key, cache_data, cache_timeout)
+            try:
+                # Generar clave de caché
+                cache_key = self._get_cache_key(request)
+                
+                # Preparar datos para caché (solo para respuestas HTML/JSON)
+                cache_data = {
+                    'content': response.content.decode('utf-8'),
+                    'content_type': response.get('Content-Type', 'text/html'),
+                    'status_code': response.status_code,
+                    'headers': dict(response.items()),
+                    'timestamp': time.time(),
+                }
+                
+                # Almacenar en caché
+                cache_page_data(cache_key, cache_data, cache_timeout)
+            except (AttributeError, UnicodeDecodeError):
+                # Si no se puede decodificar el contenido, no cachear
+                pass
         
         # Agregar header indicando que no viene del caché
         response['X-Cache'] = 'MISS'
