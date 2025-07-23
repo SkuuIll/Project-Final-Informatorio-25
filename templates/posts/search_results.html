@@ -36,7 +36,13 @@
             <div class="mt-6 flex items-center justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                 <div class="flex items-center gap-2">
                     <i data-feather="file-text" class="w-4 h-4"></i>
-                    <span>{{ posts|length }} resultado{{ posts|length|pluralize:"s" }} encontrado{{ posts|length|pluralize:"s" }}</span>
+                    <span>
+                        {% if is_paginated %}
+                            {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:"s" }} encontrado{{ page_obj.paginator.count|pluralize:"s" }}
+                        {% else %}
+                            {{ posts|length }} resultado{{ posts|length|pluralize:"s" }} encontrado{{ posts|length|pluralize:"s" }}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="w-1 h-1 bg-slate-400 rounded-full"></div>
                 <div class="flex items-center gap-2">
@@ -81,27 +87,50 @@
             {% endfor %}
         </div>
         
+        <!-- Paginación de Django -->
+        {% if is_paginated %}
         <div class="flex justify-center mt-16">
             <nav class="flex items-center gap-2" aria-label="Paginación">
-                <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">
+                {% if page_obj.has_previous %}
+                <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">
                     <i data-feather="chevron-left" class="w-4 h-4"></i>
                     Anterior
-                </button>
+                </a>
+                {% else %}
+                <span class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 dark:text-slate-600 bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 opacity-50 cursor-not-allowed">
+                    <i data-feather="chevron-left" class="w-4 h-4"></i>
+                    Anterior
+                </span>
+                {% endif %}
                 
                 <div class="flex items-center gap-1 mx-4">
-                    <button class="w-10 h-10 text-sm font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg">1</button>
-                    <button class="w-10 h-10 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">2</button>
-                    <button class="w-10 h-10 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">3</button>
-                    <span class="px-2 text-slate-500">...</span>
-                    <button class="w-10 h-10 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">8</button>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="w-10 h-10 text-sm font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg flex items-center justify-center">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?q={{ query }}&page={{ num }}" class="w-10 h-10 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 flex items-center justify-center">{{ num }}</a>
+                        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                            <a href="?q={{ query }}&page={{ num }}" class="w-10 h-10 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 flex items-center justify-center">{{ num }}</a>
+                        {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
+                            <span class="px-2 text-slate-500">...</span>
+                        {% endif %}
+                    {% endfor %}
                 </div>
                 
-                <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">
+                {% if page_obj.has_next %}
+                <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300">
                     Siguiente
                     <i data-feather="chevron-right" class="w-4 h-4"></i>
-                </button>
+                </a>
+                {% else %}
+                <span class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 dark:text-slate-600 bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/50 opacity-50 cursor-not-allowed">
+                    Siguiente
+                    <i data-feather="chevron-right" class="w-4 h-4"></i>
+                </span>
+                {% endif %}
             </nav>
         </div>
+        {% endif %}
         
     {% else %}
         <div class="text-center py-20">

@@ -86,7 +86,11 @@
         
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-600 dark:text-gray-400">
-                Mostrando <span id="visible-count">0</span> de <span id="total-count">{{ object_list|length }}</span> artículos
+                {% if is_paginated %}
+                    Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} artículos
+                {% else %}
+                    Mostrando {{ object_list|length }} artículos
+                {% endif %}
             </p>
             <button id="clear-filters" class="hidden px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                 Limpiar filtros
@@ -117,23 +121,55 @@
             {% endfor %}
         </div>
 
-    <nav id="pagination-controls" class="mt-16 flex items-center justify-between hidden" aria-label="Paginación">
-        <button id="prev-page-btn" class="inline-flex items-center gap-2 pl-3 pr-4 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+    <!-- Paginación de Django -->
+    {% if is_paginated %}
+    <nav class="mt-16 flex items-center justify-between" aria-label="Paginación">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="inline-flex items-center gap-2 pl-3 pr-4 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1">
             <i data-feather="arrow-left" class="w-5 h-5"></i>
             Anterior
-        </button>
+        </a>
+        {% else %}
+        <span class="inline-flex items-center gap-2 pl-3 pr-4 py-3 glass-effect rounded-xl text-gray-400 dark:text-gray-600 font-semibold opacity-50 cursor-not-allowed">
+            <i data-feather="arrow-left" class="w-5 h-5"></i>
+            Anterior
+        </span>
+        {% endif %}
 
         <div class="hidden md:block">
-            <span id="page-indicator" class="px-5 py-3 glass-effect rounded-xl font-medium text-gray-800 dark:text-gray-200 shadow-inner">
-                Página 1 de 1
+            <span class="px-5 py-3 glass-effect rounded-xl font-medium text-gray-800 dark:text-gray-200 shadow-inner">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
             </span>
         </div>
 
-        <button id="next-page-btn" class="inline-flex items-center gap-2 pl-4 pr-3 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+        <!-- Números de página -->
+        <div class="flex items-center space-x-2">
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg font-semibold">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}" class="px-3 py-2 glass-effect rounded-lg text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">{{ num }}</a>
+                {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                    <a href="?page={{ num }}" class="px-3 py-2 glass-effect rounded-lg text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">{{ num }}</a>
+                {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
+                    <span class="px-2 text-gray-400">...</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="inline-flex items-center gap-2 pl-4 pr-3 py-3 glass-effect rounded-xl text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-1">
             Siguiente
             <i data-feather="arrow-right" class="w-5 h-5"></i>
-        </button>
+        </a>
+        {% else %}
+        <span class="inline-flex items-center gap-2 pl-4 pr-3 py-3 glass-effect rounded-xl text-gray-400 dark:text-gray-600 font-semibold opacity-50 cursor-not-allowed">
+            Siguiente
+            <i data-feather="arrow-right" class="w-5 h-5"></i>
+        </span>
+        {% endif %}
     </nav>
+    {% endif %}
 </section>
 
 <div id="loading-spinner" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
@@ -210,18 +246,13 @@
         const totalCountEl = document.getElementById('total-count');
         const clearFiltersBtn = document.getElementById('clear-filters');
         const loadingSpinner = document.getElementById('loading-spinner');
-        const paginationControls = document.getElementById('pagination-controls');
-        const prevPageBtn = document.getElementById('prev-page-btn');
-        const nextPageBtn = document.getElementById('next-page-btn');
-        const pageIndicator = document.getElementById('page-indicator');
+
         
         let state = {
             filter: 'all',
             sort: sortSelect.value,
             view: 'grid',
             searchQuery: '',
-            currentPage: 1,
-            postsPerPage: 12, // Cambiado de 6 a 12
             visiblePosts: [],
         };
         
@@ -240,26 +271,31 @@
                 });
 
                 state.visiblePosts = sortPosts(filteredPosts, state.sort);
-                
-                const paginatedPosts = paginatePosts(state.visiblePosts, state.currentPage, state.postsPerPage);
 
-                postsGrid.innerHTML = '';
-                if (paginatedPosts.length > 0) {
-                    paginatedPosts.forEach(card => postsGrid.appendChild(card));
-                    if (noResultsMessage) noResultsMessage.style.display = 'none';
+                // Mostrar/ocultar posts basado en filtros
+                allPostCards.forEach(card => {
+                    if (state.visiblePosts.includes(card)) {
+                        card.style.display = 'block';
+                        card.classList.remove('hidden-card');
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.add('hidden-card');
+                    }
+                });
+
+                // Mostrar mensaje de "no resultados" si es necesario
+                if (state.visiblePosts.length === 0) {
+                    if (noResultsMessage) {
+                        noResultsMessage.style.display = 'block';
+                    }
                 } else {
                     if (noResultsMessage) {
-                        postsGrid.appendChild(noResultsMessage);
-                        noResultsMessage.style.display = 'block';
+                        noResultsMessage.style.display = 'none';
                     }
                 }
                 
                 updateUICounts();
-                updatePaginationControls();
-                if (typeof feather !== 'undefined') {
-                    feather.replace();
-                }
-
+                
                 // Re-initialize Feather icons
                 if (typeof feather !== 'undefined') {
                     feather.replace();
@@ -287,33 +323,9 @@
             return sorted;
         }
 
-        function paginatePosts(posts, page, postsPerPage) {
-            const start = (page - 1) * postsPerPage;
-            const end = start + postsPerPage;
-            return posts.slice(start, end);
-        }
-
         function updateUICounts() {
-            const totalVisible = state.visiblePosts.length;
-            const paginated = paginatePosts(state.visiblePosts, state.currentPage, state.postsPerPage);
-            visibleCountEl.textContent = paginated.length;
-            totalCountEl.textContent = totalVisible;
-            
             const hasActiveFilters = state.filter !== 'all' || state.searchQuery !== '';
             clearFiltersBtn.classList.toggle('hidden', !hasActiveFilters);
-        }
-        
-        function updatePaginationControls() {
-            const totalPages = Math.ceil(state.visiblePosts.length / state.postsPerPage);
-
-            if (totalPages > 1) {
-                paginationControls.classList.remove('hidden');
-                pageIndicator.textContent = `Página ${state.currentPage} de ${totalPages}`;
-                prevPageBtn.disabled = state.currentPage === 1;
-                nextPageBtn.disabled = state.currentPage === totalPages;
-            } else {
-                paginationControls.classList.add('hidden');
-            }
         }
 
         function toggleView(view) {
@@ -341,7 +353,6 @@
 
         searchInput.addEventListener('input', debounce(e => {
             state.searchQuery = e.target.value.toLowerCase().trim();
-            state.currentPage = 1; 
             render();
         }, 300));
 
@@ -353,29 +364,12 @@
             clickedButton.classList.add('active');
             
             state.filter = clickedButton.dataset.filter;
-            state.currentPage = 1; 
             render();
         });
         
         sortSelect.addEventListener('change', e => {
             state.sort = e.target.value;
-            state.currentPage = 1;
             render();
-        });
-
-        prevPageBtn.addEventListener('click', () => {
-            if (state.currentPage > 1) {
-                state.currentPage--;
-                render();
-            }
-        });
-
-        nextPageBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(state.visiblePosts.length / state.postsPerPage);
-            if (state.currentPage < totalPages) {
-                state.currentPage++;
-                render();
-            }
         });
         
         gridView.addEventListener('click', () => toggleView('grid'));
@@ -387,7 +381,6 @@
             searchInput.value = '';
             filterTagsContainer.querySelector('.active').classList.remove('active');
             filterTagsContainer.querySelector('[data-filter="all"]').classList.add('active');
-            state.currentPage = 1;
             render();
         });
         
@@ -400,7 +393,6 @@
         }
 
         function init() {
-            totalCountEl.textContent = allPostCards.length;
             const savedView = localStorage.getItem('devblog-view-preference');
             if (savedView) {
                 toggleView(savedView);

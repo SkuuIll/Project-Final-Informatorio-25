@@ -47,7 +47,6 @@ from django.core.files.storage import default_storage
 
 
 @login_required
-@write_rate_limit(rate='20/minute')
 def upload_image_view(request):
     """
     Vista para manejar la subida de imágenes desde CKEditor con seguridad avanzada.
@@ -55,49 +54,203 @@ def upload_image_view(request):
     if request.method == 'POST' and request.FILES.get('upload'):
         uploaded_file = request.FILES['upload']
         
-        # Usar el validador seguro
-        from blog.file_utils import SecureFileValidator, secure_save_uploaded_file
-        
-        # Registrar intento de subida
-        ip = get_client_ip(request)
-        logger.info(
-            f"Intento de subida de imagen: {uploaded_file.name}, tamaño={uploaded_file.size}, ip={ip}",
-            extra={
-                'user_id': request.user.id,
-                'ip': ip,
-                'filename': uploaded_file.name,
-                'filesize': uploaded_file.size,
-            }
-        )
-        
-        # Guardar archivo de forma segura
-        success, result = secure_save_uploaded_file(
-            uploaded_file,
-            'uploads/posts_content',
-            validate_func=SecureFileValidator.validate_image,
-            optimize=True
-        )
-        
-        if success:
-            file_url = default_storage.url(result)
-            return JsonResponse({'url': file_url})
-        else:
-            return JsonResponse({'error': {'message': result}}, status=400)
+        try:
+            # Registrar intento de subida
+            ip = get_client_ip(request)
+            logger.info(
+                f"Intento de subida de imagen: {uploaded_file.name}, tamaño={uploaded_file.size}, ip={ip}",
+                extra={
+                    'user_id': request.user.id,
+                    'ip': ip,
+                    'upload_filename': uploaded_file.name,  # Cambiado de 'filename' a 'upload_filename'
+                    'filesize': uploaded_file.size,
+                }
+            )
+            
+            # Validaciones básicas
+            max_size = 5 * 1024 * 1024  # 5MB
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+            
+            # Verificar tamaño
+            if uploaded_file.size > max_size:
+                return JsonResponse({
+                    'error': {'message': f'El archivo es demasiado grande. Máximo permitido: 5MB'}
+                }, status=400)
+            
+            # Verificar tipo de archivo por extensión
+            file_extension = uploaded_file.name.lower().split('.')[-1] if '.' in uploaded_file.name else ''
+            if file_extension not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                return JsonResponse({
+                    'error': {'message': 'Tipo de archivo no permitido. Use JPG, PNG, GIF o WebP'}
+                }, status=400)
+            
+            # Verificar content type
+            if uploaded_file.content_type not in allowed_types:
+                return JsonResponse({
+                    'error': {'message': f'Tipo de contenido no válido: {uploaded_file.content_type}'}
+                }, status=400)
+            
+            # Usar guardado simple y seguro
+            return simple_save_image(uploaded_file)
+                
+        except Exception as e:
+            logger.error(f"Error en upload_image_view: {e}", exc_info=True)
+            return JsonResponse({
+                'error': {'message': 'Error interno del servidor al subir la imagen'}
+            }, status=500)
     
     return JsonResponse({'error': {'message': 'Petición no válida.'}}, status=400)
+
+
+def simple_save_image(uploaded_file):
+    """
+    Función para guardar imágenes de forma simple y segura.
+    """
+    try:
+        import uuid
+        import os
+        from django.core.files.storage import default_storage
+        
+        # Validaciones adicionales
+        if not uploaded_file:
+            return JsonResponse({
+                'error': {'message': 'No se recibió ningún archivo'}
+            }, status=400)
+        
+        # Verificar que el archivo tenga contenido
+        if uploaded_file.size == 0:
+            return JsonResponse({
+                'error': {'message': 'El archivo está vacío'}
+            }, status=400)
+        
+        # Generar nombre único
+        file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+        if not file_extension:
+            file_extension = '.jpg'  # Extensión por defecto
+            
+        safe_filename = f"{uuid.uuid4().hex}{file_extension}"
+        
+        # Crear directorio si no existe
+        upload_dir = "uploads/posts_content"
+        
+        # Guardar archivo
+        file_path = f"{upload_dir}/{safe_filename}"
+        saved_path = default_storage.save(file_path, uploaded_file)
+        
+        # Obtener URL completa
+        file_url = default_storage.url(saved_path)
+        
+        # La URL ya debería ser correcta desde default_storage.url()
+        # No necesitamos hacer absoluta la URL para CKEditor
+        
+        logger.info(f"Imagen guardada exitosamente: {saved_path}, URL: {file_url}")
+        return JsonResponse({'url': file_url})
+        
+    except Exception as e:
+        logger.error(f"Error en simple_save_image: {e}", exc_info=True)
+        return JsonResponse({
+            'error': {'message': f'Error guardando imagen: {str(e)}'}
+        }, status=500)
 
 
 @csrf_exempt
 @login_required
 def custom_upload_file(request):
-    return ckeditor_views.image_upload(request)
+    """
+    Vista personalizada para subida de imágenes en CKEditor5.
+    """
+    # Log de debug para la solicitud
+    logger.info(f"Solicitud de subida de imagen: método={request.method}, usuario={request.user.username}")
+    logger.info(f"Archivos en request: {list(request.FILES.keys())}")
+    
+    if request.method == 'POST' and request.FILES.get('upload'):
+        uploaded_file = request.FILES['upload']
+        
+        # Log detalles del archivo
+        logger.info(f"Archivo recibido: nombre={uploaded_file.name}, tamaño={uploaded_file.size}, tipo={uploaded_file.content_type}")
+        
+        try:
+            # Validaciones básicas
+            max_size = 5 * 1024 * 1024  # 5MB
+            allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif']
+            allowed_content_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/avif']
+            
+            # Verificar tamaño
+            if uploaded_file.size > max_size:
+                logger.warning(f"Archivo demasiado grande: {uploaded_file.size} bytes")
+                return JsonResponse({
+                    'error': {
+                        'message': f'El archivo es demasiado grande ({uploaded_file.size} bytes). Máximo permitido: 5MB'
+                    }
+                }, status=400)
+            
+            # Verificar extensión
+            file_extension = uploaded_file.name.lower().split('.')[-1] if '.' in uploaded_file.name else ''
+            if file_extension not in allowed_extensions:
+                logger.warning(f"Extensión no permitida: {file_extension}")
+                return JsonResponse({
+                    'error': {
+                        'message': f'Tipo de archivo no permitido ({file_extension}). Use JPG, PNG, GIF, WebP o AVIF'
+                    }
+                }, status=400)
+            
+            # Verificar content type
+            if uploaded_file.content_type not in allowed_content_types:
+                logger.warning(f"Content type no permitido: {uploaded_file.content_type}")
+                return JsonResponse({
+                    'error': {
+                        'message': f'Tipo de contenido no válido ({uploaded_file.content_type})'
+                    }
+                }, status=400)
+            
+            # Crear directorio si no existe
+            import os
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Generar nombre único
+            import uuid
+            safe_filename = f"{uuid.uuid4().hex}.{file_extension}"
+            
+            # Guardar archivo
+            file_path = f"uploads/{safe_filename}"
+            logger.info(f"Intentando guardar archivo en: {file_path}")
+            
+            saved_path = default_storage.save(file_path, uploaded_file)
+            logger.info(f"Archivo guardado en: {saved_path}")
+            
+            # Obtener URL completa
+            file_url = default_storage.url(saved_path)
+            logger.info(f"URL generada: {file_url}")
+            
+            # Log exitoso
+            logger.info(f"Imagen subida exitosamente: {saved_path} por usuario {request.user.username}")
+            
+            return JsonResponse({
+                'url': file_url
+            })
+            
+        except Exception as e:
+            logger.error(f"Error subiendo imagen: {e}", exc_info=True)
+            return JsonResponse({
+                'error': {
+                    'message': f'Hubo un problema al subir la imagen: {str(e)}'
+                }
+            }, status=500)
+    
+    logger.warning(f"Solicitud inválida: método={request.method}, archivos={list(request.FILES.keys())}")
+    return JsonResponse({
+        'error': {
+            'message': 'Petición no válida. Método debe ser POST con archivo "upload".'
+        }
+    }, status=400)
    
 
 class PostListView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 6
+    paginate_by = 12  # Aumentado de 6 a 12 posts por página
 
     def get_queryset(self):
         # Usar el manager optimizado para eliminar consultas N+1
@@ -132,7 +285,7 @@ class PostListByTagView(ListView):
     model = Post
     template_name = "posts/post_list.html"
     context_object_name = "object_list"
-    paginate_by = 6
+    paginate_by = 12  # Consistente con PostListView
 
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
@@ -546,6 +699,7 @@ def favorite_list(request):
 class SearchResultsView(ListView):
     model = Post
     template_name = "posts/search_results.html"
+    paginate_by = 12  # Agregar paginación a búsquedas
     
     @method_decorator(search_rate_limit(rate='30/m'))
     def get(self, request, *args, **kwargs):
