@@ -554,7 +554,13 @@
                     <option value="">Todas las carpetas</option>
                     {% for folder in folders %}
                         <option value="{{ folder }}" {% if folder == current_folder %}selected{% endif %}>
-                            {{ folder|default:"Sin carpeta" }}
+                            {% if folder == "root" %}
+                                📁 Raíz de media
+                            {% elif folder == "" %}
+                                📁 Sin carpeta
+                            {% else %}
+                                📁 {{ folder }}
+                            {% endif %}
                         </option>
                     {% endfor %}
                 </select>

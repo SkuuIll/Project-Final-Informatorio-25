@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db.models import Q
-from ..image_generation.image_selector import ImageSelector
+from ..media_image_selector import MediaImageSelector
 from ..utils import safe_get_image_url, validate_image_file
 
 logger = logging.getLogger(__name__)
@@ -32,11 +32,11 @@ def image_gallery_view(request):
     page = request.GET.get('page', 1)
     
     try:
-        # Obtener todas las imágenes
+        # Obtener todas las imágenes de media
         if search_query:
-            images = ImageSelector.search_images(search_query, folder_filter or None)
+            images = MediaImageSelector.search_images(search_query, folder_filter or None)
         else:
-            images = ImageSelector.get_available_images(folder_filter or None)
+            images = MediaImageSelector.get_all_media_images(folder_filter or None)
         
         # Aplicar ordenamiento
         if sort_by == 'name':
@@ -51,13 +51,11 @@ def image_gallery_view(request):
         page_obj = paginator.get_page(page)
         
         # Obtener estadísticas
-        stats = ImageSelector.get_image_stats()
+        stats = MediaImageSelector.get_image_stats()
         
-        # Obtener carpetas disponibles
-        folders = set()
-        for image in images:
-            folders.add(image.get('folder', ''))
-        folders = sorted(list(folders))
+        # Obtener estructura de carpetas
+        folder_structure = MediaImageSelector.get_folder_structure()
+        folders = list(folder_structure.keys())
         
         context = {
             'images': page_obj,
@@ -105,24 +103,14 @@ def delete_image_ajax(request):
                 'error': 'La imagen no existe'
             })
         
-        # Validar que está en una carpeta permitida
-        allowed_folders = [
-            'ai_posts/content/',
-            'ai_posts/covers/',
-            'ai_posts/images/',
-            'post_images/',
-            'uploads/',
-            'images/',
-        ]
+        # Usar el MediaImageSelector para eliminar la imagen
+        success, message = MediaImageSelector.delete_image(image_path)
         
-        if not any(image_path.startswith(folder) for folder in allowed_folders):
+        if not success:
             return JsonResponse({
                 'success': False,
-                'error': 'No se puede eliminar imágenes de esta carpeta'
+                'error': message
             })
-        
-        # Eliminar la imagen
-        default_storage.delete(image_path)
         
         logger.info(f"Imagen eliminada por {request.user.username}: {image_path}")
         
@@ -160,26 +148,17 @@ def bulk_delete_images_ajax(request):
                 'error': 'No se proporcionaron imágenes para eliminar'
             })
         
-        deleted_count = 0
-        errors = []
+        # Usar el MediaImageSelector para eliminación masiva
+        result = MediaImageSelector.bulk_delete_images(image_paths)
         
-        for image_path in image_paths:
-            try:
-                if default_storage.exists(image_path):
-                    default_storage.delete(image_path)
-                    deleted_count += 1
-                else:
-                    errors.append(f"No existe: {image_path}")
-            except Exception as e:
-                errors.append(f"Error con {image_path}: {str(e)}")
-        
-        logger.info(f"Eliminación masiva por {request.user.username}: {deleted_count} imágenes")
+        logger.info(f"Eliminación masiva por {request.user.username}: {result['deleted_count']} imágenes")
         
         return JsonResponse({
             'success': True,
-            'deleted_count': deleted_count,
-            'errors': errors,
-            'message': f'Se eliminaron {deleted_count} imágenes'
+            'deleted_count': result['deleted_count'],
+            'errors': result['errors'],
+            'total_attempted': result['total_attempted'],
+            'message': f'Se eliminaron {result["deleted_count"]} de {result["total_attempted"]} imágenes'
         })
         
     except json.JSONDecodeError:

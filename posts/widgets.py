@@ -449,17 +449,45 @@ class ImageSelectorWidget(forms.ClearableFileInput):
             return mark_safe(error_html)
     
     def get_existing_images(self):
-        """Get list of existing images from various folders, sorted by creation date (newest first)."""
+        """Get list of existing images from media folder, sorted by creation date (newest first)."""
+        try:
+            # Import here to avoid circular imports
+            from .media_image_selector import MediaImageSelector
+            
+            # Get recent images from all media folders
+            all_images = MediaImageSelector.get_recent_images(50)
+            
+            # Convert to the format expected by the widget
+            images = []
+            for img in all_images:
+                images.append({
+                    'path': img['path'],
+                    'url': img['url'],
+                    'name': img['filename'],
+                    'folder': img['folder'],
+                    'modified_time': img['modified_time'],
+                    'size_bytes': img['size_bytes'],
+                    'size_mb': img['size_mb']
+                })
+            
+            # Limit to 30 most recent images for performance
+            return images[:30]
+            
+        except Exception as e:
+            logger.error(f"Error getting images from MediaImageSelector: {e}")
+            # Fallback to original method if there's an error
+            return self._get_images_fallback()
+    
+    def _get_images_fallback(self):
+        """Fallback method for getting images if MediaImageSelector fails."""
         images = []
         
-        # Folders to search for images
+        # Basic folders to search as fallback
         image_folders = [
-            'ai_posts/content/',  # Imágenes extraídas del contenido
-            'ai_posts/covers/',   # Imágenes de portada generadas (si las hay)
-            'ai_posts/images/',   # Imágenes generadas por IA
-            'post_images/',       # Imágenes subidas manualmente
-            'uploads/',           # Otras imágenes subidas
-            'images/',            # Carpeta general de imágenes
+            'ai_posts/',
+            'post_images/',
+            'uploads/',
+            'images/',
         ]
         
         for folder in image_folders:
@@ -472,16 +500,13 @@ class ImageSelectorWidget(forms.ClearableFileInput):
                         if self.is_image_file(file):
                             file_path = os.path.join(folder, file).replace('\\', '/')
                             
-                            # Get file creation/modification time
                             try:
                                 file_stats = default_storage.get_created_time(file_path)
                                 modified_time = file_stats.timestamp() if file_stats else 0
                             except Exception:
-                                # Fallback to current time if can't get file stats
                                 import time
                                 modified_time = time.time()
                             
-                            # Get file size for additional info
                             try:
                                 file_size = default_storage.size(file_path)
                                 size_mb = round(file_size / (1024 * 1024), 2)
@@ -505,8 +530,7 @@ class ImageSelectorWidget(forms.ClearableFileInput):
         # Sort by modification time (newest first)
         images.sort(key=lambda x: x.get('modified_time', 0), reverse=True)
         
-        # Limit to 30 most recent images
-        return images[:30]
+        return images[:20]
     
     def safe_render_existing_images(self, images, input_name):
         """Safely render the grid of existing images with error handling."""
