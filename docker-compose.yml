@@ -1,5 +1,3 @@
-# version: '3.8'  # Comentado para evitar warning
-
 services:
   # Base de datos PostgreSQL
   db:
@@ -11,17 +9,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5433:5432"  # Cambiar puerto para evitar conflictos
+      - "5433:5432"
     restart: unless-stopped
-    shm_size: 128mb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 30s
 
   # Redis para cache y colas
   redis:
@@ -30,6 +25,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -40,12 +36,9 @@ services:
   web:
     build: .
     command: >
-      sh -c "echo 'Esperando base de datos...' &&
-             sleep 10 &&
-             python manage.py migrate &&
+      sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             echo 'Iniciando servidor...' &&
-             python manage.py runserver 0.0.0.0:8000"
+             gunicorn --bind 0.0.0.0:8000 --workers 3 blog.wsgi:application"
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
@@ -53,7 +46,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEBUG=${DEBUG:-False}
+      - DEBUG=False
       - USE_POSTGRESQL=True
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
@@ -61,19 +54,15 @@ services:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - REDIS_URL=redis://redis:6379/0
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-      - USE_X_FORWARDED_HOST=${USE_X_FORWARDED_HOST:-True}
-      - SECURE_PROXY_SSL_HEADER=${SECURE_PROXY_SSL_HEADER}
+      - ALLOWED_HOSTS=127.0.0.1,localhost,proyecto.skulll.site
+      - USE_X_FORWARDED_HOST=True
+      - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    restart: unless-stopped
 
   # Worker Celery para tareas asíncronas
   celery:
@@ -114,19 +103,6 @@ services:
     depends_on:
       - redis
       - celery
-    restart: unless-stopped
-
-  # Nginx para servir archivos estáticos (opcional para producción)
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - static_volume:/app/staticfiles:ro
-      - media_volume:/app/media:ro
-    depends_on:
-      - web
     restart: unless-stopped
 
 volumes:
