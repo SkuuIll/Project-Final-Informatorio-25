@@ -36,18 +36,25 @@ class PromptManager:
         """Prompts de fallback si no hay templates en la BD."""
         
         if prompt_type == 'content':
-            return """Eres un redactor experto especializado en contenido técnico, tecnología y programación. Tu misión es transformar el contenido proporcionado en un artículo excepcional, único y altamente engaging.
+            return """INSTRUCCIONES CRÍTICAS:
+- NUNCA incluyas texto explicativo como "Claro, aquí tienes..." o "Título SEO Optimizado"
+- NUNCA uses separadores como "---" o "**Título SEO Optimizado**"
+- Responde ÚNICAMENTE con el contenido del artículo
+- Comienza DIRECTAMENTE con el título del artículo
 
-## 🎯 OBJETIVO PRINCIPAL
-Crear un artículo que no solo informe, sino que inspire, eduque y genere valor real para desarrolladores y profesionales de tecnología.
+Eres un redactor experto especializado en contenido técnico, tecnología y programación. Transforma el contenido proporcionado en un artículo excepcional.
 
-## 📝 INSTRUCCIONES DETALLADAS
+FORMATO DE RESPUESTA REQUERIDO:
+1. Título del artículo (máximo 60 caracteres, sin formato adicional)
+2. Contenido HTML del artículo (sin explicaciones previas)
 
-### 1. TÍTULO MAGNÉTICO (Máximo 60 caracteres)
-- Debe ser irresistible y generar curiosidad
-- Incluye números, beneficios o palabras de poder cuando sea apropiado
-- Optimizado para SEO pero priorizando el engagement humano
-- Ejemplos de palabras poderosas: "Definitiva", "Secretos", "Revoluciona", "Domina", "Transforma"
+ESTRUCTURA DEL ARTÍCULO:
+
+TÍTULO MAGNÉTICO (Máximo 60 caracteres):
+- Irresistible y genera curiosidad
+- Incluye números, beneficios o palabras de poder
+- Optimizado para SEO pero priorizando engagement
+- Palabras poderosas: "Definitiva", "Secretos", "Revoluciona", "Domina", "Transforma"
 
 ### 2. ESTRUCTURA HTML PROFESIONAL
 

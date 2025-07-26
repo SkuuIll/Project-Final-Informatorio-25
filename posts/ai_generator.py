@@ -129,6 +129,53 @@ def extract_content_from_url(url: str) -> dict:
             'error': f'Error procesando contenido: {str(e)}'
         }
 
+def clean_ai_response(text: str) -> str:
+    """
+    Limpia la respuesta de la IA eliminando texto explicativo innecesario.
+    
+    Args:
+        text: Texto de respuesta de la IA
+        
+    Returns:
+        Texto limpio sin explicaciones innecesarias
+    """
+    import re
+    
+    # Patrones de texto explicativo a eliminar
+    patterns_to_remove = [
+        r'^.*?[Cc]laro,?\s*aquí tienes.*?(?=\n|$)',
+        r'^.*?[Aa]quí está.*?(?=\n|$)',
+        r'^.*?[Aa]quí tienes.*?(?=\n|$)',
+        r'^.*?[Pp]erfecto,?\s*aquí.*?(?=\n|$)',
+        r'^.*?[Ee]ste es.*?(?=\n|$)',
+        r'^.*?[Aa] continuación.*?(?=\n|$)',
+        r'^\s*---+\s*$',  # Separadores
+        r'^\s*\*\*.*?[Tt]ítulo.*?\*\*\s*$',  # **Título SEO Optimizado**
+        r'^\s*\*\*.*?[Oo]ptimizado.*?\*\*\s*$',
+        r'^\s*---+.*?---+\s*$',  # --- Título SEO Optimizado ---
+        r'^.*?siguiendo.*?especificaciones.*?(?=\n|$)',
+        r'^.*?redactado.*?especificaciones.*?(?=\n|$)',
+    ]
+    
+    cleaned_text = text.strip()
+    
+    # Aplicar cada patrón
+    for pattern in patterns_to_remove:
+        cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.MULTILINE | re.IGNORECASE)
+    
+    # Limpiar líneas vacías múltiples
+    cleaned_text = re.sub(r'\n\s*\n\s*\n+', '\n\n', cleaned_text)
+    
+    # Limpiar espacios al inicio y final
+    cleaned_text = cleaned_text.strip()
+    
+    # Si después de limpiar queda muy poco contenido, devolver el original
+    if len(cleaned_text) < len(text) * 0.3:  # Si se perdió más del 70%
+        logger.warning("Limpieza demasiado agresiva, devolviendo texto original")
+        return text.strip()
+    
+    return cleaned_text
+
 def rewrite_content_with_ai(content: str, prompt: str = None, progress_callback=None) -> dict:
     """
     Reescribe el contenido usando IA.
@@ -146,10 +193,16 @@ def rewrite_content_with_ai(content: str, prompt: str = None, progress_callback=
         
         # Prompt por defecto si no se proporciona uno
         if not prompt:
-            prompt = """
-            Reescribe el siguiente contenido de manera profesional y atractiva para un blog de tecnología.
-            Mantén la información técnica precisa pero hazla más accesible.
-            Estructura el contenido con párrafos claros y un flujo lógico.
+            prompt = """INSTRUCCIONES CRÍTICAS:
+- Responde ÚNICAMENTE con el contenido del artículo
+- NO incluyas texto explicativo como "Claro, aquí tienes..." o "Aquí está el artículo"
+- NO uses separadores como "---" o "**Título SEO Optimizado**"
+- Comienza DIRECTAMENTE con el título del artículo
+
+Reescribe el siguiente contenido como un artículo profesional y atractivo para un blog de tecnología.
+Mantén la información técnica precisa pero hazla más accesible.
+Estructura el contenido con párrafos claros y un flujo lógico.
+Usa HTML semántico apropiado (<h2>, <h3>, <p>, <strong>, <em>, <ul>, <li>, etc.).
             """
         
         full_prompt = f"{prompt}\n\nContenido a reescribir:\n{content}"
@@ -162,9 +215,12 @@ def rewrite_content_with_ai(content: str, prompt: str = None, progress_callback=
                 'error': 'No se recibió respuesta del modelo de IA'
             }
         
+        # Limpiar respuesta de texto explicativo innecesario
+        cleaned_content = clean_ai_response(response.text)
+        
         return {
             'success': True,
-            'content': response.text.strip()
+            'content': cleaned_content
         }
         
     except Exception as e:
@@ -189,19 +245,20 @@ def generate_tags_with_ai(content: str, progress_callback=None) -> dict:
         if progress_callback:
             progress_callback("Generando tags con IA...", 70)
         
-        prompt = f"""
-        Analiza el siguiente contenido y genera entre 3 y 6 tags relevantes.
-        Los tags deben ser:
-        - Específicos y relevantes al contenido
-        - En español
-        - Una sola palabra o máximo dos palabras
-        - Relacionados con tecnología, programación o el tema principal
-        
-        Devuelve solo los tags separados por comas, sin explicaciones adicionales.
-        
-        Contenido:
-        {content[:2000]}
-        """
+        prompt = f"""INSTRUCCIONES CRÍTICAS:
+- Responde ÚNICAMENTE con los tags separados por comas
+- NO incluyas explicaciones como "Aquí están los tags:" o "Los tags son:"
+- NO uses numeración ni viñetas
+- Formato exacto: tag1, tag2, tag3, tag4
+
+Analiza el contenido y genera entre 3 y 6 tags relevantes:
+- Específicos y relevantes al contenido
+- En español
+- Una sola palabra o máximo dos palabras
+- Relacionados con tecnología, programación o el tema principal
+
+Contenido:
+{content[:2000]}"""
         
         response = model.generate_content(prompt)
         
@@ -211,10 +268,17 @@ def generate_tags_with_ai(content: str, progress_callback=None) -> dict:
                 'error': 'No se pudieron generar tags'
             }
         
-        # Procesar tags
-        tags_text = response.text.strip()
+        # Limpiar y procesar tags
+        tags_text = clean_ai_response(response.text)
+        
+        # Remover texto explicativo específico de tags
+        import re
+        tags_text = re.sub(r'^.*?tags.*?son:?\s*', '', tags_text, flags=re.IGNORECASE)
+        tags_text = re.sub(r'^.*?aquí.*?tags:?\s*', '', tags_text, flags=re.IGNORECASE)
+        tags_text = re.sub(r'^\d+\.\s*', '', tags_text, flags=re.MULTILINE)  # Remover numeración
+        
         tags = [tag.strip() for tag in tags_text.split(',')]
-        tags = [tag for tag in tags if tag and len(tag) > 1][:6]  # Máximo 6 tags
+        tags = [tag for tag in tags if tag and len(tag) > 1 and not tag.lower().startswith('tag')][:6]
         
         return {
             'success': True,
