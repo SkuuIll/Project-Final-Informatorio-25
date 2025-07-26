@@ -10,7 +10,7 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+      POSTGRES_HOST_AUTH_METHOD: trust
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"  # Cambiar puerto para evitar conflictos
@@ -40,9 +40,12 @@ services:
   web:
     build: .
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "echo 'Esperando base de datos...' &&
+             sleep 10 &&
+             python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 blog.wsgi:application"
+             echo 'Iniciando servidor...' &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
