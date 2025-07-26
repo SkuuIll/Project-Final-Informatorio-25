@@ -93,6 +93,11 @@ django-ipware==6.0.0             # Utilidades para obtener IP del cliente
 python-dotenv==1.1.1             # Carga variables de entorno desde archivo .env
 
 # ================================
+# MONITOREO DE SISTEMA - Recursos y rendimiento
+# ================================
+psutil==6.1.0                    # Monitoreo de procesos y recursos del sistema
+
+# ================================
 # DESARROLLO Y TESTING - Herramientas de desarrollo
 # ================================
 coverage==7.9.2                  # Medición de cobertura de tests
