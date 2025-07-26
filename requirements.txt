@@ -71,7 +71,7 @@ txaio==25.6.1                    # Utilidades para programación asíncrona
 # TAREAS ASÍNCRONAS - Procesamiento en background
 # ================================
 celery==5.3.6                    # Sistema de colas de tareas distribuidas
-redis==5.0.1                     # Base de datos en memoria para cache y colas
+redis==4.6.0                     # Base de datos en memoria para cache y colas
 django-redis==5.4.0              # Integración de Redis con Django
 flower==2.0.1                    # Monitor web para Celery
 
