@@ -188,6 +188,12 @@ class ImageSelectorWidget(forms.ClearableFileInput):
                 
                 <div class="mb-3">
                     <label class="form-label">O seleccionar imagen existente:</label>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Ordenadas por fecha (más recientes primero)
+                            {f' • {len(existing_images)} imágenes disponibles' if existing_images else ''}
+                        </small>
+                    </div>
                     <div class="existing-images-container">
                         <div class="row" id="existing-images-grid">
                             {self.safe_render_existing_images(existing_images, name)}
@@ -305,7 +311,7 @@ class ImageSelectorWidget(forms.ClearableFileInput):
         
         <style>
         .existing-images-container {{
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -319,6 +325,7 @@ class ImageSelectorWidget(forms.ClearableFileInput):
             border-radius: 4px;
             padding: 5px;
             transition: all 0.2s;
+            position: relative;
         }}
         
         .existing-image-item:hover {{
@@ -331,18 +338,92 @@ class ImageSelectorWidget(forms.ClearableFileInput):
             background-color: #d4edda;
         }}
         
+        .image-container {{
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }}
+        
         .existing-image-item img {{
             width: 100%;
-            height: 80px;
+            height: 100px;
             object-fit: cover;
             border-radius: 2px;
+            transition: transform 0.2s;
+        }}
+        
+        .existing-image-item:hover img {{
+            transform: scale(1.05);
+        }}
+        
+        .image-overlay {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+        }}
+        
+        .existing-image-item:hover .image-overlay {{
+            opacity: 1;
+        }}
+        
+        .image-info {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }}
+        
+        .date-info, .size-info {{
+            color: white;
+            font-size: 0.7em;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-weight: 500;
         }}
         
         .existing-image-item .image-name {{
-            font-size: 0.8em;
+            font-size: 0.75em;
             text-align: center;
             margin-top: 5px;
             word-break: break-all;
+            line-height: 1.2;
+            max-height: 2.4em;
+            overflow: hidden;
+            color: #555;
+        }}
+        
+        .existing-image-item:hover .image-name {{
+            color: #007bff;
+            font-weight: 500;
+        }}
+        
+        .existing-image-item.selected .image-name {{
+            color: #28a745;
+            font-weight: 600;
+        }}
+        
+        /* Indicador de imagen reciente */
+        .existing-image-item[data-recent="true"]::before {{
+            content: "Nuevo";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #28a745;
+            color: white;
+            font-size: 0.6em;
+            padding: 2px 4px;
+            border-radius: 2px;
+            z-index: 10;
+            font-weight: 600;
         }}
         </style>
         '''
@@ -368,13 +449,14 @@ class ImageSelectorWidget(forms.ClearableFileInput):
             return mark_safe(error_html)
     
     def get_existing_images(self):
-        """Get list of existing images from various folders."""
+        """Get list of existing images from various folders, sorted by creation date (newest first)."""
         images = []
         
         # Folders to search for images
         image_folders = [
             'ai_posts/content/',  # Imágenes extraídas del contenido
             'ai_posts/covers/',   # Imágenes de portada generadas (si las hay)
+            'ai_posts/images/',   # Imágenes generadas por IA
             'post_images/',       # Imágenes subidas manualmente
             'uploads/',           # Otras imágenes subidas
             'images/',            # Carpeta general de imágenes
@@ -389,18 +471,42 @@ class ImageSelectorWidget(forms.ClearableFileInput):
                     for file in files:
                         if self.is_image_file(file):
                             file_path = os.path.join(folder, file).replace('\\', '/')
+                            
+                            # Get file creation/modification time
+                            try:
+                                file_stats = default_storage.get_created_time(file_path)
+                                modified_time = file_stats.timestamp() if file_stats else 0
+                            except Exception:
+                                # Fallback to current time if can't get file stats
+                                import time
+                                modified_time = time.time()
+                            
+                            # Get file size for additional info
+                            try:
+                                file_size = default_storage.size(file_path)
+                                size_mb = round(file_size / (1024 * 1024), 2)
+                            except Exception:
+                                file_size = 0
+                                size_mb = 0
+                            
                             images.append({
                                 'path': file_path,
                                 'url': default_storage.url(file_path),
                                 'name': file,
-                                'folder': folder
+                                'folder': folder,
+                                'modified_time': modified_time,
+                                'size_bytes': file_size,
+                                'size_mb': size_mb
                             })
             except Exception as e:
-                # Folder doesn't exist or can't be accessed
+                logger.warning(f"Error accessing folder {folder}: {e}")
                 continue
         
-        # Sort by modification time (newest first) if possible
-        return sorted(images, key=lambda x: x['name'], reverse=True)[:20]  # Limit to 20 images
+        # Sort by modification time (newest first)
+        images.sort(key=lambda x: x.get('modified_time', 0), reverse=True)
+        
+        # Limit to 30 most recent images
+        return images[:30]
     
     def safe_render_existing_images(self, images, input_name):
         """Safely render the grid of existing images with error handling."""
@@ -429,11 +535,59 @@ class ImageSelectorWidget(forms.ClearableFileInput):
                     safe_url = image['url'].replace("'", "\\'").replace('"', '\\"')
                     safe_name = image['name'].replace('<', '&lt;').replace('>', '&gt;')
                     
+                    # Format date and size info
+                    date_info = ""
+                    size_info = ""
+                    
+                    if 'modified_time' in image and image['modified_time']:
+                        try:
+                            from datetime import datetime
+                            date_obj = datetime.fromtimestamp(image['modified_time'])
+                            date_info = date_obj.strftime('%d/%m/%Y')
+                        except Exception:
+                            date_info = ""
+                    
+                    if 'size_mb' in image and image['size_mb']:
+                        if image['size_mb'] < 1:
+                            size_info = f"{int(image['size_bytes'] / 1024)}KB"
+                        else:
+                            size_info = f"{image['size_mb']}MB"
+                    
+                    # Create tooltip with additional info
+                    tooltip_info = f"Archivo: {safe_name}"
+                    if date_info:
+                        tooltip_info += f"\\nFecha: {date_info}"
+                    if size_info:
+                        tooltip_info += f"\\nTamaño: {size_info}"
+                    tooltip_info += f"\\nCarpeta: {image.get('folder', 'N/A')}"
+                    
+                    # Check if image is recent (last 24 hours)
+                    is_recent = False
+                    if 'modified_time' in image and image['modified_time']:
+                        try:
+                            import time
+                            current_time = time.time()
+                            # 24 hours = 24 * 60 * 60 = 86400 seconds
+                            is_recent = (current_time - image['modified_time']) < 86400
+                        except Exception:
+                            is_recent = False
+                    
+                    recent_attr = 'data-recent="true"' if is_recent else ''
+                    
                     html_parts.append(f'''
-                    <div class="col-md-3 col-sm-4 col-6 mb-2">
-                        <div class="existing-image-item" onclick="selectExistingImage('{safe_path}', '{safe_url}', '{input_name}')">
-                            <img src="{safe_url}" alt="{safe_name}" loading="lazy"
-                                 onerror="this.parentElement.innerHTML='<div class=\\'text-danger\\' style=\\'padding:10px;text-align:center;\\'>Error<br>cargando<br>imagen</div>'">
+                    <div class="col-md-3 col-sm-4 col-6 mb-3">
+                        <div class="existing-image-item" {recent_attr} onclick="selectExistingImage('{safe_path}', '{safe_url}', '{input_name}')" 
+                             title="{tooltip_info}">
+                            <div class="image-container">
+                                <img src="{safe_url}" alt="{safe_name}" loading="lazy"
+                                     onerror="this.parentElement.innerHTML='<div class=\\'text-danger\\' style=\\'padding:10px;text-align:center;\\'>Error<br>cargando<br>imagen</div>'">
+                                <div class="image-overlay">
+                                    <div class="image-info">
+                                        {f'<small class="date-info">{date_info}</small>' if date_info else ''}
+                                        {f'<small class="size-info">{size_info}</small>' if size_info else ''}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="image-name">{safe_name}</div>
                         </div>
                     </div>
