@@ -9,9 +9,7 @@ from .models import Post, Comment, AIModel
 from .forms import AiPostGeneratorForm
 from .widgets import ImageSelectorWidget
 from .utils import safe_get_image_url, validate_image_file, log_file_error
-from .ai_generator import (
-    generate_complete_post,
-)
+# El import de ai_generator_optimized se hace dinámicamente en la vista
 
 logger = logging.getLogger(__name__)
 
@@ -207,38 +205,54 @@ class PostAdmin(admin.ModelAdmin):
                 url = form.cleaned_data['url']
                 rewrite_prompt = form.cleaned_data['rewrite_prompt']
                 extract_images = form.cleaned_data.get('extract_images', True)
-                max_images = form.cleaned_data.get('max_images', 5)
+                max_images = min(form.cleaned_data.get('max_images', 3), 3)  # Máximo 3 para evitar timeouts
 
                 try:
+                    # Usar generador original con configuración optimizada
+                    from .ai_generator import generate_complete_post
+                    
                     result = generate_complete_post(
                         url=url, 
                         rewrite_prompt=rewrite_prompt, 
                         extract_images=extract_images, 
                         max_images=max_images,
-                        generate_cover=True
+                        generate_cover=False  # Desactivar para evitar timeouts
                     )
+                    
                     if not result.get('success'):
-                        self.message_user(request, f"No se pudo generar el post: {result.get('error', 'Error desconocido')}", level=messages.ERROR)
+                        error_msg = result.get('error', 'Error desconocido')
+                        logger.error(f"Error generando post en admin: {error_msg}")
+                        self.message_user(request, f"No se pudo generar el post: {error_msg}", level=messages.ERROR)
                         return redirect(".")
 
                     title = result.get('title', 'Título no generado')
                     content = result.get('content', '')
                     tags = result.get('tags', [])
+                    reading_time = result.get('reading_time', 5)
 
                     post = Post.objects.create(
                         author=request.user,
                         title=title,
                         content=content,
                         status='draft',
+                        reading_time=reading_time
                     )
+                    
                     if tags:
                         post.tags.add(*tags)
 
+                    logger.info(f"Post generado exitosamente en admin: {post.id} por {request.user.username}")
                     self.message_user(request, "Post generado con éxito como borrador. Ya puedes editarlo.", level=messages.SUCCESS)
                     return redirect("admin:posts_post_change", post.id)
 
+                except TimeoutError:
+                    error_msg = "La generación del post excedió el tiempo límite. Intenta con contenido más corto o sin imágenes."
+                    logger.error(f"Timeout en generación de post admin: {request.user.username}")
+                    self.message_user(request, error_msg, level=messages.ERROR)
+                    return redirect(".")
                 except Exception as e:
-                    self.message_user(request, f"Ocurrió un error: {e}", level=messages.ERROR)
+                    logger.error(f"Error inesperado en generación admin: {e}", exc_info=True)
+                    self.message_user(request, f"Ocurrió un error inesperado: {str(e)}", level=messages.ERROR)
                     return redirect(".")
         else:
             form = AiPostGeneratorForm()
@@ -246,7 +260,7 @@ class PostAdmin(admin.ModelAdmin):
         context = dict(
            self.admin_site.each_context(request),
            form=form,
-           title="Generar Post con IA",
+           title="Generar Post con IA (Optimizado)",
         )
         return render(request, "admin/posts/post/ai_generator.html", context)
 
