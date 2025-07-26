@@ -50,7 +50,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEBUG=False
+      - DEBUG=${DEBUG:-False}
       - USE_POSTGRESQL=True
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
@@ -58,6 +58,9 @@ services:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - REDIS_URL=redis://redis:6379/0
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - USE_X_FORWARDED_HOST=${USE_X_FORWARDED_HOST:-True}
+      - SECURE_PROXY_SSL_HEADER=${SECURE_PROXY_SSL_HEADER}
     depends_on:
       db:
         condition: service_healthy
