@@ -133,11 +133,48 @@ gunicorn==23.0.0                # Servidor WSGI
 ## 🚀 Instalación
 
 ### 📋 **Requisitos Previos**
-- Python 3.12+
-- pip (gestor de paquetes de Python)
-- Git
+- **Opción 1 (Docker)**: Docker y Docker Compose
+- **Opción 2 (Local)**: Python 3.12+, pip, Git
 
-### 💻 **Instalación Local**
+### 🐳 **Opción 1: Docker (Recomendado para Producción)**
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
+cd Project-Final-Informatorio-25
+
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
+
+# 3. Construir y levantar servicios
+docker-compose up -d --build
+
+# 4. El sistema estará disponible en:
+# - Aplicación: http://localhost:8000
+# - Admin: http://localhost:8000/admin (admin/admin123)
+# - Flower (Monitor Celery): http://localhost:5555
+```
+
+### 🛠️ **Desarrollo con Docker**
+
+```bash
+# Para desarrollo (con hot reload)
+docker-compose -f docker-compose.dev.yml up --build
+
+# Ver logs
+docker-compose logs -f web
+
+# Ejecutar comandos Django
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py shell
+
+# Parar servicios
+docker-compose down
+```
+
+### 💻 **Opción 2: Instalación Local**
 
 ```bash
 # 1. Clonar el repositorio
@@ -156,7 +193,7 @@ pip install -r requirements.txt
 
 # 4. Configurar variables de entorno
 cp .env.example .env
-# Editar .env con tus configuraciones (ver sección de configuración)
+# Editar .env con tus configuraciones
 
 # 5. Ejecutar migraciones
 python manage.py migrate
@@ -170,9 +207,11 @@ python manage.py runserver
 # 🎉 ¡Listo! Visita http://localhost:8000
 ```
 
-### 🔑 **Acceso al Admin**
-- URL: `http://localhost:8000/admin/`
-- Usa las credenciales del superusuario que creaste
+### 🔑 **Acceso por Defecto**
+- **Aplicación**: `http://localhost:8000`
+- **Admin**: `http://localhost:8000/admin/`
+- **Docker**: admin/admin123 (creado automáticamente)
+- **Local**: Usa las credenciales del superusuario que creaste
 
 ---
 
@@ -186,13 +225,16 @@ SECRET_KEY=tu-clave-super-secreta-aqui
 DEBUG=True  # False en producción
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Base de Datos (SQLite por defecto)
-USE_POSTGRESQL=False  # True para usar PostgreSQL
+# Base de Datos
+USE_POSTGRESQL=False  # True para Docker/Producción
 POSTGRES_DB=devblog
 POSTGRES_USER=devblog_user
-POSTGRES_PASSWORD=password-seguro
-POSTGRES_HOST=localhost
+POSTGRES_PASSWORD=devblog_password
+POSTGRES_HOST=localhost  # 'db' para Docker
 POSTGRES_PORT=5432
+
+# Redis (para Docker/Producción)
+REDIS_URL=redis://localhost:6379/0  # redis://redis:6379/0 para Docker
 
 # Servicios de IA
 GOOGLE_API_KEY=tu-api-key-de-gemini-aqui
@@ -206,6 +248,16 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=tu-email@gmail.com
 EMAIL_HOST_PASSWORD=tu-app-password
+```
+
+### 🐳 **Configuración para Docker**
+
+Para usar Docker, asegúrate de configurar:
+```env
+USE_POSTGRESQL=True
+POSTGRES_HOST=db
+REDIS_URL=redis://redis:6379/0
+DEBUG=False  # Para producción
 ```
 
 ### 🔑 **Obtener API Key de Google Gemini**

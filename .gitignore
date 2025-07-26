@@ -69,3 +69,7 @@ node_modules/
 
 # Kiro IDE
 .kiro/
+
+# Docker
+.docker/
+docker-compose.override.yml
