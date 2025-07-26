@@ -138,7 +138,6 @@ if os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't'):
             "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             "OPTIONS": {
-                "charset": "utf8",
                 "connect_timeout": 10,
                 "application_name": "devblog",
                 "client_encoding": "UTF8",
@@ -174,7 +173,7 @@ if os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't'):
             "HOST": os.environ.get("POSTGRES_READ_HOST"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             "OPTIONS": {
-                "charset": "utf8",
+                "client_encoding": "UTF8",
             },
             "CONN_MAX_AGE": 60,
             "TEST": {
