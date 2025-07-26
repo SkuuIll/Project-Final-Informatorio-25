@@ -1,112 +1,104 @@
+version: '3.8'
+
 services:
-  # Base de datos PostgreSQL
   db:
-    image: postgres:14-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+    image: postgres:15
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: devblog
+      POSTGRES_USER: devblog_user
+      POSTGRES_PASSWORD: devblog_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
-    restart: unless-stopped
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U devblog_user -d devblog"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
 
-  # Redis para cache y colas
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Aplicación Django
   web:
     build: .
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 --workers 3 blog.wsgi:application"
-    volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+      - media_files:/app/media
+      - static_files:/app/staticfiles
     environment:
-      - DEBUG=False
-      - USE_POSTGRESQL=True
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-      - ALLOWED_HOSTS=127.0.0.1,localhost,proyecto.skulll.site
-      - USE_X_FORWARDED_HOST=True
-      - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
+      - ENVIRONMENT=production
+    env_file:
+      - .env.docker
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py initialize_tag_system --calculate-cooccurrence --create-history &&
+             gunicorn blog.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
-  # Worker Celery para tareas asíncronas
   celery:
     build: .
-    command: celery -A blog worker -l info
     volumes:
       - .:/app
-      - media_volume:/app/media
+      - media_files:/app/media
     environment:
-      - DEBUG=False
-      - USE_POSTGRESQL=True
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+    env_file:
+      - .env.docker
     depends_on:
-      - db
-      - redis
-    restart: unless-stopped
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A blog worker -l info
 
-  # Monitor Flower para Celery
+  celery-beat:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - ENVIRONMENT=production
+    env_file:
+      - .env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A blog beat -l info
+
   flower:
     build: .
-    command: celery -A blog flower --port=5555
     ports:
       - "5555:5555"
+    volumes:
+      - .:/app
     environment:
-      - DEBUG=False
-      - USE_POSTGRESQL=True
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+    env_file:
+      - .env.docker
     depends_on:
       - redis
-      - celery
-    restart: unless-stopped
+    command: celery -A blog flower --port=5555
 
 volumes:
   postgres_data:
   redis_data:
-  static_volume:
-  media_volume:
+  media_files:
+  static_files:

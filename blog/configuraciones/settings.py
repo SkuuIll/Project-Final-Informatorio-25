@@ -21,8 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
-# Cargar variables de entorno desde .env
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+# Detectar entorno y cargar variables apropiadas
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
+
+# Cargar variables de entorno desde el archivo apropiado
+if ENVIRONMENT == 'production' or os.path.exists('/.dockerenv'):
+    # Estamos en Docker o producción
+    env_file = os.path.join(BASE_DIR, ".env.docker")
+    if os.path.exists(env_file):
+        load_dotenv(env_file)
+    else:
+        load_dotenv(os.path.join(BASE_DIR, ".env"))
+else:
+    # Desarrollo local
+    load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-fallback-key")
 
@@ -60,6 +72,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_prometheus",
     "axes",
+
     # Mis apps
     "blog",
     "posts",
@@ -127,27 +140,43 @@ WSGI_APPLICATION = "blog.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# Use PostgreSQL in production, SQLite for development
-if os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't'):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB", "devblog"),
-            "USER": os.environ.get("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "OPTIONS": {
-                "connect_timeout": 10,
-                "application_name": "devblog",
-                "client_encoding": "UTF8",
-            },
-            # Configuración de conexión optimizada
-            "CONN_MAX_AGE": 60,  # Mantener conexiones abiertas por 60 segundos
-            "CONN_HEALTH_CHECKS": True,  # Verificar salud de conexiones
-        }
-    }
+# Configuración de base de datos según el entorno
+def configure_database():
+    """Configura la base de datos según el entorno."""
+    use_postgresql = os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't')
     
+    if use_postgresql or ENVIRONMENT == 'production' or os.path.exists('/.dockerenv'):
+        # Usar PostgreSQL en producción/Docker
+        return {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.environ.get("POSTGRES_DB", "devblog"),
+                "USER": os.environ.get("POSTGRES_USER", "postgres"),
+                "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+                "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+                "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+                "OPTIONS": {
+                    "connect_timeout": 10,
+                    "application_name": "devblog",
+                    "client_encoding": "UTF8",
+                },
+                # Configuración de conexión optimizada
+                "CONN_MAX_AGE": 60,  # Mantener conexiones abiertas por 60 segundos
+                "CONN_HEALTH_CHECKS": True,  # Verificar salud de conexiones
+            }
+        }
+    else:
+        # Usar SQLite en desarrollo local
+        return {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+
+DATABASES = configure_database()
+# Configuración adicional para PostgreSQL en producción
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     # Configure PgBouncer if enabled
     if USE_PGBOUNCER:
         # Override database connection settings to use PgBouncer
@@ -183,14 +212,6 @@ if os.environ.get('USE_POSTGRESQL', 'False').lower() in ('true', '1', 't'):
         
         # Router de base de datos para separar lecturas/escrituras
         DATABASE_ROUTERS = ["blog.db_router.ReadReplicaRouter"]
-else:
-    # Default to SQLite for development
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
 
 
 # Password validation
@@ -224,8 +245,31 @@ USE_I18N = True
 USE_TZ = True
 
 # Configuración de Celery
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+def configure_celery():
+    """Configura Celery según el entorno."""
+    redis_url = os.environ.get('REDIS_URL')
+    
+    if redis_url and (ENVIRONMENT == 'production' or os.path.exists('/.dockerenv')):
+        # Usar Redis para Celery en producción/Docker
+        return {
+            'CELERY_BROKER_URL': os.environ.get('CELERY_BROKER_URL', redis_url.replace('/1', '/0')),
+            'CELERY_RESULT_BACKEND': os.environ.get('CELERY_RESULT_BACKEND', redis_url.replace('/1', '/0')),
+            'CELERY_TASK_ALWAYS_EAGER': False,
+            'CELERY_TASK_EAGER_PROPAGATES': False,
+        }
+    else:
+        # Ejecutar tareas síncronamente en desarrollo
+        return {
+            'CELERY_TASK_ALWAYS_EAGER': True,
+            'CELERY_TASK_EAGER_PROPAGATES': True,
+            'CELERY_BROKER_URL': 'memory://',
+            'CELERY_RESULT_BACKEND': 'cache+memory://',
+        }
+
+# Aplicar configuración de Celery
+celery_config = configure_celery()
+for key, value in celery_config.items():
+    globals()[key] = value
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos
@@ -249,23 +293,45 @@ WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = DEBUG
 
 # Configuración de caché (necesario para rate limiting)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
-        'KEY_PREFIX': 'devblog',
-        'TIMEOUT': 300,
-    }
-}
-
-# Fallback a cache local si Redis no está disponible
-if not os.environ.get('REDIS_URL'):
-    CACHES = {
+def configure_cache():
+    """Configura el sistema de caché según el entorno."""
+    redis_url = os.environ.get('REDIS_URL')
+    
+    if redis_url and (ENVIRONMENT == 'production' or os.path.exists('/.dockerenv')):
+        # Usar Redis en producción/Docker
+        try:
+            return {
+                'default': {
+                    'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                    'LOCATION': redis_url,
+                    'KEY_PREFIX': 'devblog',
+                    'TIMEOUT': 300,
+                    'OPTIONS': {
+                        'CONNECTION_POOL_KWARGS': {
+                            'retry_on_timeout': True,
+                            'socket_connect_timeout': 5,
+                            'socket_timeout': 5,
+                            'max_connections': 20,
+                        }
+                    }
+                }
+            }
+        except Exception as e:
+            print(f"Warning: Redis no disponible, usando caché local: {e}")
+    
+    # Fallback a caché local
+    return {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
+            'LOCATION': 'devblog-cache',
+            'TIMEOUT': 300,
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+            }
         }
     }
+
+CACHES = configure_cache()
 
 
 MEDIA_URL = "/media/"

@@ -1,39 +1,36 @@
-# Usar imagen oficial de Python
+# Usar Python 3.12 como base
 FROM python:3.12-slim
 
 # Establecer variables de entorno
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Establecer directorio de trabajo
-WORKDIR /app
+ENV ENVIRONMENT=production
 
 # Instalar dependencias del sistema
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        postgresql-client \
-        build-essential \
-        libpq-dev \
-        libmagic1 \
-        git \
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
 
 # Copiar requirements y instalar dependencias Python
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código del proyecto
+# Copiar código de la aplicación
 COPY . /app/
 
-# Crear directorio para archivos de media
-RUN mkdir -p /app/media/post_images /app/media/ai_posts
+# Crear directorios necesarios
+RUN mkdir -p /app/media /app/staticfiles /app/logs
 
-# Recopilar archivos estáticos
-RUN python manage.py collectstatic --noinput
+# Configurar permisos
+RUN chmod +x /app/manage_environment.py
 
 # Exponer puerto
 EXPOSE 8000
 
 # Comando por defecto
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "blog.wsgi:application"]
+CMD ["gunicorn", "blog.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]

@@ -136,32 +136,35 @@ gunicorn==23.0.0                # Servidor WSGI
 - **Opción 1 (Docker)**: Docker y Docker Compose
 - **Opción 2 (Local)**: Python 3.12+, pip, Git
 
-### 🐳 **Opción 1: Docker (Recomendado para Producción)**
+### ⚡ **Inicio Rápido**
 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
 cd Project-Final-Informatorio-25
 
-# 2. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus configuraciones
+# 2. Inicio automático (detecta el entorno)
+python start.py
+```
 
-# 3. Construir y levantar servicios
+### 🐳 **Opción 1: Docker (Recomendado para Producción)**
+
+```bash
+# 1. Configurar para producción
+python manage_environment.py prod
+
+# 2. Construir y levantar servicios
 docker-compose up -d --build
 
-# 4. El sistema estará disponible en:
+# 3. El sistema estará disponible en:
 # - Aplicación: http://localhost:8000
-# - Admin: http://localhost:8000/admin (admin/admin123)
+# - Admin: http://localhost:8000/admin
 # - Flower (Monitor Celery): http://localhost:5555
 ```
 
-### 🛠️ **Desarrollo con Docker**
+### 🛠️ **Comandos Docker Útiles**
 
 ```bash
-# Para desarrollo (con hot reload)
-docker-compose -f docker-compose.dev.yml up --build
-
 # Ver logs
 docker-compose logs -f web
 
@@ -170,48 +173,69 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py createsuperuser
 docker-compose exec web python manage.py shell
 
+# Reinicializar sistema de tags
+docker-compose exec web python manage.py initialize_tag_system --calculate-cooccurrence --create-history
+
 # Parar servicios
 docker-compose down
 ```
 
-### 💻 **Opción 2: Instalación Local**
+### 💻 **Opción 2: Desarrollo Local**
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
-cd Project-Final-Informatorio-25
-
-# 2. Crear y activar entorno virtual
+# 1. Crear y activar entorno virtual
 python -m venv venv
 # Windows:
 venv\Scripts\activate
 # Linux/Mac:
 source venv/bin/activate
 
-# 3. Instalar dependencias
+# 2. Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus configuraciones
+# 3. Configurar para desarrollo
+python manage_environment.py dev
 
-# 5. Ejecutar migraciones
+# 4. Iniciar servidor (automático)
+python start.py
+
+# O manualmente:
 python manage.py migrate
-
-# 6. Crear superusuario
 python manage.py createsuperuser
-
-# 7. Ejecutar servidor de desarrollo
 python manage.py runserver
-
-# 🎉 ¡Listo! Visita http://localhost:8000
 ```
+
+### 🔧 **Gestión de Entornos**
+
+```bash
+# Ver entorno actual
+python manage_environment.py status
+
+# Cambiar a desarrollo (completo con IA)
+python manage_environment.py dev
+
+# Cambiar a mínimo (solo tags inteligentes, sin IA)
+python manage_environment.py minimal
+
+# Cambiar a producción (Docker)
+python manage_environment.py prod
+
+# Verificar si está en Docker
+python manage_environment.py check
+```
+
+### 📦 **Configuraciones Disponibles**
+
+| Configuración | Base de Datos | Caché | IA | Tags Inteligentes | Uso |
+|---------------|---------------|-------|----|--------------------|-----|
+| **Desarrollo** | SQLite | Local | ✅ | ✅ | Desarrollo completo |
+| **Mínimo** | SQLite | Local | ❌ | ✅ | Solo sistema de tags |
+| **Producción** | PostgreSQL | Redis | ✅ | ✅ | Docker/VPS |
 
 ### 🔑 **Acceso por Defecto**
 - **Aplicación**: `http://localhost:8000`
 - **Admin**: `http://localhost:8000/admin/`
-- **Docker**: admin/admin123 (creado automáticamente)
-- **Local**: Usa las credenciales del superusuario que creaste
+- **Crear superusuario**: `python manage.py createsuperuser`
 
 ---
 
