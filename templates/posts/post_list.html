@@ -59,28 +59,13 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <label for="sort-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Ordenar por:</label>
-                    <select id="sort-select" class="px-3 py-2 glass-effect rounded-lg border-0 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-900 dark:text-gray-100">
-                        <option value="-created_at">Más reciente</option>
-                        <option value="created_at">Más antiguo</option>
-                        <option value="likes">Más populares</option>
-                        <option value="views">Más vistos</option>
-                        <option value="comments">Más comentados</option>
-                        <option value="title">Título A-Z</option>
-                        <option value="-title">Título Z-A</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <button id="grid-view" class="p-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Vista en cuadrícula" aria-pressed="true">
-                        <i data-feather="grid" class="w-4 h-4"></i>
-                    </button>
-                    <button id="list-view" class="p-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Vista en lista" aria-pressed="false">
-                        <i data-feather="list" class="w-4 h-4"></i>
-                    </button>
-                </div>
+            <div class="flex items-center gap-2">
+                <button id="grid-view" class="p-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Vista en cuadrícula" aria-pressed="true">
+                    <i data-feather="grid" class="w-4 h-4"></i>
+                </button>
+                <button id="list-view" class="p-2 glass-effect rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors" aria-label="Vista en lista" aria-pressed="false">
+                    <i data-feather="list" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
         
@@ -221,10 +206,7 @@
         animation: slideInUp 0.6s ease-out;
     }
 
-    select#sort-select option {
-        background: #1f2937; 
-        color: #f3f4f6;
-    }
+
 </style>
 
 {% load static %}
@@ -239,7 +221,6 @@
         const allPostCards = Array.from(document.querySelectorAll('.post-card-wrapper'));
         const noResultsMessage = document.getElementById('no-results-message');
         const postsGrid = document.getElementById('posts-grid');
-        const sortSelect = document.getElementById('sort-select');
         const gridView = document.getElementById('grid-view');
         const listView = document.getElementById('list-view');
         const visibleCountEl = document.getElementById('visible-count');
@@ -250,7 +231,6 @@
         
         let state = {
             filter: 'all',
-            sort: sortSelect.value,
             view: 'grid',
             searchQuery: '',
             visiblePosts: [],
@@ -270,7 +250,7 @@
                     return matchesFilter && matchesSearch;
                 });
 
-                state.visiblePosts = sortPosts(filteredPosts, state.sort);
+                state.visiblePosts = filteredPosts;
 
                 // Mostrar/ocultar posts basado en filtros
                 allPostCards.forEach(card => {
@@ -305,23 +285,7 @@
             }, 150);
         }
 
-        function sortPosts(posts, sortBy) {
-            const sorted = [...posts]; 
-            switch(sortBy) {
-                case 'created_at':
-                    sorted.sort((a, b) => new Date(a.dataset.date) - new Date(b.dataset.date));
-                    break;
-                case 'title':
-                    sorted.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
-                    break;
-                case '-title':
-                    sorted.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
-                    break;
-                default:
-                    sorted.sort((a, b) => new Date(b.dataset.date) - new Date(a.dataset.date));
-            }
-            return sorted;
-        }
+
 
         function updateUICounts() {
             const hasActiveFilters = state.filter !== 'all' || state.searchQuery !== '';
@@ -364,11 +328,6 @@
             clickedButton.classList.add('active');
             
             state.filter = clickedButton.dataset.filter;
-            render();
-        });
-        
-        sortSelect.addEventListener('change', e => {
-            state.sort = e.target.value;
             render();
         });
         

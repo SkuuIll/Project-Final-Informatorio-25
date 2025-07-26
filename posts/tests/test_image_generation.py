@@ -242,13 +242,9 @@ class TestImageGenerationConfig(TestCase):
         self.assertIn('default_service', config)
         self.assertIn('fallback_enabled', config)
         self.assertIn('max_retries', config)
-        self.assertEqual(config['default_service'], 'openai')
+        self.assertEqual(config['default_service'], 'gemini')
     
-    @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
-    def test_get_available_services_with_openai(self):
-        """Test getting available services with OpenAI configured."""
-        services = ImageGenerationConfig.get_available_services()
-        self.assertIn('openai', services)
+
     
     @patch.dict(os.environ, {'STABILITY_API_KEY': 'test-key'})
     def test_get_available_services_with_stability(self):
@@ -262,27 +258,15 @@ class TestImageGenerationConfig(TestCase):
             services = ImageGenerationConfig.get_available_services()
             self.assertEqual(services, [])
     
-    def test_validate_service_config_openai_missing_key(self):
-        """Test validation of OpenAI config without API key."""
-        with patch.dict(os.environ, {}, clear=True):
-            is_valid, error = ImageGenerationConfig.validate_service_config('openai')
-            self.assertFalse(is_valid)
-            self.assertIn('API key not configured', error)
-    
-    @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
-    def test_validate_service_config_openai_valid(self):
-        """Test validation of valid OpenAI config."""
-        is_valid, error = ImageGenerationConfig.validate_service_config('openai')
-        self.assertTrue(is_valid)
-        self.assertIsNone(error)
+
     
     def test_get_fallback_services(self):
         """Test getting fallback services."""
         with patch.object(ImageGenerationConfig, 'get_available_services') as mock_available:
-            mock_available.return_value = ['openai', 'stability']
+            mock_available.return_value = ['gemini', 'stability']
             
-            fallbacks = ImageGenerationConfig.get_fallback_services('openai')
+            fallbacks = ImageGenerationConfig.get_fallback_services('gemini')
             self.assertEqual(fallbacks, ['stability'])
             
             fallbacks = ImageGenerationConfig.get_fallback_services('stability')
-            self.assertEqual(fallbacks, ['openai'])
+            self.assertEqual(fallbacks, ['gemini'])

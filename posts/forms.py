@@ -1,7 +1,7 @@
 from django import forms
 from .models import Post, Comment, AIModel, AIPromptTemplate
 from django_ckeditor_5.widgets import CKEditor5Widget
-from .image_generation import registry
+from .image_services import registry
 from .prompt_manager import PromptManager
 
 class PostForm(forms.ModelForm):
@@ -128,8 +128,6 @@ Título SEO Optimizado
 <p>Más contenido...</p>
 <!-- IMAGEN SUGERIDA: Captura de pantalla mostrando la interfaz de la herramienta -->
 <p>Continúa el contenido...</p>
----TAGS---
-tag1, tag2, tag3, tag4, tag5
 
 **CONTENIDO ORIGINAL A REESCRIBIR:**
 {content}
@@ -186,13 +184,7 @@ class AiPostGeneratorForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
     
-    # Nuevas opciones para generación de imagen de portada
-    generate_cover_image = forms.BooleanField(
-        label="Generar imagen de portada automáticamente",
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    )
+
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -238,73 +230,11 @@ class AiPostGeneratorForm(forms.Form):
                 widget=forms.Select(attrs={'class': 'form-control'})
             )
         
-        # Obtener servicios disponibles dinámicamente
-        available_services = registry.get_available_services()
-        service_choices = []
-        
-        if available_services:
-            for service_name in available_services:
-                service = registry.get_service(service_name)
-                if service:
-                    service_choices.append((service_name, service.get_service_name()))
-        
-        # Si no hay servicios disponibles, mostrar mensaje
-        if not service_choices:
-            service_choices = [('none', 'No hay servicios disponibles')]
-        
-        # Agregar campo de servicio de imagen dinámicamente
-        self.fields['image_service'] = forms.ChoiceField(
-            label="Servicio de generación de imágenes",
-            choices=service_choices,
-            required=False,
-            initial=service_choices[0][0] if service_choices else 'none',
-            widget=forms.Select(attrs={'class': 'form-control'})
-        )
-        
-        # Campo de estilo de imagen
-        self.fields['image_style'] = forms.ChoiceField(
-            label="Estilo de imagen",
-            choices=[
-                ('professional', 'Profesional/Corporativo'),
-                ('modern', 'Moderno/Minimalista'),
-                ('tech', 'Tecnológico/Futurista'),
-                ('creative', 'Creativo/Artístico'),
-            ],
-            initial='professional',
-            required=False,
-            widget=forms.Select(attrs={'class': 'form-control'})
-        )
-        
-        # Campo de tamaño de imagen (si hay servicios disponibles)
-        if available_services:
-            # Obtener tamaños soportados del primer servicio disponible
-            first_service = registry.get_service(available_services[0])
-            if first_service:
-                supported_params = first_service.get_supported_parameters()
-                size_options = supported_params.get('size', {}).get('options', ['1024x1024'])
-                
-                size_choices = [(size, size) for size in size_options]
-                
-                self.fields['image_size'] = forms.ChoiceField(
-                    label="Tamaño de imagen",
-                    choices=size_choices,
-                    initial=size_choices[0][0] if size_choices else '1024x1024',
-                    required=False,
-                    widget=forms.Select(attrs={'class': 'form-control'})
-                )
+
     
     def clean(self):
         cleaned_data = super().clean()
-        generate_cover = cleaned_data.get('generate_cover_image')
-        image_service = cleaned_data.get('image_service')
-        
-        # Validar que si se quiere generar imagen, hay un servicio disponible
-        if generate_cover and image_service == 'none':
-            raise forms.ValidationError(
-                "No se puede generar imagen de portada: no hay servicios de generación disponibles. "
-                "Configura al menos un servicio (Gemini, OpenAI, etc.) en las variables de entorno."
-            )
-        
+        # Ya no necesitamos validación especial, el comportamiento es automático
         return cleaned_data
 
 

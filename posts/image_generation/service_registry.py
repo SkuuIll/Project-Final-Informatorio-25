@@ -182,12 +182,6 @@ def register_default_services():
     except ImportError as e:
         logger.warning(f"Could not register Gemini service: {e}")
     
-    try:
-        from .openai_generator import OpenAIImageGenerator
-        registry.register_service('openai', OpenAIImageGenerator)
-    except ImportError as e:
-        logger.warning(f"Could not register OpenAI service: {e}")
-    
     # Register additional services here as they are implemented
     logger.info("Default image generation services registered")
 

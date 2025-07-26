@@ -172,16 +172,7 @@ class TestCoverImagePromptBuilder(TestCase):
         self.assertFalse(is_valid)
         self.assertIn('blog', error.lower())
     
-    def test_optimize_prompt_for_openai(self):
-        """Test prompt optimization for OpenAI."""
-        base_prompt = "Create a professional image about Django"
-        
-        optimized = CoverImagePromptBuilder.optimize_prompt_for_service(
-            base_prompt, 'openai'
-        )
-        
-        # OpenAI should keep the full prompt
-        self.assertEqual(optimized, base_prompt)
+
     
     def test_optimize_prompt_for_stability(self):
         """Test prompt optimization for Stability AI."""

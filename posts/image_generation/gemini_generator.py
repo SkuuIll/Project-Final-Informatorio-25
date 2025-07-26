@@ -69,49 +69,30 @@ class GeminiImageGenerator(ImageGenerationService):
             return False, None, error_msg
         
         try:
-            # Build the image generation prompt
-            image_prompt = self._build_image_prompt(prompt, **kwargs)
+            # Nota: Gemini actualmente no genera imágenes directamente
+            # En su lugar, generamos una descripción detallada y creamos una imagen placeholder
             
-            # Generate image using Gemini
+            # Build the image description prompt
+            description_prompt = self._build_description_prompt(prompt, **kwargs)
+            
+            # Generate detailed description using Gemini
             start_time = time.time()
-            response = self.model.generate_content([image_prompt])
+            response = self.model.generate_content(description_prompt)
             generation_time = time.time() - start_time
             
-            # Check if response contains an image
-            if hasattr(response, 'parts') and response.parts:
-                for part in response.parts:
-                    if hasattr(part, 'inline_data') and part.inline_data:
-                        # Save the generated image
-                        image_data = part.inline_data.data
-                        image_url = ImageStorage.save_image_from_content(
-                            image_data, 
-                            filename=f"gemini_generated_{int(time.time())}.jpg"
-                        )
-                        
-                        if image_url:
-                            logger.info(f"Image generated successfully in {generation_time:.2f}s")
-                            self.log_generation_attempt(prompt, True)
-                            return True, image_url, None
-            
-            # If no image in response, try alternative approach only if enabled
-            if kwargs.get('allow_placeholder', False):
-                # Generate a detailed description and use it to create a simple colored image
-                description_prompt = f"Create a detailed visual description for: {prompt}"
-                description_response = self.model.generate_content(description_prompt)
+            if response.text:
+                # Create a placeholder image with the generated description
+                placeholder_url = self._create_placeholder_image(
+                    response.text, 
+                    **kwargs
+                )
                 
-                if description_response.text:
-                    # Create a placeholder image with the description
-                    placeholder_url = self._create_placeholder_image(
-                        description_response.text, 
-                        **kwargs
-                    )
-                    
-                    if placeholder_url:
-                        logger.info("Generated placeholder image with description")
-                        self.log_generation_attempt(prompt, True)
-                        return True, placeholder_url, None
+                if placeholder_url:
+                    logger.info(f"Generated placeholder image with AI description in {generation_time:.2f}s")
+                    self.log_generation_attempt(prompt, True)
+                    return True, placeholder_url, None
             
-            error_msg = "No image generated in response"
+            error_msg = "No description generated for image"
             self.log_generation_attempt(prompt, False, error_msg)
             return False, None, error_msg
             
@@ -216,44 +197,52 @@ class GeminiImageGenerator(ImageGenerationService):
             try:
                 # Try to use a default font
                 font = ImageFont.load_default()
-            except:
-                font = None
-            
-            # Add title text
-            text = "Generated Cover Image"
-            if font:
-                bbox = draw.textbbox((0, 0), text, font=font)
+                
+                # Add title text
+                title = kwargs.get('title', 'AI Generated Image')
+                text_color = '#ffffff'
+                
+                # Calculate text position (centered)
+                bbox = draw.textbbox((0, 0), title, font=font)
                 text_width = bbox[2] - bbox[0]
                 text_height = bbox[3] - bbox[1]
                 x = (width - text_width) // 2
                 y = (height - text_height) // 2
-                draw.text((x, y), text, fill='white', font=font)
+                
+                # Draw text with shadow
+                draw.text((x+2, y+2), title, fill='#000000', font=font)  # Shadow
+                draw.text((x, y), title, fill=text_color, font=font)     # Main text
+                
+            except Exception as e:
+                logger.warning(f"Could not add text to placeholder image: {e}")
             
-            # Save to temporary file
-            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_file:
-                img.save(temp_file.name, 'JPEG', quality=85)
-                temp_path = temp_file.name
-            
-            # Process and save the image
-            processed_path = ImageProcessor.optimize_image(temp_path)
-            
-            # Save to storage
-            with open(processed_path, 'rb') as f:
-                image_content = f.read()
-            
-            image_url = ImageStorage.save_image_from_content(
-                image_content,
-                filename=f"placeholder_{int(time.time())}.jpg"
-            )
-            
-            # Cleanup temp files
-            ImageStorage.cleanup_temp_files([temp_path, processed_path])
-            
-            return image_url
+            # Save the image using ImageStorage
+            filename = f"gemini_placeholder_{int(time.time())}.jpg"
+            return ImageStorage.save_image_from_pil(img, filename)
             
         except Exception as e:
             logger.error(f"Error creating placeholder image: {e}")
             return None
+        except Exception as e:
+            logger.error(f"Error creating placeholder image: {e}")
+            return None
+    
+    def _build_description_prompt(self, prompt: str, **kwargs) -> str:
+        """
+        Build a prompt for generating detailed image descriptions.
+        """
+        style = kwargs.get('style', 'professional')
+        
+        description_prompt = f"""
+        Create a detailed visual description for a blog post cover image about: {prompt}
+        
+        Style: {style}
+        
+        The description should be suitable for creating a professional blog post header image.
+        Keep the description concise but vivid, around 2-3 sentences.
+        """
+        
+        return description_prompt.strip()
     
     def is_available(self) -> bool:
         """Check if Gemini service is available."""
@@ -269,10 +258,8 @@ class GeminiImageGenerator(ImageGenerationService):
             return False, "Google API key not configured"
         
         try:
-            # Test API connection
             genai.configure(api_key=self.api_key)
             test_model = genai.GenerativeModel(self.model_name)
-            # Simple test to verify API works
             test_response = test_model.generate_content("Test")
             return True, None
         except Exception as e:
@@ -282,7 +269,7 @@ class GeminiImageGenerator(ImageGenerationService):
         """Get supported parameters for Gemini."""
         return {
             'size': {
-                'type': 'string', 
+                'type': 'string',
                 'default': '1024x1024',
                 'options': ['512x512', '1024x1024', '1792x1024'],
                 'description': 'Image dimensions'
@@ -292,21 +279,13 @@ class GeminiImageGenerator(ImageGenerationService):
                 'default': 'professional',
                 'options': ['professional', 'modern', 'tech', 'creative'],
                 'description': 'Image style'
-            },
-            'model': {
-                'type': 'string',
-                'default': 'gemini-2.0-flash-exp',
-                'options': ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash'],
-                'description': 'Gemini model to use'
             }
         }
     
     def get_cost_estimate(self, **kwargs) -> float:
         """Estimate cost for Gemini image generation."""
-        # Gemini pricing is generally lower than other services
-        # This is an estimate - actual costs may vary
-        return 0.01  # Estimated $0.01 per image
+        return 0.01
     
     def get_generation_time_estimate(self, **kwargs) -> int:
         """Estimate generation time for Gemini."""
-        return 15  # Estimated 15 seconds
+        return 15

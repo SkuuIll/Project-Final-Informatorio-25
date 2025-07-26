@@ -33,12 +33,6 @@ class ImageGenerationConfig:
             'size': '1024x1024',
             'style': 'professional',
         },
-        'openai': {
-            'model': 'dall-e-3',
-            'size': '1792x1024',
-            'quality': 'standard',
-            'style': 'natural',
-        },
         'stability': {
             'model': 'stable-diffusion-xl-1024-v1-0',
             'width': 1024,
@@ -94,14 +88,7 @@ class ImageGenerationConfig:
         if service_name == 'gemini':
             base_config.update({
                 'api_key': os.getenv('GOOGLE_API_KEY'),
-                'model': os.getenv('GEMINI_MODEL', base_config.get('model')),
-            })
-        elif service_name == 'openai':
-            base_config.update({
-                'api_key': os.getenv('OPENAI_API_KEY'),
-                'model': os.getenv('OPENAI_IMAGE_MODEL', base_config.get('model')),
-                'size': os.getenv('OPENAI_IMAGE_SIZE', base_config.get('size')),
-                'quality': os.getenv('OPENAI_IMAGE_QUALITY', base_config.get('quality')),
+                'model': os.getenv('GEMINI_IMAGE_MODEL', base_config.get('model')),
             })
         elif service_name == 'stability':
             base_config.update({
@@ -126,10 +113,6 @@ class ImageGenerationConfig:
         # Check Gemini (Google)
         if os.getenv('GOOGLE_API_KEY'):
             available.append('gemini')
-        
-        # Check OpenAI
-        if os.getenv('OPENAI_API_KEY'):
-            available.append('openai')
         
         # Check Stability AI
         if os.getenv('STABILITY_API_KEY'):
@@ -167,7 +150,7 @@ class ImageGenerationConfig:
         fallbacks = [s for s in available if s != primary_service]
         
         # Order fallbacks by preference
-        preference_order = ['gemini', 'openai', 'stability']
+        preference_order = ['gemini', 'stability']
         ordered_fallbacks = []
         
         for preferred in preference_order:
@@ -199,12 +182,6 @@ class ImageGenerationConfig:
                 return False, "Google API key not configured"
             if not config.get('model'):
                 return False, "Gemini model not specified"
-                
-        elif service_name == 'openai':
-            if not config.get('api_key'):
-                return False, "OpenAI API key not configured"
-            if not config.get('model'):
-                return False, "OpenAI model not specified"
                 
         elif service_name == 'stability':
             if not config.get('api_key'):

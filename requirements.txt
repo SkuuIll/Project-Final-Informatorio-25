@@ -1,56 +1,118 @@
-asgiref==3.9.1
-attrs==25.3.0
-autobahn==24.4.2
-Automat==25.4.16
-beautifulsoup4==4.12.3
-cffi==1.17.1
-channels==4.2.2
-constantly==23.10.4
-crispy-bootstrap5==2025.6
-cryptography==45.0.5
-daphne==4.1.0
-Django==5.2.4
-django-ckeditor-5==0.2.18
-django-crispy-forms==2.4
-django-extensions==4.1
-django-jazzmin==3.0.1
-django-taggit==6.1.0
-django-turnstile==0.1.2
-djangorestframework==3.16.0
-google-generativeai==0.7.2
-gunicorn==23.0.0
-hyperlink==21.0.0
-idna==3.10
-incremental==24.7.2
-packaging==25.0
-pillow==11.3.0
-pyasn1==0.6.1
-pyasn1_modules==0.4.2
-pycparser==2.22
-pyOpenSSL==25.1.0
-python-dotenv==1.1.1
-requests==2.32.3
-service-identity==24.2.0
-setuptools==80.9.0
-sqlparse==0.5.3
-Twisted==25.5.0
-txaio==25.6.1
-typing_extensions==4.14.1
-tzdata==2025.2
-whitenoise==6.9.0
-zope.interface==7.2
-coverage==7.9.2
-ruff==0.12.3
-Cython==3.1.2
-django-widget-tweaks==1.5.0
-psycopg2-binary==2.9.9
-python-json-logger==2.0.7
-django-prometheus==2.3.1
-django-ratelimit==4.1.0
-django-axes==6.3.0
-python-magic==0.4.27
-django-ipware==6.0.0
-celery==5.3.6
-redis==5.0.1
-django-redis==5.4.0
-flower==2.0.1
+# ================================
+# DJANGO CORE - Framework principal
+# ================================
+Django==5.2.4                    # Framework web principal de Python
+asgiref==3.9.1                   # Especificación ASGI para Django
+sqlparse==0.5.3                  # Parser SQL para Django
+tzdata==2025.2                   # Datos de zona horaria
+
+# ================================
+# DJANGO EXTENSIONS - Funcionalidades adicionales
+# ================================
+djangorestframework==3.16.0      # Framework para APIs REST
+django-extensions==4.1            # Comandos y utilidades adicionales para Django
+django-widget-tweaks==1.5.0      # Personalización de widgets de formularios
+
+# ================================
+# EDITOR Y FORMULARIOS - UI/UX
+# ================================
+django-ckeditor-5==0.2.18        # Editor WYSIWYG avanzado para contenido
+django-crispy-forms==2.4         # Formularios con mejor diseño
+crispy-bootstrap5==2025.6        # Integración de Crispy Forms con Bootstrap 5
+
+# ================================
+# ADMIN PERSONALIZADO - Panel de administración
+# ================================
+django-jazzmin==3.0.1            # Tema moderno y personalizable para Django Admin
+
+# ================================
+# CONTENIDO Y ETIQUETAS - Gestión de posts
+# ================================
+django-taggit==6.1.0             # Sistema de etiquetas para posts
+
+# ================================
+# INTELIGENCIA ARTIFICIAL - Generación de contenido
+# ================================
+google-generativeai==0.7.2       # SDK oficial de Google Gemini AI
+beautifulsoup4==4.12.3           # Parser HTML para extracción de contenido
+requests==2.32.3                 # Cliente HTTP para peticiones web
+
+# ================================
+# SEGURIDAD - Protección y autenticación
+# ================================
+django-turnstile==0.1.2          # Integración con Cloudflare Turnstile (CAPTCHA)
+django-axes==6.3.0               # Protección contra ataques de fuerza bruta
+django-ratelimit==4.1.0          # Limitación de velocidad de peticiones
+cryptography==45.0.5             # Biblioteca de criptografía
+pyOpenSSL==25.1.0                # Soporte SSL/TLS
+
+# ================================
+# MANEJO DE ARCHIVOS - Imágenes y media
+# ================================
+Pillow==11.3.0                   # Procesamiento de imágenes
+python-magic==0.4.27             # Detección de tipos de archivo
+whitenoise==6.9.0                # Servir archivos estáticos en producción
+
+# ================================
+# BASE DE DATOS - Conectores y drivers
+# ================================
+psycopg2-binary==2.9.9           # Driver PostgreSQL (incluye binarios compilados)
+
+# ================================
+# WEBSOCKETS Y TIEMPO REAL - Comunicación asíncrona
+# ================================
+channels==4.2.2                  # Soporte para WebSockets en Django
+daphne==4.1.0                    # Servidor ASGI para Django Channels
+autobahn==24.4.2                 # Framework WebSocket/WAMP
+Twisted==25.5.0                  # Framework de red asíncrono
+txaio==25.6.1                    # Utilidades para programación asíncrona
+
+# ================================
+# TAREAS ASÍNCRONAS - Procesamiento en background
+# ================================
+celery==5.3.6                    # Sistema de colas de tareas distribuidas
+redis==5.0.1                     # Base de datos en memoria para cache y colas
+django-redis==5.4.0              # Integración de Redis con Django
+flower==2.0.1                    # Monitor web para Celery
+
+# ================================
+# SERVIDOR WEB - Producción
+# ================================
+gunicorn==23.0.0                 # Servidor WSGI para producción
+
+# ================================
+# MONITOREO Y LOGGING - Observabilidad
+# ================================
+django-prometheus==2.3.1         # Métricas de Prometheus para Django
+python-json-logger==2.0.7        # Logging estructurado en formato JSON
+django-ipware==6.0.0             # Utilidades para obtener IP del cliente
+
+# ================================
+# CONFIGURACIÓN - Variables de entorno
+# ================================
+python-dotenv==1.1.1             # Carga variables de entorno desde archivo .env
+
+# ================================
+# DESARROLLO Y TESTING - Herramientas de desarrollo
+# ================================
+coverage==7.9.2                  # Medición de cobertura de tests
+ruff==0.12.3                     # Linter y formateador de código Python
+
+# ================================
+# DEPENDENCIAS INTERNAS - Librerías de soporte
+# ================================
+attrs==25.3.0                    # Clases con atributos automáticos
+constantly==23.10.4              # Constantes simbólicas
+cffi==1.17.1                     # Interfaz de funciones foráneas de C
+Cython==3.1.2                    # Compilador Python a C
+hyperlink==21.0.0                # Manipulación de URLs
+idna==3.10                        # Soporte para nombres de dominio internacionales
+incremental==24.7.2              # Versionado automático
+packaging==25.0                  # Utilidades de empaquetado
+pyasn1==0.6.1                    # Codificación/decodificación ASN.1
+pyasn1_modules==0.4.2            # Módulos ASN.1 adicionales
+pycparser==2.22                  # Parser de C en Python
+service-identity==24.2.0         # Verificación de identidad de servicios
+setuptools==80.9.0               # Herramientas de construcción de paquetes
+typing_extensions==4.14.1        # Extensiones de tipado para Python
+zope.interface==7.2               # Definición de interfaces

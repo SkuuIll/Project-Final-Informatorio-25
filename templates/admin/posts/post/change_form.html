@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+
+{% block form_top %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Asegurar que el formulario tenga enctype correcto para manejar archivos
+        const form = document.querySelector('#post_form');
+        if (form && !form.getAttribute('enctype')) {
+            form.setAttribute('enctype', 'multipart/form-data');
+            console.log('Enctype multipart/form-data añadido al formulario');
+        }
+        
+        // También verificar el formulario principal del admin
+        const adminForm = document.querySelector('form[method="post"]');
+        if (adminForm && !adminForm.getAttribute('enctype')) {
+            adminForm.setAttribute('enctype', 'multipart/form-data');
+            console.log('Enctype multipart/form-data añadido al formulario del admin');
+        }
+    });
+    </script>
+{% endblock %}

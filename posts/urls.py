@@ -21,6 +21,7 @@ from .views import (
     upload_image_view,
     ai_post_generator_view,
     ai_post_generator_simple_view,
+    api_existing_images,
 )
 # from .views.image_views import (
 #     image_gallery_view,
@@ -69,6 +70,7 @@ urlpatterns = [
     
     path('generate-ai-post/', ai_post_generator_view, name='ai_post_generator'),
     path('generate-ai-post-simple/', ai_post_generator_simple_view, name='ai_post_generator_simple'),
+    path('admin/api/existing-images/', api_existing_images, name='api_existing_images'),
     
     # URLs para gestión de prompts (comentadas temporalmente)
     # path('admin/prompts/', prompt_list_view, name='prompt_list'),

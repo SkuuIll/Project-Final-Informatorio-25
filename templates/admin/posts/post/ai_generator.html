@@ -197,14 +197,9 @@
             cursor: pointer;
         }
         
-        /* Mejorar el estilo de las secciones de opciones */
-        #cover-image-options {
-            transition: all 0.3s ease;
-            border: 1px solid #b3d9ff;
-        }
-        
-        #cover-image-options.hidden {
-            display: none !important;
+        /* Estilos para opciones de extracción de imágenes */
+        .form-section {
+            margin-bottom: 30px;
         }
         
         /* Mejorar labels de checkbox */
@@ -321,105 +316,7 @@
                 </div>
             </div>
 
-            <!-- Nueva sección para generación de imagen de portada -->
-            <div class="form-section">
-                <div class="form-section-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
-                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                    </svg>
-                    {% translate 'Generación de Imagen de Portada' %}
-                </div>
-                
-                <div class="enhanced-form-row">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        {{ form.generate_cover_image }}
-                        <label for="{{ form.generate_cover_image.id_for_label }}" style="margin: 0; font-weight: 600; color: #444; cursor: pointer;">
-                            {{ form.generate_cover_image.label }}
-                            {% if form.generate_cover_image.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                        </label>
-                    </div>
-                    {% if form.generate_cover_image.help_text %}
-                        <div class="field-help-text" style="margin-top: 5px;">{{ form.generate_cover_image.help_text }}</div>
-                    {% endif %}
-                    <div class="field-help-text" style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 4px; border: 1px solid #c3e6c3;">
-                        <strong>✨ Nuevo:</strong> Genera automáticamente una imagen de portada profesional usando Gemini 2.0 Flash.
-                    </div>
-                </div>
-                
-                <!-- Opciones de configuración de imagen (se muestran solo si está habilitado) -->
-                <div id="cover-image-options" style="margin-top: 20px; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #5b9bd5;">
-                    <div class="enhanced-form-row">
-                        <label for="{{ form.image_service.id_for_label }}" {% if form.image_service.field.required %}class="required"{% endif %}>
-                            {{ form.image_service.label }}
-                            {% if form.image_service.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                        </label>
-                        {{ form.image_service }}
-                        {% if form.image_service.help_text %}
-                            <div class="field-help-text">{{ form.image_service.help_text }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="enhanced-form-row">
-                        <label for="{{ form.image_style.id_for_label }}" {% if form.image_style.field.required %}class="required"{% endif %}>
-                            {{ form.image_style.label }}
-                            {% if form.image_style.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                        </label>
-                        {{ form.image_style }}
-                        {% if form.image_style.help_text %}
-                            <div class="field-help-text">{{ form.image_style.help_text }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    {% if form.image_size %}
-                    <div class="enhanced-form-row">
-                        <label for="{{ form.image_size.id_for_label }}" {% if form.image_size.field.required %}class="required"{% endif %}>
-                            {{ form.image_size.label }}
-                            {% if form.image_size.field.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                        </label>
-                        {{ form.image_size }}
-                        {% if form.image_size.help_text %}
-                            <div class="field-help-text">{{ form.image_size.help_text }}</div>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Botón para seleccionar imagen existente -->
-                    <div class="enhanced-form-row" style="margin-top: 15px;">
-                        <button type="button" class="btn btn-outline-primary" id="selectExistingImageBtn" style="padding: 8px 16px; border: 1px solid #5b9bd5; color: #5b9bd5; background: white; border-radius: 6px; cursor: pointer; transition: all 0.3s ease;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px; vertical-align: middle;">
-                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                            </svg>
-                            Seleccionar imagen existente
-                        </button>
-                        <div class="field-help-text" style="margin-top: 8px;">
-                            Alternativamente, puedes seleccionar una imagen ya existente de las carpetas ai_posts.
-                        </div>
-                    </div>
-                    
-                    <!-- Campo oculto para almacenar la imagen seleccionada -->
-                    <input type="hidden" id="selectedImagePath" name="selected_image_path" value="">
-                    
-                    <!-- Vista previa de imagen seleccionada -->
-                    <div id="selectedImagePreview" style="display: none; margin-top: 15px; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 1px solid #b3d9ff;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <img id="selectedImageThumbnail" src="" alt="" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; color: #333; margin-bottom: 4px;">Imagen seleccionada:</div>
-                                <div id="selectedImageName" style="font-size: 14px; color: #666; margin-bottom: 4px;"></div>
-                                <div id="selectedImageDimensions" style="font-size: 12px; color: #888;"></div>
-                            </div>
-                            <button type="button" id="removeSelectedImage" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                                Quitar
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="field-help-text" style="margin-top: 15px; padding: 12px; background: #e8f4fd; border-radius: 6px; border: 1px solid #b3d9ff;">
-                        <strong>💡 Consejo:</strong> Puedes generar una imagen automáticamente o seleccionar una existente. 
-                        Si seleccionas una imagen existente, se usará en lugar de generar una nueva.
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Sección de extracción de imágenes del contenido -->
             <div class="form-section">
@@ -535,35 +432,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const spinner = generateBtn.querySelector('.loading-spinner');
     const btnText = generateBtn.querySelector('.btn-text');
     
-    // Manejo de la visibilidad de opciones de imagen de portada
-    const generateCoverCheckbox = document.querySelector('input[name="generate_cover_image"]');
-    const coverImageOptions = document.getElementById('cover-image-options');
-    
-    function toggleCoverImageOptions() {
-        if (generateCoverCheckbox && coverImageOptions) {
-            if (generateCoverCheckbox.checked) {
-                coverImageOptions.classList.remove('hidden');
-                coverImageOptions.style.display = 'block';
-                coverImageOptions.style.animation = 'fadeIn 0.3s ease-in';
-            } else {
-                coverImageOptions.classList.add('hidden');
-                coverImageOptions.style.display = 'none';
-            }
-        }
-    }
-    
-    // Configurar estado inicial
-    if (generateCoverCheckbox && coverImageOptions) {
-        toggleCoverImageOptions();
-        
-        // Escuchar cambios en el checkbox
-        generateCoverCheckbox.addEventListener('change', toggleCoverImageOptions);
-        
-        console.log('Cover image options initialized:', {
-            checkbox: generateCoverCheckbox.checked,
-            optionsVisible: coverImageOptions.style.display !== 'none'
-        });
-    }
+    // Configuración simplificada - comportamiento automático
+    console.log('AI Post Generator initialized - automatic cover image assignment enabled');
     
     // Manejo del envío del formulario
     form.addEventListener('submit', function(e) {
@@ -586,23 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Validación específica para imagen de portada
-        if (generateCoverCheckbox && generateCoverCheckbox.checked) {
-            const imageService = document.getElementById('{{ form.image_service.id_for_label }}');
-            if (imageService && imageService.value === 'none') {
-                hasErrors = true;
-                imageService.style.borderColor = '#dc3545';
-                
-                // Mostrar mensaje de error específico
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.innerHTML = '<strong>Error:</strong> No se puede generar imagen de portada sin un servicio configurado. Configura al menos un servicio (Gemini, OpenAI, etc.) en las variables de entorno.';
-                form.insertBefore(errorDiv, form.firstChild);
-                
-                // Scroll al error
-                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
+        // Validación básica - ya no necesitamos validación específica de imágenes
         
         if (hasErrors) {
             e.preventDefault();
@@ -614,123 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Manejo de selección de imagen existente
-    const selectExistingImageBtn = document.getElementById('selectExistingImageBtn');
-    const selectedImagePath = document.getElementById('selectedImagePath');
-    const selectedImagePreview = document.getElementById('selectedImagePreview');
-    const selectedImageThumbnail = document.getElementById('selectedImageThumbnail');
-    const selectedImageName = document.getElementById('selectedImageName');
-    const selectedImageDimensions = document.getElementById('selectedImageDimensions');
-    const removeSelectedImage = document.getElementById('removeSelectedImage');
-    
-    // Función para mostrar el modal de selección de imágenes
-    function showImageSelector() {
-        // Crear modal dinámicamente
-        const modalHtml = `
-            <div class="modal fade" id="imageSelectorModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Seleccionar Imagen de Portada</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Cargando...</span>
-                                </div>
-                                <p class="mt-2">Cargando imágenes disponibles...</p>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" id="confirmImageSelection" disabled>
-                                Usar Imagen Seleccionada
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Agregar modal al DOM
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Cargar contenido del modal
-        fetch('/posts/image-selector-modal/')
-            .then(response => response.text())
-            .then(html => {
-                const modal = document.getElementById('imageSelectorModal');
-                const modalBody = modal.querySelector('.modal-body');
-                modalBody.innerHTML = html;
-                
-                // Mostrar modal
-                const bsModal = new bootstrap.Modal(modal);
-                bsModal.show();
-                
-                // Limpiar modal al cerrar
-                modal.addEventListener('hidden.bs.modal', function() {
-                    modal.remove();
-                });
-            })
-            .catch(error => {
-                console.error('Error loading image selector:', error);
-                alert('Error al cargar el selector de imágenes');
-            });
-    }
-    
-    // Función global para manejar selección de imagen (llamada desde el modal)
-    window.onImageSelected = function(imageData) {
-        selectedImagePath.value = imageData.path;
-        selectedImageThumbnail.src = imageData.url;
-        selectedImageName.textContent = imageData.filename;
-        
-        // Obtener dimensiones si están disponibles
-        const img = new Image();
-        img.onload = function() {
-            selectedImageDimensions.textContent = `${this.width}x${this.height}`;
-        };
-        img.src = imageData.url;
-        
-        selectedImagePreview.style.display = 'block';
-        
-        // Deshabilitar generación automática si se selecciona imagen manual
-        if (generateCoverCheckbox) {
-            generateCoverCheckbox.checked = false;
-            toggleCoverImageOptions();
-        }
-        
-        console.log('Image selected:', imageData);
-    };
-    
-    // Event listeners
-    if (selectExistingImageBtn) {
-        selectExistingImageBtn.addEventListener('click', showImageSelector);
-        
-        // Mejorar estilo del botón
-        selectExistingImageBtn.addEventListener('mouseenter', function() {
-            this.style.background = '#5b9bd5';
-            this.style.color = 'white';
-        });
-        
-        selectExistingImageBtn.addEventListener('mouseleave', function() {
-            this.style.background = 'white';
-            this.style.color = '#5b9bd5';
-        });
-    }
-    
-    if (removeSelectedImage) {
-        removeSelectedImage.addEventListener('click', function() {
-            selectedImagePath.value = '';
-            selectedImagePreview.style.display = 'none';
-            
-            // Re-habilitar generación automática
-            if (generateCoverCheckbox) {
-                generateCoverCheckbox.checked = true;
-                toggleCoverImageOptions();
-            }
-        });
-    }
+    console.log('AI Post Generator form initialized successfully');
     
     // Agregar animación CSS para el fade in
     const style = document.createElement('style');

@@ -5,6 +5,7 @@ Utility functions for image processing and storage.
 import os
 import uuid
 import hashlib
+import time
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 from PIL import Image, ImageOps
@@ -309,4 +310,57 @@ class ImageStorage:
                 return hashlib.sha256(image_data).hexdigest()
         except Exception as e:
             logger.error(f"Error generating hash for image {image_path}: {e}")
+            return None
+
+    @classmethod
+    def save_image_from_pil(cls, pil_image, filename: str = None, folder: str = None) -> Optional[str]:
+        """
+        Save image from PIL Image object.
+        
+        Args:
+            pil_image: PIL Image object
+            filename: Desired filename (will be made unique)
+            folder: Folder to save in (defaults to cover images folder)
+            
+        Returns:
+            URL of saved image or None if failed
+        """
+        try:
+            import io
+            from django.core.files.base import ContentFile
+            
+            # Use default folder if not specified
+            if folder is None:
+                from .config import ImageGenerationConfig
+                storage_config = ImageGenerationConfig.get_storage_config()
+                folder = storage_config['cover_image_folder']
+            
+            # Generate filename if not provided
+            if filename is None:
+                filename = f"generated_image_{int(time.time())}.jpg"
+            
+            # Ensure filename is unique
+            filename = cls.generate_unique_filename(filename)
+            file_path = os.path.join(folder, filename)
+            
+            # Convert PIL image to bytes
+            img_buffer = io.BytesIO()
+            
+            # Convert to RGB if necessary (for JPEG)
+            if pil_image.mode in ('RGBA', 'LA', 'P'):
+                pil_image = pil_image.convert('RGB')
+            
+            # Save as JPEG
+            pil_image.save(img_buffer, format='JPEG', quality=85, optimize=True)
+            img_buffer.seek(0)
+            
+            # Save to storage
+            file_content = ContentFile(img_buffer.getvalue())
+            saved_path = default_storage.save(file_path, file_content)
+            
+            logger.info(f"PIL image saved: {saved_path}")
+            return default_storage.url(saved_path)
+            
+        except Exception as e:
+            logger.error(f"Error saving PIL image: {e}")
             return None

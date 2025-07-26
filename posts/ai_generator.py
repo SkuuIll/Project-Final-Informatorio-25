@@ -29,7 +29,7 @@ def get_active_model_name():
         active_model = AIModel.objects.get(is_active=True)
         return active_model.name
     except AIModel.DoesNotExist:
-        return 'gemini-2.0-flash-exp'  # Modelo por defecto
+        return os.getenv('GEMINI_TEXT_MODEL', 'gemini-2.5-pro')  # Usar Gemini 2.5-pro por defecto
 
 def extract_links_from_content(content: str, base_url: str) -> list[str]:
     """
@@ -48,549 +48,539 @@ def extract_links_from_content(content: str, base_url: str) -> list[str]:
             url = urljoin(base_url, url)
         absolute_urls.append(url)
     
-    return list(set(absolute_urls))  # Eliminar duplicados
-
-def extract_images_from_url(url: str, max_images: int = 5) -> list[dict]:
-    """
-    Extrae imágenes de una URL de manera inteligente, priorizando imágenes de contenido.
-    """
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
-        images = []
-        
-        # Priorizar imágenes dentro del contenido principal
-        content_selectors = [
-            'article img',
-            'main img', 
-            '.content img',
-            '.post-content img',
-            '.entry-content img',
-            '[role="main"] img'
-        ]
-        
-        # Buscar imágenes en el contenido principal primero
-        for selector in content_selectors:
-            content_images = soup.select(selector)
-            if content_images:
-                for img in content_images[:max_images]:
-                    if _is_valid_content_image(img, url):
-                        image_data = _process_image_tag(img, url)
-                        if image_data and image_data not in images:
-                            images.append(image_data)
-                            if len(images) >= max_images:
-                                return images
-                break
-        
-        # Si no encontramos suficientes imágenes en el contenido, buscar en toda la página
-        if len(images) < max_images:
-            all_images = soup.find_all('img')
-            for img in all_images:
-                if len(images) >= max_images:
-                    break
-                    
-                if _is_valid_content_image(img, url):
-                    image_data = _process_image_tag(img, url)
-                    if image_data and image_data not in images:
-                        images.append(image_data)
-        
-        return images
-    
-    except requests.RequestException as e:
-        print(f"Error al extraer imágenes: {e}")
-        return []
-
-
-def _is_valid_content_image(img_tag, base_url: str) -> bool:
-    """
-    Determina si una imagen es válida para incluir en el contenido.
-    """
-    src = img_tag.get('src', '')
-    alt = img_tag.get('alt', '')
-    
-    # Filtrar imágenes no válidas
-    invalid_patterns = [
-        'logo', 'avatar', 'profile', 'icon', 'button', 'banner', 
-        'ad', 'advertisement', 'social', 'share', 'comment',
-        'pixel', 'tracking', 'analytics', 'spacer', 'blank'
-    ]
-    
-    # Verificar src
-    if not src or any(pattern in src.lower() for pattern in invalid_patterns):
-        return False
-    
-    # Verificar alt text
-    if any(pattern in alt.lower() for pattern in invalid_patterns):
-        return False
-    
-    # Verificar extensiones de imagen válidas
-    valid_extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
-    if not any(ext in src.lower() for ext in valid_extensions):
-        return False
-    
-    # Verificar que no sea una imagen muy pequeña (probablemente decorativa)
-    width = img_tag.get('width')
-    height = img_tag.get('height')
-    
-    if width and height:
-        try:
-            w, h = int(width), int(height)
-            if w < 300 or h < 300:  # Filtrar imágenes pequeñas
-                return False
-        except ValueError:
-            pass
-    
-    # Verificar clases CSS que indican imágenes decorativas
-    css_classes = img_tag.get('class', [])
-    if isinstance(css_classes, list):
-        css_classes = ' '.join(css_classes)
-    
-    decorative_classes = ['icon', 'logo', 'avatar', 'thumbnail-small', 'decoration']
-    if any(cls in css_classes.lower() for cls in decorative_classes):
-        return False
-    
-    return True
-
-
-def _process_image_tag(img_tag, base_url: str) -> dict:
-    """
-    Procesa un tag de imagen y devuelve información estructurada.
-    """
-    src = img_tag.get('src', '')
-    if not src:
-        return None
-    
-    # Convertir URL relativa a absoluta
-    if not src.startswith(('http://', 'https://')):
-        src = urljoin(base_url, src)
-    
-    # Obtener información adicional
-    alt = img_tag.get('alt', '').strip()
-    title = img_tag.get('title', '').strip()
-    
-    # Generar descripción si no hay alt text
-    if not alt and not title:
-        # Intentar extraer descripción del contexto
-        parent = img_tag.parent
-        if parent:
-            figcaption = parent.find('figcaption')
-            if figcaption:
-                alt = figcaption.get_text().strip()
-    
-    return {
-        'src': src,
-        'alt': alt or 'Imagen del artículo',
-        'title': title or alt or 'Imagen relacionada con el contenido',
-        'width': img_tag.get('width'),
-        'height': img_tag.get('height')
-    }
-
-
-def download_image(image_url: str, folder: str = 'ai_posts/images/', min_width: int = 300, min_height: int = 300) -> str:
-    """
-    Descarga una imagen y la guarda en el almacenamiento de Django.
-    Solo descarga imágenes que cumplan con los requisitos mínimos de tamaño.
-    Retorna la URL de la imagen guardada.
-    """
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        response = requests.get(image_url, headers=headers, timeout=10)
-        response.raise_for_status()
-
-        # Verificar el tamaño de la imagen antes de guardarla
-        try:
-            from PIL import Image
-            import io
-            
-            # Crear objeto Image desde el contenido descargado
-            image_content = io.BytesIO(response.content)
-            with Image.open(image_content) as img:
-                width, height = img.size
-                
-                # Verificar que la imagen cumple con los requisitos mínimos
-                if width < min_width or height < min_height:
-                    print(f"Imagen descartada por tamaño insuficiente: {width}x{height} (mínimo: {min_width}x{min_height}) - {image_url}")
-                    return None
-                
-                print(f"Imagen válida encontrada: {width}x{height} - {image_url}")
-                
-        except Exception as e:
-            print(f"Error al verificar dimensiones de imagen {image_url}: {e}")
-            # Si no podemos verificar las dimensiones, continuamos con la descarga
-            pass
-
-        # Crear carpeta si no existe
-        if not default_storage.exists(folder):
-            try:
-                os.makedirs(default_storage.path(folder))
-                print(f"Carpeta creada: {folder}")
-            except Exception as e:
-                print(f"Error al crear carpeta {folder}: {e}")
-
-        # Obtener la extensión del archivo
-        parsed_url = urlparse(image_url)
-        file_extension = os.path.splitext(parsed_url.path)[1]
-        if not file_extension:
-            file_extension = '.jpg'  # Por defecto
-
-        # Generar nombre único para el archivo
-        filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = os.path.join(folder, filename)
-
-        # Guardar el archivo
-        file_content = ContentFile(response.content)
-        saved_path = default_storage.save(file_path, file_content)
-        print(f"Imagen guardada en: {saved_path}")
-
-        return default_storage.url(saved_path)
-
-    except Exception as e:
-        print(f"Error al descargar imagen {image_url}: {e}")
-        return None
+    return absolute_urls
 
 def extract_content_from_url(url: str) -> dict:
     """
-    Extrae el contenido, enlaces e imágenes de una URL.
+    Extrae el contenido principal de una URL.
+    
+    Returns:
+        dict: Diccionario con 'success', 'title', 'content', 'error'
     """
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        response = requests.get(url, headers=headers, timeout=10)
+        
+        response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
+        
         soup = BeautifulSoup(response.content, 'html.parser')
         
+        # Extraer título
+        title = ""
+        title_tag = soup.find('title')
+        if title_tag:
+            title = title_tag.get_text().strip()
+        
         # Extraer contenido principal
-        article = soup.find('article')
-        if not article:
-            article = soup.find('main')
+        content = ""
         
-        if article:
-            content = article.get_text(separator='\n', strip=True)
-        else:
-            content = soup.body.get_text(separator='\n', strip=True)
+        # Buscar contenido en diferentes elementos comunes
+        content_selectors = [
+            'article',
+            '.content',
+            '.post-content',
+            '.entry-content',
+            '.article-content',
+            'main',
+            '.main-content'
+        ]
         
-        # Extraer enlaces del contenido
-        links = extract_links_from_content(content, url)
+        for selector in content_selectors:
+            content_element = soup.select_one(selector)
+            if content_element:
+                content = content_element.get_text(separator=' ', strip=True)
+                break
         
-        return {
-            'content': content,
-            'links': links,
-            'base_url': url
-        }
-            
-    except requests.RequestException as e:
-        print(f"Error al descargar la URL: {e}")
-        return {
-            'content': None,
-            'links': [],
-            'base_url': url
-        }
-
-# Función compatible con el código existente (devuelve tupla)
-def rewrite_content_with_ai(content: str, prompt_template: str, urls: list = None) -> tuple[str, str]:
-    """
-    Usa Gemini para reescribir el contenido y generar un título.
-    Versión compatible que devuelve tupla (título, contenido).
-    """
-    result = rewrite_content_with_ai_advanced(content, prompt_template, urls)
-    return result['title'], result['content']
-
-def rewrite_content_with_ai_advanced(content: str, prompt_template: str, urls: list = None) -> dict:
-    """
-    Usa Gemini para reescribir el contenido, generar título y extraer tags.
-    Versión avanzada que devuelve diccionario completo.
-    """
-    setup_api()
-    model_name = get_active_model_name()
-    model = genai.GenerativeModel(model_name)
-    
-    # Preparar el prompt con URLs si están disponibles
-    urls_text = "\n".join(urls) if urls else "No se encontraron URLs adicionales"
-    prompt = prompt_template.format(content=content, urls=urls_text)
-    
-    response = model.generate_content(prompt)
-    
-    try:
-        # Dividir la respuesta en secciones
-        response_text = response.text
+        # Si no se encuentra contenido específico, usar el body
+        if not content:
+            body = soup.find('body')
+            if body:
+                # Remover scripts y estilos
+                for script in body(["script", "style"]):
+                    script.decompose()
+                content = body.get_text(separator=' ', strip=True)
         
-        # Buscar tags si están incluidos
-        if "---TAGS---" in response_text:
-            parts = response_text.split("---TAGS---")
-            main_content = parts[0].strip()
-            tags_text = parts[1].strip() if len(parts) > 1 else ""
-            tags = [tag.strip() for tag in tags_text.split(',') if tag.strip()]
-        else:
-            main_content = response_text
-            tags = []
+        # Limpiar contenido
+        content = re.sub(r'\s+', ' ', content).strip()
         
-        # Separar título y contenido
-        if '---' in main_content:
-            content_parts = main_content.split('---', 1)
-            title = content_parts[0].strip()
-            body = content_parts[1].strip()
-        else:
-            title = "Título no generado"
-            body = main_content
+        if not content:
+            return {
+                'success': False,
+                'error': 'No se pudo extraer contenido de la URL'
+            }
         
         return {
+            'success': True,
             'title': title,
-            'content': body,
-            'tags': tags,
-            'raw_response': response_text
+            'content': content[:5000],  # Limitar a 5000 caracteres
+            'url': url
         }
-    
-    except (IndexError, AttributeError) as e:
-        print(f"Error al procesar respuesta de AI: {e}")
-        return {
-            'title': "Título no generado",
-            'content': response.text if hasattr(response, 'text') else "Contenido no generado",
-            'tags': [],
-            'raw_response': response.text if hasattr(response, 'text') else ""
-        }
-
-def generate_tags_with_ai(content: str, prompt_template: str) -> list[str]:
-    """
-    Usa Gemini para generar una lista de tags a partir del contenido.
-    """
-    setup_api()
-    model_name = get_active_model_name()
-    model = genai.GenerativeModel(model_name)
-    prompt = prompt_template.format(content=content)
-    
-    response = model.generate_content(prompt)
-    
-    try:
-        tags = [tag.strip() for tag in response.text.split(',')]
-        return tags
-    except AttributeError:
-        return []
-
-def process_images_in_content(content: str, images_data: list[dict]) -> str:
-    """
-    Procesa el contenido HTML y reemplaza los comentarios de imágenes sugeridas
-    con imágenes reales si están disponibles.
-    """
-    if not images_data:
-        return content
-    
-    # Buscar comentarios de imágenes sugeridas
-    image_comment_pattern = r'<!-- IMAGEN SUGERIDA: ([^>]+) -->'
-    
-    used_images = set()
-    image_index = 0
-    
-    def replace_image_comment(match):
-        nonlocal image_index
-        description = match.group(1)
         
-        # Insertar la siguiente imagen no usada
-        while image_index < len(images_data):
-            img_data = images_data[image_index]
-            image_index += 1
-            local_url = img_data.get('local_url')
-            if local_url and local_url not in used_images:
-                used_images.add(local_url)
-                return f'<p><img src="{local_url}" alt="{img_data.get("alt", description)}" style="max-width: 100%; height: auto;"></p>'
-        
-        # Si no hay imagen disponible, mantener el comentario
-        return match.group(0)
-    
-    return re.sub(image_comment_pattern, replace_image_comment, content)
-
-def generate_complete_post(
-    url: str, 
-    rewrite_prompt: str,  
-    extract_images: bool = True, 
-    max_images: int = 5,
-    title: str = None,
-    generate_cover: bool = True,
-    image_style: str = 'professional',
-    progress_callback: callable = None
-) -> dict:
-    """
-    Genera un post completo a partir de una URL.
-    
-    Args:
-        url: URL del artículo a procesar
-        rewrite_prompt: Instrucciones para reescribir el contenido
-        extract_images: Si se deben extraer imágenes
-        max_images: Número máximo de imágenes a extraer
-        title: Título personalizado (opcional)
-        generate_cover: Si se debe generar una imagen de portada
-        image_style: Estilo de la imagen de portada
-        progress_callback: Función para reportar progreso (opcional)
-        
-    Returns:
-        Diccionario con el resultado del proceso
-    """
-    def report_progress(step: str, percentage: int):
-        """Helper function to report progress"""
-        if progress_callback:
-            try:
-                progress_callback(step, percentage)
-            except Exception as e:
-                logger.warning(f"Error reporting progress: {e}")
-    
-    if not url and not title:
+    except requests.RequestException as e:
         return {
             'success': False,
-            'error': 'Se requiere una URL o un título personalizado.'
+            'error': f'Error al acceder a la URL: {str(e)}'
         }
-    
-    report_progress("Iniciando generación de post", 0)
-    
-    # Extraer contenido de la URL si se proporciona
-    content = None
-    if url:
-        report_progress("Extrayendo contenido de URL", 10)
-        content_result = extract_content_from_url(url)
-        if not content_result['success']:
-            return content_result
-        content = content_result['content']
-        report_progress("Contenido extraído exitosamente", 20)
-    
-    # Extraer imágenes si está habilitado
-    images_data = []
-    if extract_images and url:
-        report_progress("Extrayendo imágenes", 25)
-        images_info = extract_images_from_url(url, max_images)
-        for i, img_info in enumerate(images_info):
-            local_url = download_image(img_info['src'], min_width=300, min_height=300)
-            if local_url:
-                img_info['local_url'] = local_url
-                images_data.append(img_info)
-            # Report progress for image extraction
-            progress = 25 + (i + 1) * 10 / len(images_info)
-            report_progress(f"Procesando imagen {i + 1}/{len(images_info)}", int(progress))
-        report_progress("Imágenes procesadas", 35)
-    
-    # Reescribir contenido con IA
-    report_progress("Generando contenido con IA", 40)
-    if content:
-        ai_title, ai_content = rewrite_content_with_ai(
-            content=content,
-            prompt_template=rewrite_prompt
-        )
-        ai_result = {
-            'success': True,
-            'title': title if title else ai_title,
-            'content': ai_content
-        }
-    else:
-        # Si no hay contenido de URL, usar solo el título proporcionado
-        ai_result = {
-            'success': True,
-            'title': title or 'Post generado con IA',
-            'content': 'Contenido generado automáticamente.'
-        }
-    
-    if not ai_result['success']:
-        return ai_result
-    
-    report_progress("Contenido generado exitosamente", 50)
-    
-    # Generar tags
-    report_progress("Generando tags", 55)
-    try:
-        # Usar un prompt básico para generar tags
-        tag_prompt = "Genera 5 tags relevantes para este contenido, separados por comas: {content}"
-        ai_result['tags'] = generate_tags_with_ai(ai_result['content'], tag_prompt)
-        report_progress("Tags generados", 60)
     except Exception as e:
-        logger.warning(f"Error generating tags: {e}")
-        ai_result['tags'] = []
-        report_progress("Tags no disponibles", 60)
+        return {
+            'success': False,
+            'error': f'Error procesando contenido: {str(e)}'
+        }
+
+def rewrite_content_with_ai(content: str, prompt: str = None, progress_callback=None) -> dict:
+    """
+    Reescribe el contenido usando IA.
     
-    # Calcular tiempo de lectura
-    def calculate_reading_time(content):
-        """Calcula el tiempo de lectura estimado en minutos"""
-        if not content:
-            return 0
-        # Aproximadamente 200 palabras por minuto
-        word_count = len(content.split())
-        return max(1, round(word_count / 200))
+    Returns:
+        dict: Diccionario con 'success', 'content', 'error'
+    """
+    try:
+        setup_api()
+        # Usar Gemini 2.5-pro para mejor calidad de contenido
+        model = genai.GenerativeModel('gemini-2.5-pro')
+        
+        if progress_callback:
+            progress_callback("Reescribiendo contenido con IA...", 30)
+        
+        # Prompt por defecto si no se proporciona uno
+        if not prompt:
+            prompt = """
+            Reescribe el siguiente contenido de manera profesional y atractiva para un blog de tecnología.
+            Mantén la información técnica precisa pero hazla más accesible.
+            Estructura el contenido con párrafos claros y un flujo lógico.
+            """
+        
+        full_prompt = f"{prompt}\n\nContenido a reescribir:\n{content}"
+        
+        response = model.generate_content(full_prompt)
+        
+        if not response.text:
+            return {
+                'success': False,
+                'error': 'No se recibió respuesta del modelo de IA'
+            }
+        
+        return {
+            'success': True,
+            'content': response.text.strip()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error reescribiendo contenido: {e}")
+        return {
+            'success': False,
+            'error': f'Error en la reescritura: {str(e)}'
+        }
+
+def generate_tags_with_ai(content: str, progress_callback=None) -> dict:
+    """
+    Genera tags usando IA basándose en el contenido.
     
-    ai_result['reading_time'] = calculate_reading_time(ai_result['content'])
+    Returns:
+        dict: Diccionario con 'success', 'tags', 'error'
+    """
+    try:
+        setup_api()
+        # Usar Gemini 2.5-pro para mejor calidad de tags
+        model = genai.GenerativeModel('gemini-2.5-pro')
+        
+        if progress_callback:
+            progress_callback("Generando tags con IA...", 70)
+        
+        prompt = f"""
+        Analiza el siguiente contenido y genera entre 3 y 6 tags relevantes.
+        Los tags deben ser:
+        - Específicos y relevantes al contenido
+        - En español
+        - Una sola palabra o máximo dos palabras
+        - Relacionados con tecnología, programación o el tema principal
+        
+        Devuelve solo los tags separados por comas, sin explicaciones adicionales.
+        
+        Contenido:
+        {content[:2000]}
+        """
+        
+        response = model.generate_content(prompt)
+        
+        if not response.text:
+            return {
+                'success': False,
+                'error': 'No se pudieron generar tags'
+            }
+        
+        # Procesar tags
+        tags_text = response.text.strip()
+        tags = [tag.strip() for tag in tags_text.split(',')]
+        tags = [tag for tag in tags if tag and len(tag) > 1][:6]  # Máximo 6 tags
+        
+        return {
+            'success': True,
+            'tags': tags
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generando tags: {e}")
+        return {
+            'success': False,
+            'error': f'Error generando tags: {str(e)}'
+        }
+
+def calculate_reading_time(content: str) -> int:
+    """
+    Calcula el tiempo de lectura estimado en minutos.
+    """
+    if not content:
+        return 1
     
-    # Insertar imágenes en el contenido si hay disponibles
-    report_progress("Procesando imágenes en contenido", 65)
-    final_content = ai_result['content']
-    if images_data:
-        final_content = process_images_in_content(final_content, images_data)
-        report_progress("Imágenes insertadas en contenido", 70)
+    # Contar palabras
+    words = len(content.split())
     
-    ai_result['content'] = final_content
-    ai_result['images'] = images_data
+    # Promedio de 200 palabras por minuto
+    reading_time = max(1, round(words / 200))
     
-    # Generar imagen de portada si está habilitado
-    if generate_cover:
-        report_progress("Generando imagen de portada", 75)
-        try:
-            from posts.image_generation import registry, CoverImagePromptBuilder
-            
-            logger.info("Starting cover image generation...")
-            
-            # Obtener el servicio de generación de imágenes
-            service = registry.get_default_service()
-            if service:
-                logger.info(f"Using image service: {service.__class__.__name__}")
-                report_progress("Construyendo prompt para imagen", 80)
+    return reading_time
+
+def extract_and_process_images(url: str, max_images: int = 5, prioritize_large: bool = True) -> list:
+    """
+    Extrae imágenes de una URL y las procesa para uso en el post.
+    
+    Args:
+        url (str): URL de donde extraer las imágenes
+        max_images (int): Número máximo de imágenes a extraer
+        
+    Returns:
+        list: Lista de diccionarios con información de las imágenes procesadas
+    """
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+        
+        # Encontrar todas las imágenes
+        img_tags = soup.find_all('img')
+        
+        # Filtrar y priorizar imágenes si se solicita
+        if prioritize_large:
+            # Filtrar imágenes que probablemente sean de contenido (no iconos/logos pequeños)
+            filtered_imgs = []
+            for img in img_tags:
+                # Obtener dimensiones si están disponibles
+                width = img.get('width')
+                height = img.get('height')
                 
-                # Construir prompt optimizado para la imagen
-                prompt = CoverImagePromptBuilder.build_cover_prompt(
-                    title=ai_result['title'],
-                    content=ai_result['content'],
-                    tags=ai_result['tags'],
-                    style=image_style
-                )
-                
-                logger.info(f"Generated prompt for image: {prompt[:100]}...")
-                
-                # Generar la imagen con reintentos
-                max_retries = 3
-                for attempt in range(max_retries):
+                # Filtrar por tamaño si está disponible
+                if width and height:
                     try:
-                        report_progress(f"Generando imagen (intento {attempt + 1})", 85 + attempt * 3)
-                        success, image_url, error = service.generate_image(prompt)
-                        
-                        if success and image_url:
-                            ai_result['cover_image_url'] = image_url
-                            logger.info(f"Cover image generated successfully: {image_url}")
-                            report_progress("Imagen de portada generada", 95)
-                            break
-                        else:
-                            logger.warning(f"Attempt {attempt + 1} failed to generate cover image: {error}")
-                            if attempt == max_retries - 1:
-                                logger.error("All attempts to generate cover image failed")
-                                report_progress("Error generando imagen de portada", 95)
-                    except Exception as e:
-                        logger.error(f"Attempt {attempt + 1} error generating cover image: {e}")
-                        if attempt == max_retries - 1:
-                            logger.error("All attempts to generate cover image failed due to errors")
-                            report_progress("Error generando imagen de portada", 95)
+                        w, h = int(width), int(height)
+                        if w >= 200 and h >= 150:  # Mínimo tamaño razonable
+                            filtered_imgs.append(img)
+                    except ValueError:
+                        filtered_imgs.append(img)  # Incluir si no se puede parsear
+                else:
+                    # Si no hay dimensiones, incluir por defecto
+                    filtered_imgs.append(img)
+            
+            # Si después del filtrado no hay suficientes, usar todas
+            if len(filtered_imgs) < max_images // 2:
+                img_tags = img_tags[:max_images]
             else:
-                logger.warning("No image generation service available")
-                report_progress("Servicio de imágenes no disponible", 95)
-                # Fallback: continue without cover image
+                img_tags = filtered_imgs[:max_images]
+        else:
+            img_tags = img_tags[:max_images]
+        
+        processed_images = []
+        
+        for i, img in enumerate(img_tags):
+            try:
+                # Obtener URL de la imagen
+                img_src = img.get('src')
+                if not img_src:
+                    continue
                 
-        except ImportError:
-            logger.warning("Image generation modules not available, skipping cover image generation")
-            report_progress("Módulos de imagen no disponibles", 95)
-        except Exception as e:
-            logger.error(f"Unexpected error generating cover image: {e}")
-            report_progress("Error inesperado con imagen", 95)
-            # Fallback: continue without cover image
-    else:
-        report_progress("Omitiendo generación de imagen", 95)
+                # Convertir URL relativa a absoluta
+                if img_src.startswith('//'):
+                    img_url = f"https:{img_src}"
+                elif img_src.startswith('/'):
+                    img_url = f"{base_url}{img_src}"
+                elif not img_src.startswith(('http://', 'https://')):
+                    img_url = urljoin(url, img_src)
+                else:
+                    img_url = img_src
+                
+                # Obtener información adicional
+                alt_text = img.get('alt', '')
+                title_text = img.get('title', '')
+                
+                # Descargar y guardar la imagen
+                try:
+                    img_response = requests.get(img_url, headers=headers, timeout=15)
+                    img_response.raise_for_status()
+                    
+                    # Verificar que es una imagen válida
+                    content_type = img_response.headers.get('content-type', '')
+                    if not content_type.startswith('image/'):
+                        continue
+                    
+                    # Generar nombre único
+                    file_extension = img_url.split('.')[-1].split('?')[0][:4]  # Limitar extensión
+                    if file_extension.lower() not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                        file_extension = 'jpg'
+                    
+                    filename = f"extracted_{uuid.uuid4().hex[:8]}.{file_extension}"
+                    file_path = f"ai_posts/content/{filename}"
+                    
+                    # Guardar imagen
+                    from django.core.files.base import ContentFile
+                    saved_path = default_storage.save(file_path, ContentFile(img_response.content))
+                    local_url = default_storage.url(saved_path)
+                    
+                    processed_images.append({
+                        'original_url': img_url,
+                        'local_url': local_url,
+                        'local_path': saved_path,
+                        'alt_text': alt_text,
+                        'title_text': title_text,
+                        'filename': filename
+                    })
+                    
+                    logger.info(f"Imagen extraída y guardada: {filename}")
+                    
+                except Exception as e:
+                    logger.warning(f"Error procesando imagen {img_url}: {e}")
+                    continue
+                    
+            except Exception as e:
+                logger.warning(f"Error con imagen {i}: {e}")
+                continue
+        
+        logger.info(f"Se procesaron {len(processed_images)} imágenes de {len(img_tags)} encontradas")
+        return processed_images
+        
+    except Exception as e:
+        logger.error(f"Error extrayendo imágenes de {url}: {e}")
+        return []
+
+def insert_images_in_content(content: str, images: list) -> str:
+    """
+    Inserta imágenes en el contenido HTML del post de manera inteligente.
     
-    report_progress("Post generado exitosamente", 100)
-    return ai_result
+    Args:
+        content (str): Contenido HTML del post
+        images (list): Lista de imágenes procesadas
+        
+    Returns:
+        str: Contenido con imágenes insertadas
+    """
+    try:
+        if not images:
+            return content
+        
+        # Parsear el contenido HTML
+        soup = BeautifulSoup(content, 'html.parser')
+        
+        # Encontrar párrafos donde insertar imágenes
+        paragraphs = soup.find_all('p')
+        
+        if not paragraphs:
+            # Si no hay párrafos, insertar al final
+            for img_data in images:
+                img_html = create_image_html(img_data)
+                content += f"\n\n{img_html}"
+            return content
+        
+        # Calcular posiciones para insertar imágenes
+        total_paragraphs = len(paragraphs)
+        images_to_insert = min(len(images), 3)  # Máximo 3 imágenes en el contenido
+        
+        if total_paragraphs >= 3:
+            # Insertar imágenes distribuidas a lo largo del contenido
+            positions = []
+            if images_to_insert >= 1:
+                positions.append(total_paragraphs // 3)  # Primera tercera parte
+            if images_to_insert >= 2:
+                positions.append(2 * total_paragraphs // 3)  # Segunda tercera parte
+            if images_to_insert >= 3:
+                positions.append(total_paragraphs - 1)  # Cerca del final
+        else:
+            # Pocos párrafos, insertar después del primero
+            positions = [1] if total_paragraphs > 1 else [0]
+        
+        # Insertar imágenes en las posiciones calculadas
+        for i, pos in enumerate(positions[:len(images)]):
+            if pos < len(paragraphs):
+                img_html = create_image_html(images[i])
+                img_tag = BeautifulSoup(img_html, 'html.parser')
+                
+                # Insertar después del párrafo
+                paragraphs[pos].insert_after(img_tag)
+        
+        return str(soup)
+        
+    except Exception as e:
+        logger.error(f"Error insertando imágenes en contenido: {e}")
+        return content
+
+def create_image_html(img_data: dict) -> str:
+    """
+    Crea HTML para una imagen con el formato adecuado para CKEditor.
+    
+    Args:
+        img_data (dict): Datos de la imagen
+        
+    Returns:
+        str: HTML de la imagen
+    """
+    alt_text = img_data.get('alt_text', 'Imagen del artículo')
+    title_text = img_data.get('title_text', '')
+    local_url = img_data.get('local_url', '')
+    
+    # Crear HTML responsivo para la imagen
+    html = f'''
+    <figure style="text-align: center; margin: 20px 0;">
+        <img src="{local_url}" 
+             alt="{alt_text}" 
+             title="{title_text}"
+             style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+        {f'<figcaption style="font-style: italic; color: #666; margin-top: 8px; font-size: 0.9em;">{alt_text}</figcaption>' if alt_text else ''}
+    </figure>
+    '''
+    
+    return html.strip()
+
+def generate_complete_post(url=None, title=None, rewrite_prompt=None, tag_prompt=None, 
+                         extract_images=False, max_images=5, 
+                         progress_callback=None, **kwargs):
+    """
+    Genera un post completo usando IA.
+    
+    Returns:
+        dict: Diccionario con el resultado de la generación
+    """
+    try:
+        if progress_callback:
+            progress_callback("Iniciando generación de post...", 0)
+        
+        result = {
+            'success': True,
+            'title': '',
+            'content': '',
+            'tags': [],
+            'reading_time': 1,
+            'extracted_images': [],
+            'suggested_cover_image': None,
+            'available_cover_images': []
+        }
+        
+        # Extraer contenido de URL si se proporciona
+        if url:
+            if progress_callback:
+                progress_callback("Extrayendo contenido de URL...", 10)
+            
+            extraction_result = extract_content_from_url(url)
+            if not extraction_result['success']:
+                return {
+                    'success': False,
+                    'error': extraction_result['error']
+                }
+            
+            # Usar título extraído si no se proporciona uno
+            if not title:
+                result['title'] = extraction_result['title']
+            else:
+                result['title'] = title
+            
+            content = extraction_result['content']
+        else:
+            if not title:
+                return {
+                    'success': False,
+                    'error': 'Se requiere una URL o un título para generar el post'
+                }
+            
+            result['title'] = title
+            content = f"Crear contenido sobre: {title}"
+        
+        # Reescribir contenido con IA
+        if progress_callback:
+            progress_callback("Reescribiendo contenido...", 30)
+        
+        rewrite_result = rewrite_content_with_ai(content, rewrite_prompt, progress_callback)
+        if not rewrite_result['success']:
+            return {
+                'success': False,
+                'error': rewrite_result['error']
+            }
+        
+        result['content'] = rewrite_result['content']
+        
+        # Generar tags
+        if progress_callback:
+            progress_callback("Generando tags...", 70)
+        
+        tags_result = generate_tags_with_ai(result['content'], progress_callback)
+        if tags_result['success']:
+            result['tags'] = tags_result['tags']
+        else:
+            # Tags por defecto si falla la generación
+            result['tags'] = ['tecnología', 'blog', 'desarrollo']
+        
+        # Calcular tiempo de lectura
+        result['reading_time'] = calculate_reading_time(result['content'])
+        
+        # Extraer y procesar imágenes del contenido si se solicita
+        if extract_images and url:
+            if progress_callback:
+                progress_callback("Extrayendo imágenes del contenido...", 80)
+            
+            try:
+                prioritize_large = kwargs.get('prioritize_large_images', True)
+                extracted_images = extract_and_process_images(url, max_images, prioritize_large)
+                result['extracted_images'] = extracted_images
+                
+                # Insertar imágenes en el contenido si se encontraron
+                if extracted_images:
+                    result['content'] = insert_images_in_content(result['content'], extracted_images)
+                    result['available_cover_images'] = extracted_images  # Todas las imágenes disponibles para portada
+                    logger.info(f"Se insertaron {len(extracted_images)} imágenes en el contenido")
+                    logger.info(f"Disponibles {len(extracted_images)} imágenes para seleccionar como portada")
+                else:
+                    logger.info("No se encontraron imágenes para extraer")
+                    
+            except Exception as e:
+                logger.warning(f"Error extrayendo imágenes: {e}")
+                result['extracted_images'] = []
+        
+        # Sugerir imagen de portada de las extraídas si hay disponibles
+        if extract_images and result.get('extracted_images'):
+            # Seleccionar la primera imagen como sugerencia de portada
+            first_image = result['extracted_images'][0]
+            result['suggested_cover_image'] = {
+                'url': first_image['local_url'],
+                'path': first_image['local_path'],
+                'alt_text': first_image['alt_text'],
+                'filename': first_image['filename']
+            }
+            logger.info(f"Imagen de portada sugerida: {first_image['filename']}")
+        else:
+            result['suggested_cover_image'] = None
+        
+        if progress_callback:
+            progress_callback("Post generado exitosamente", 100)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error en generate_complete_post: {e}")
+        return {
+            'success': False,
+            'error': f'Error generando post: {str(e)}'
+        }

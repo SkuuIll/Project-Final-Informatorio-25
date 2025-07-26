@@ -1,15 +1,14 @@
 <div align="center">
 
-# 🚀 DevBlog - Plataforma de Blogging Moderna
+# 🚀 DevBlog - Plataforma de Blogging con IA
 
-### *Una plataforma de blogging completa construida con Django y tecnologías modernas*
+### *Una plataforma de blogging moderna con generación de contenido por IA construida con Django*
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![Django](https://img.shields.io/badge/Django-5.2+-green.svg)](https://djangoproject.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[🌐 **Demo en Vivo**](https://proyecto.skulll.site/) • [📖 **Documentación**](docs/) • [🐛 **Reportar Bug**](https://github.com/SkuuIll/Project-Final-Informatorio-25/issues)
+[🌐 **Demo en Vivo**](https://proyecto.skulll.site/) • [🐛 **Reportar Bug**](https://github.com/SkuuIll/Project-Final-Informatorio-25/issues)
 
 </div>
 
@@ -19,13 +18,11 @@
 
 - [✨ Características](#-características)
 - [🛠️ Stack Tecnológico](#️-stack-tecnológico)
-- [🚀 Instalación Rápida](#-instalación-rápida)
-- [📖 Documentación](#-documentación)
-- [🧪 Testing](#-testing)
+- [🚀 Instalación](#-instalación)
 - [🔧 Configuración](#-configuración)
-- [📊 API](#-api)
-- [🤝 Contribuir](#-contribuir)
-- [📄 Licencia](#-licencia)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🤖 Generador de IA](#-generador-de-ia)
+- [👨‍💻 Autor](#-autor)
 
 ---
 
@@ -42,15 +39,19 @@
 - ✅ Editor WYSIWYG avanzado con CKEditor 5
 - ✅ Sistema de etiquetas inteligente
 - ✅ Cálculo automático de tiempo de lectura
-- ✅ Subida y gestión de imágenes optimizada
+- ✅ Widget personalizado para selección de imágenes de cabecera
+- ✅ Galería de imágenes extraídas automáticamente
 - ✅ Estados de publicación (borrador/publicado)
 - ✅ Posts destacados (sticky posts)
+- ✅ Gestión segura de archivos con validación
 
 ### 🤖 **Inteligencia Artificial**
-- ✅ Generador de contenido con Google Gemini AI
+- ✅ Generador de contenido con Google Gemini 2.5-pro
 - ✅ Extracción automática de contenido desde URLs
+- ✅ Extracción y procesamiento automático de imágenes
 - ✅ Generación automática de etiquetas
-- ✅ Reescritura inteligente de contenido
+- ✅ Reescritura inteligente de contenido con formato HTML
+- ✅ Selector inteligente de imágenes de cabecera desde medios existentes
 
 ### 💬 **Interacción Social**
 - ✅ Sistema de comentarios con likes
@@ -129,83 +130,49 @@ gunicorn==23.0.0                # Servidor WSGI
 
 ---
 
-## 🚀 Instalación Rápida
+## 🚀 Instalación
 
-### 🐳 **Opción 1: Docker (Recomendado)**
+### 📋 **Requisitos Previos**
+- Python 3.12+
+- pip (gestor de paquetes de Python)
+- Git
+
+### 💻 **Instalación Local**
 
 ```bash
-# 1. Clonar repositorio
+# 1. Clonar el repositorio
 git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
 cd Project-Final-Informatorio-25
 
-# 2. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus configuraciones
-
-# 3. Levantar servicios
-docker-compose up -d --build
-
-# 4. Ejecutar migraciones
-docker-compose exec web python manage.py migrate
-docker-compose exec web python manage.py createsuperuser
-
-# 🎉 ¡Listo! Visita http://localhost:8000
-```
-
-### 💻 **Opción 2: Instalación Local**
-
-```bash
-# 1. Clonar y configurar entorno
-git clone https://github.com/SkuuIll/Project-Final-Informatorio-25.git
-cd Project-Final-Informatorio-25
+# 2. Crear y activar entorno virtual
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
 
-# 2. Instalar dependencias
+# 3. Instalar dependencias
 pip install -r requirements.txt
 
-# 3. Configurar base de datos
+# 4. Configurar variables de entorno
 cp .env.example .env
+# Editar .env con tus configuraciones (ver sección de configuración)
+
+# 5. Ejecutar migraciones
 python manage.py migrate
+
+# 6. Crear superusuario
 python manage.py createsuperuser
 
-# 4. Ejecutar servidor
+# 7. Ejecutar servidor de desarrollo
 python manage.py runserver
 
 # 🎉 ¡Listo! Visita http://localhost:8000
 ```
 
----
-
-## 📖 Documentación
-
-| Documento | Descripción |
-|-----------|-------------|
-| [📋 **Guía de Instalación**](docs/INSTALLATION.md) | Instalación detallada paso a paso |
-| [🔌 **Documentación de API**](docs/API.md) | Endpoints y ejemplos de uso |
-| [⚙️ **Configuración**](docs/CONFIGURATION.md) | Variables de entorno y settings |
-| [🧪 **Testing**](docs/TESTING.md) | Guía de testing y cobertura |
-| [🚀 **Despliegue**](docs/DEPLOYMENT.md) | Guía de producción |
-
----
-
-## 🧪 Testing
-
-```bash
-# Ejecutar todos los tests
-python manage.py test
-
-# Tests con cobertura
-coverage run --source='.' manage.py test
-coverage report
-coverage html
-
-# Tests específicos
-python manage.py test posts.tests.PostModelTest
-python manage.py test accounts.tests
-```
-
-**Cobertura actual: 85%+** 📊
+### 🔑 **Acceso al Admin**
+- URL: `http://localhost:8000/admin/`
+- Usa las credenciales del superusuario que creaste
 
 ---
 
@@ -215,66 +182,39 @@ python manage.py test accounts.tests
 
 ```env
 # Django Core
-SECRET_KEY=tu-clave-super-secreta
-DEBUG=False
-ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+SECRET_KEY=tu-clave-super-secreta-aqui
+DEBUG=True  # False en producción
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Base de Datos
-USE_POSTGRESQL=True
+# Base de Datos (SQLite por defecto)
+USE_POSTGRESQL=False  # True para usar PostgreSQL
 POSTGRES_DB=devblog
 POSTGRES_USER=devblog_user
 POSTGRES_PASSWORD=password-seguro
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 
-# Servicios Externos
-GOOGLE_API_KEY=tu-api-key-de-gemini
+# Servicios de IA
+GOOGLE_API_KEY=tu-api-key-de-gemini-aqui
+
+# Seguridad (Opcional)
 TURNSTILE_SITE_KEY=tu-site-key
 TURNSTILE_SECRET_KEY=tu-secret-key
 
-# Email (Producción)
+# Email (Opcional)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=tu-email@gmail.com
 EMAIL_HOST_PASSWORD=tu-app-password
 ```
 
----
+### 🔑 **Obtener API Key de Google Gemini**
 
-## 📊 API
-
-### Endpoints Principales
-
-```http
-GET    /api/posts/                    # Listar posts
-GET    /api/posts/{slug}/             # Obtener post específico
-POST   /post/{username}/{slug}/like/  # Like/Unlike post
-POST   /comment/{id}/like/            # Like/Unlike comentario
-GET    /search/?q={query}             # Búsqueda
-GET    /feed/                         # RSS Feed
-```
-
-### Ejemplo de Respuesta
-
-```json
-{
-  "count": 25,
-  "next": "http://localhost:8000/api/posts/?page=2",
-  "results": [
-    {
-      "id": 1,
-      "title": "Mi Primer Post",
-      "slug": "mi-primer-post",
-      "author": "admin",
-      "created_at": "2024-01-01T12:00:00Z",
-      "views": 142,
-      "likes_count": 15,
-      "reading_time": 3,
-      "tags": ["django", "python", "web"]
-    }
-  ]
-}
-```
+1. Ve a [Google AI Studio](https://aistudio.google.com/)
+2. Inicia sesión con tu cuenta de Google
+3. Crea un nuevo proyecto o selecciona uno existente
+4. Ve a "Get API Key" y genera una nueva clave
+5. Copia la clave y pégala en tu archivo `.env`
 
 ---
 
@@ -282,106 +222,106 @@ GET    /feed/                         # RSS Feed
 
 ```
 DevBlog/
-├── 📁 accounts/              # Gestión de usuarios
+├── 📁 accounts/              # Gestión de usuarios y autenticación
 │   ├── models.py            # Profile, Notification
-│   ├── views.py             # Auth, perfil, settings
-│   └── forms.py             # Formularios de usuario
-├── 📁 blog/                 # Configuración principal
+│   ├── views.py             # Auth, perfil, configuraciones
+│   ├── forms.py             # Formularios de usuario
+│   └── admin.py             # Admin personalizado
+├── 📁 blog/                 # Configuración principal del proyecto
 │   ├── configuraciones/     # Settings modulares
+│   │   ├── settings.py      # Configuración principal
+│   │   ├── development.py   # Settings de desarrollo
+│   │   └── production.py    # Settings de producción
 │   ├── middleware.py        # Middleware personalizado
-│   └── urls.py              # URLs principales
-├── 📁 posts/                # Lógica de posts
-│   ├── models.py            # Post, Comment, AIModel
-│   ├── views.py             # CRUD, likes, AI
-│   ├── ai_generator.py      # Integración con Gemini
-│   └── serializers.py      # API serializers
+│   ├── urls.py              # URLs principales
+│   └── wsgi.py              # Configuración WSGI
+├── 📁 posts/                # Lógica principal de posts y contenido
+│   ├── models.py            # Post, Comment, AIModel, AIPromptTemplate
+│   ├── views.py             # CRUD, likes, búsqueda, AI
+│   ├── admin.py             # Admin personalizado con widget de imágenes
+│   ├── widgets.py           # Widget personalizado para selección de imágenes
+│   ├── ai_generator.py      # Integración con Google Gemini AI
+│   ├── image_services.py    # Servicios de generación de imágenes
+│   ├── utils.py             # Utilidades para manejo seguro de archivos
+│   └── managers.py          # Managers personalizados para optimización
 ├── 📁 templates/            # Templates HTML
-│   ├── base.html            # Template base
+│   ├── base.html            # Template base con Tailwind CSS
 │   ├── partials/            # Componentes reutilizables
-│   └── posts/               # Templates de posts
+│   ├── posts/               # Templates de posts
+│   ├── accounts/            # Templates de usuarios
+│   └── admin/               # Templates personalizados del admin
 ├── 📁 static/               # Archivos estáticos
 │   ├── css/                 # Estilos personalizados
-│   ├── js/                  # JavaScript
-│   └── img/                 # Imágenes
-├── 📁 docs/                 # Documentación
-├── 📁 logs/                 # Archivos de log
-├── 🐳 docker-compose.yml    # Configuración Docker
+│   ├── js/                  # JavaScript y Alpine.js
+│   └── img/                 # Imágenes del sitio
+├── 📁 media/                # Archivos subidos por usuarios
+│   ├── post_images/         # Imágenes de posts
+│   └── ai_posts/            # Imágenes extraídas por IA
+├── 📁 staticfiles/          # Archivos estáticos recolectados
 ├── 📋 requirements.txt      # Dependencias Python
-└── ⚙️ .env                  # Variables de entorno
+├── ⚙️ .env                  # Variables de entorno
+├── 🗃️ db.sqlite3           # Base de datos SQLite (desarrollo)
+└── 🐍 manage.py             # Script de gestión de Django
 ```
 
 ---
 
-## 🚀 Características Avanzadas
+## 🤖 Generador de IA
 
-### 🤖 **Generador de IA**
-- Integración con Google Gemini AI
-- Extracción automática de contenido desde URLs
-- Generación de títulos y etiquetas inteligentes
-- Reescritura de contenido optimizada para SEO
+### ✨ **Características Principales**
 
-### 📊 **Analytics Integrado**
-- Tracking de vistas en tiempo real
-- Estadísticas de engagement
-- Métricas de rendimiento por autor
-- Gráficos interactivos en el dashboard
+- **🧠 Google Gemini 2.5-pro**: Integración con el modelo de IA más avanzado de Google
+- **🔗 Extracción de URLs**: Analiza y extrae contenido automáticamente desde cualquier URL
+- **🖼️ Procesamiento de Imágenes**: Descarga y procesa imágenes encontradas en el contenido
+- **📝 Reescritura Inteligente**: Convierte contenido en artículos únicos con formato HTML
+- **🏷️ Generación de Tags**: Crea etiquetas relevantes automáticamente
+- **🎯 Selección de Cabecera**: Widget inteligente para seleccionar imágenes de cabecera
 
-### 🔔 **Sistema de Notificaciones**
-- Notificaciones en tiempo real con WebSockets
-- Emails automáticos para eventos importantes
-- Panel de notificaciones personalizable
-- Configuración granular de preferencias
+### 🚀 **Cómo Usar el Generador**
 
-### 🎨 **Temas y Personalización**
-- Tema claro/oscuro automático
-- Personalización de colores por usuario
-- Layouts adaptativos
-- Componentes reutilizables
+1. **Accede al Admin**: Ve a `/admin/posts/post/`
+2. **Generador de IA**: Haz clic en "Generar Post con IA"
+3. **Ingresa URL**: Pega la URL del artículo que quieres procesar
+4. **Configura Opciones**: 
+   - Selecciona el tipo de prompt
+   - Activa extracción de imágenes
+   - Ajusta el número máximo de imágenes
+5. **Genera**: El sistema creará automáticamente:
+   - Título optimizado
+   - Contenido reescrito en HTML
+   - Tags relevantes
+   - Imágenes extraídas y procesadas
 
----
+### 🛠️ **Configuración Avanzada**
 
-## 🤝 Contribuir
-
-¡Las contribuciones son bienvenidas! Por favor:
-
-1. 🍴 Fork el proyecto
-2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
-5. 🔄 Abre un Pull Request
-
-### 📋 Guidelines
-
-- Sigue las convenciones de código existentes
-- Agrega tests para nuevas funcionalidades
-- Actualiza la documentación cuando sea necesario
-- Usa commits descriptivos
+El sistema incluye templates de prompts personalizables para diferentes tipos de contenido:
+- **Reescritura Simple**: Para contenido básico
+- **Post Completo**: Para artículos detallados con estructura HTML
+- **Generación de Tags**: Para crear etiquetas específicas
 
 ---
 
-## 📈 Roadmap
-
-- [ ] 🔍 **Búsqueda Avanzada** - Elasticsearch integration
-- [ ] 📱 **PWA** - Progressive Web App features
-- [ ] 🌐 **i18n** - Internacionalización completa
-- [ ] 📊 **Analytics Avanzado** - Google Analytics integration
-- [ ] 🔗 **Social Login** - OAuth con Google, GitHub, etc.
-- [ ] 📧 **Newsletter** - Sistema de suscripciones
-- [ ] 🎯 **SEO Avanzado** - Meta tags automáticos
-- [ ] 🚀 **Performance** - Caching con Redis
-
 ---
 
-## 📊 Estadísticas del Proyecto
+## � Funcionralidades Destacadas
 
-<div align="center">
+### 🎨 **Widget Personalizado de Imágenes**
+- Selector visual de imágenes existentes
+- Preview en tiempo real
+- Validación automática de archivos
+- Soporte para múltiples formatos (JPG, PNG, WebP, etc.)
 
-![GitHub repo size](https://img.shields.io/github/repo-size/SkuuIll/Project-Final-Informatorio-25)
-![GitHub last commit](https://img.shields.io/github/last-commit/SkuuIll/Project-Final-Informatorio-25)
-![GitHub issues](https://img.shields.io/github/issues/SkuuIll/Project-Final-Informatorio-25)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/SkuuIll/Project-Final-Informatorio-25)
+### 🔒 **Seguridad Avanzada**
+- Validación segura de archivos
+- Protección contra directory traversal
+- Manejo robusto de errores
+- Logging estructurado para debugging
 
-</div>
+### ⚡ **Optimización de Rendimiento**
+- Managers personalizados para consultas optimizadas
+- Caching inteligente de imágenes
+- Lazy loading de contenido
+- Compresión automática de archivos estáticos
 
 ---
 
@@ -392,22 +332,30 @@ DevBlog/
 **SkuuIll**
 
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SkuuIll)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/skulll)
+
+*Desarrollador Full Stack especializado en Django y tecnologías web modernas*
 
 </div>
 
 ---
 
-## 🎓 Agradecimientos
+## 🎓 Proyecto Final - Informatorio Chaco 2025
 
-Este proyecto fue desarrollado como **Proyecto Final** para el curso de **Desarrollo Web** del programa **Informatorio Chaco 2025**.
+Este proyecto fue desarrollado como **Proyecto Final** para el curso de **Desarrollo Web con Python y Django** del programa **Informatorio Chaco 2025**.
 
-**Agradecimientos especiales a:**
-- 🏫 **Informatorio Chaco** - Por la formación y oportunidades
-- 👨‍🏫 **Instructores** - Por la guía y mentoring
-- 👥 **Compañeros de curso** - Por el apoyo y colaboración
+### 🏆 **Logros del Proyecto**
+- ✅ Implementación completa de CRUD con Django
+- ✅ Integración exitosa con APIs de IA (Google Gemini)
+- ✅ Sistema de autenticación y autorización robusto
+- ✅ UI/UX moderna y responsiva
+- ✅ Optimización de rendimiento y seguridad
+- ✅ Código limpio y bien documentado
+
+### 🙏 **Agradecimientos**
+- 🏫 **Informatorio Chaco** - Por la oportunidad de formación
+- 👨‍🏫 **Instructores** - Por la guía y conocimientos compartidos
+- 👥 **Compañeros** - Por el apoyo y colaboración
 - 🌐 **Comunidad Open Source** - Por las herramientas increíbles
-
 
 ---
 
@@ -415,6 +363,8 @@ Este proyecto fue desarrollado como **Proyecto Final** para el curso de **Desarr
 
 ### ⭐ ¡Si te gusta este proyecto, dale una estrella!
 
-**Hecho con ❤️ en Argentina 🇦🇷**
+**Hecho con ❤️ en Chaco, Argentina 🇦🇷**
+
+*Proyecto Final - Informatorio 2025*
 
 </div>

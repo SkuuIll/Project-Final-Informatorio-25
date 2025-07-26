@@ -290,7 +290,12 @@ class PostListByTagView(ListView):
     def get_queryset(self):
         tag_slug = self.kwargs.get("tag_slug")
         # Usar el manager optimizado para posts con tag específico
-        return Post.optimized.with_tag(tag_slug).with_stats().order_by("-created_at")
+        queryset = Post.optimized.with_tag(tag_slug).with_stats()
+        
+        # Ordenar con sticky posts primero, igual que PostListView
+        return queryset.extra(
+            select={'is_sticky_int': 'CASE WHEN is_sticky THEN 0 ELSE 1 END'}
+        ).order_by('is_sticky_int', '-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -338,34 +343,6 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 
-    model = Post
-    template_name = "posts/post_list.html"
-    context_object_name = "object_list"
-    # paginate_by = 12
-
-    def get_queryset(self):
-        queryset = Post.objects.filter(status="published")
-        sort_by = self.request.GET.get('sort_by', '-created_at')
-
-        if sort_by == 'likes':
-            queryset = queryset.annotate(num_likes=Count('likes')).order_by('-is_sticky', '-num_likes', '-created_at')
-        elif sort_by == 'views':
-            queryset = queryset.order_by('-is_sticky', '-views', '-created_at')
-        elif sort_by == 'comments':
-            queryset = queryset.annotate(num_comments=Count('comments')).order_by('-is_sticky', '-num_comments', '-created_at')
-        else:
-            queryset = queryset.order_by('-is_sticky', sort_by)
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['all_tags'] = Tag.objects.annotate(num_posts=Count('post')).order_by('-num_posts')[:4]
-        context['sort_by'] = self.request.GET.get('sort_by', '-created_at')
-        one_day_ago = timezone.now() - timedelta(days=1)
-        latest_posts = Post.objects.filter(status="published", created_at__gte=one_day_ago).order_by('-created_at')[:5]
-        context['latest_post_ids'] = [post.id for post in latest_posts]
-        return context
 
 
 class PostDetailView(DetailView):
@@ -1030,3 +1007,144 @@ def ai_post_generator_simple_view(request):
         form = AiPostGeneratorForm()
     
     return render(request, 'posts/ai_generator.html', {'form': form})
+@login_required
+def ai_post_generator_view(request):
+    """Vista para el generador de posts con IA."""
+    from .forms import AiPostGeneratorForm
+    from .ai_generator import generate_complete_post
+    
+    if not _check_post_permission(request.user):
+        messages.error(request, 'No tienes permisos para crear posts.')
+        return redirect('posts:post_list')
+    
+    if request.method == 'POST':
+        form = AiPostGeneratorForm(request.POST)
+        if form.is_valid():
+            try:
+                # Extraer datos del formulario
+                url = form.cleaned_data.get('url')
+                title = form.cleaned_data.get('title')
+                rewrite_prompt = form.cleaned_data.get('rewrite_prompt')
+                tag_prompt = form.cleaned_data.get('tag_prompt')
+                extract_images = form.cleaned_data.get('extract_images', False)
+                max_images = form.cleaned_data.get('max_images', 5)
+                # Siempre priorizar imágenes grandes y asignar automáticamente la primera como portada
+                prioritize_large_images = True
+                
+                # Generar el post
+                result = generate_complete_post(
+                    url=url,
+                    title=title,
+                    rewrite_prompt=rewrite_prompt,
+                    tag_prompt=tag_prompt,
+                    extract_images=extract_images,
+                    max_images=max_images,
+                    prioritize_large_images=prioritize_large_images
+                )
+                
+                if result.get('success'):
+                    # Crear el post
+                    post = Post.objects.create(
+                        title=result['title'],
+                        content=result['content'],
+                        author=request.user,
+                        status='draft',
+                        reading_time=result.get('reading_time', 1)
+                    )
+                    
+                    # Agregar tags
+                    if result.get('tags'):
+                        for tag_name in result['tags']:
+                            post.tags.add(tag_name.strip())
+                    
+                    # Asignar automáticamente la primera imagen extraída como portada
+                    if extract_images and result.get('suggested_cover_image'):
+                        try:
+                            suggested_image = result['suggested_cover_image']
+                            relative_path = suggested_image['path']
+                            post.header_image = relative_path
+                            post.save()
+                            logger.info(f"✅ Imagen de portada asignada automáticamente: {relative_path}")
+                            messages.success(request, f'Se asignó automáticamente la primera imagen extraída como portada: {suggested_image["filename"]}')
+                        except Exception as e:
+                            logger.error(f"❌ Error asignando imagen de portada: {e}")
+                            messages.warning(request, 'No se pudo asignar la imagen de portada automáticamente.')
+                    
+                    # Informar sobre imágenes disponibles
+                    available_images = result.get('available_cover_images', [])
+                    if available_images:
+                        messages.info(request, f'Se extrajeron {len(available_images)} imágenes. Puedes cambiar la portada editando el post.')
+                    elif extract_images:
+                        messages.warning(request, 'No se pudieron extraer imágenes del contenido.')
+                    
+                    if post:
+                        messages.success(request, f'Post "{post.title}" generado exitosamente.')
+                        return redirect('posts:post_detail', username=post.author.username, slug=post.slug)
+                    else:
+                        messages.error(request, 'Error al crear el post en la base de datos.')
+                else:
+                    error_msg = result.get('error', 'Error desconocido en la generación')
+                    messages.error(request, f'Error generando el post: {error_msg}')
+                    
+            except Exception as e:
+                logger.error(f"Error en ai_post_generator_view: {e}")
+                messages.error(request, f'Error inesperado: {str(e)}')
+    else:
+        form = AiPostGeneratorForm()
+    
+    return render(request, 'admin/posts/post/ai_generator.html', {
+        'form': form,
+        'title': 'Generador de Posts con IA'
+    })
+
+@login_required
+def ai_post_generator_simple_view(request):
+    """Vista simplificada para el generador de posts con IA."""
+    return ai_post_generator_view(request)
+@login_required
+def api_existing_images(request):
+    """API endpoint para obtener imágenes existentes."""
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    try:
+        images = []
+        
+        # Folders to search for images
+        image_folders = [
+            'ai_posts/covers/',
+            'post_images/',
+            'uploads/',
+            'images/',
+        ]
+        
+        for folder in image_folders:
+            try:
+                if default_storage.exists(folder):
+                    # List files in folder
+                    _, files = default_storage.listdir(folder)
+                    
+                    for file in files:
+                        if is_image_file(file):
+                            file_path = os.path.join(folder, file).replace('\\', '/')
+                            images.append({
+                                'path': file_path,
+                                'url': default_storage.url(file_path),
+                                'name': file,
+                                'folder': folder
+                            })
+            except Exception:
+                continue
+        
+        # Sort by name (newest first)
+        images = sorted(images, key=lambda x: x['name'], reverse=True)[:30]
+        
+        return JsonResponse({'images': images})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def is_image_file(filename):
+    """Check if file is an image."""
+    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
+    return any(filename.lower().endswith(ext) for ext in image_extensions)
