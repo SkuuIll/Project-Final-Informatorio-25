@@ -415,15 +415,25 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.profile.can_post
 
     def form_valid(self, form):
+        from .services import TagManagerService
+        
         form.instance.author = self.request.user
         self.object = form.save(commit=False)
         self.object.save()
-        tags = self.request.POST.getlist('tags')
-        tag_objects = []
-        for tag_name in tags:
-            tag, created = Tag.objects.get_or_create(name=tag_name)
-            tag_objects.append(tag)
-        self.object.tags.set(tag_objects)
+        
+        # Procesar tags con el sistema inteligente
+        tags_input = self.request.POST.get('tags', '')
+        if tags_input:
+            # Dividir por comas y limpiar
+            tag_names = [tag.strip() for tag in tags_input.split(',') if tag.strip()]
+            
+            # Usar el servicio de tags inteligente
+            tag_manager = TagManagerService()
+            processed_tags = tag_manager.process_post_tags(self.object, tag_names, self.request.user)
+            
+            # Asignar tags al post
+            self.object.tags.set(processed_tags)
+        
         return super().form_valid(form)
 
 
@@ -437,14 +447,27 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == post.author
 
     def form_valid(self, form):
+        from .services import TagManagerService
+        
         self.object = form.save(commit=False)
         self.object.save()
-        tags = self.request.POST.getlist('tags')
-        tag_objects = []
-        for tag_name in tags:
-            tag, created = Tag.objects.get_or_create(name=tag_name)
-            tag_objects.append(tag)
-        self.object.tags.set(tag_objects)
+        
+        # Procesar tags con el sistema inteligente
+        tags_input = self.request.POST.get('tags', '')
+        if tags_input:
+            # Dividir por comas y limpiar
+            tag_names = [tag.strip() for tag in tags_input.split(',') if tag.strip()]
+            
+            # Usar el servicio de tags inteligente
+            tag_manager = TagManagerService()
+            processed_tags = tag_manager.process_post_tags(self.object, tag_names, self.request.user)
+            
+            # Asignar tags al post
+            self.object.tags.set(processed_tags)
+        else:
+            # Si no hay tags, limpiar
+            self.object.tags.clear()
+        
         return super().form_valid(form)
 
 

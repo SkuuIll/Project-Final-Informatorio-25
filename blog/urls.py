@@ -11,6 +11,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("ckeditor5/upload/", custom_upload_file, name="ck_editor_5_upload_file"),
     path("ckeditor5/", include("django_ckeditor_5.urls")),
+    path("api/", include("posts.api.urls")),  # APIs del sistema de tags inteligente
     path("", include("posts.urls")),
     path("accounts/", include("accounts.urls")),
     path("about/", about, name="about"),

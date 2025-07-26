@@ -193,7 +193,7 @@
 
                         <div>
                             <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                Tags
+                                Tags Inteligentes
                             </label>
                             <div class="relative">
                                 <input type="text" 
@@ -204,7 +204,7 @@
                                        placeholder="tecnología, web...">
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                                Separa los tags con comas.
+                                Sistema inteligente con autocompletado y sugerencias automáticas.
                             </p>
                         </div>
                     </div>
@@ -216,6 +216,7 @@
 
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.2/classic/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script src="{% load static %}{% static 'js/intelligent-tags.js' %}"></script>
 
 <style>
     .glass-effect {
@@ -285,6 +286,45 @@
     .animate-fade-in {
         animation: fadeIn 0.5s ease-out forwards;
     }
+    
+    /* Estilos para el sistema de tags inteligente */
+    .intelligent-tags-container {
+        position: relative;
+    }
+    
+    .selected-tags-container {
+        min-height: 2rem;
+    }
+    
+    .tag-suggestions-container {
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+    
+    .suggestion-item.active {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .dark .suggestion-item.active {
+        background-color: rgba(129, 140, 248, 0.2);
+    }
+    
+    .popular-tags-container button,
+    .content-suggestions-container button {
+        transition: all 0.2s ease;
+    }
+    
+    .popular-tags-container button:hover,
+    .content-suggestions-container button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark .popular-tags-container button:hover,
+    .dark .content-suggestions-container button:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
 </style>
 
 <script>
@@ -344,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let editor;
     let autosaveTimeout;
+    let intelligentTags;
     
     ClassicEditor
         .create(document.querySelector('#editor'), {
@@ -395,11 +436,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(editorInstance => {
             editor = editorInstance;
+            window.editor = editor; // Hacer disponible globalmente para el sistema de tags
             editor.model.document.on('change:data', () => {
                 updateStats();
                 scheduleAutosave();
             });
-            updateStats(); 
+            updateStats();
+            
+            // Inicializar sistema de tags inteligente después del editor
+            if (typeof IntelligentTagSystem !== 'undefined') {
+                intelligentTags = new IntelligentTagSystem();
+            }
         })
         .catch(error => {
             console.error('Error al inicializar CKEditor:', error);

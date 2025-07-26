@@ -4,13 +4,43 @@ from django_ckeditor_5.widgets import CKEditor5Widget
 from .image_services import registry
 from .prompt_manager import PromptManager
 
+
+class TagWidget(forms.TextInput):
+    """Widget personalizado para manejar tags correctamente."""
+    
+    def format_value(self, value):
+        """Convierte los tags a string separado por comas."""
+        if value is not None and not isinstance(value, str):
+            # Si value es un queryset o lista de objetos Tag
+            if hasattr(value, 'all'):
+                # Es un manager de tags
+                return ', '.join(tag.name for tag in value.all())
+            elif hasattr(value, '__iter__'):
+                # Es una lista/queryset
+                return ', '.join(str(tag) if hasattr(tag, 'name') else str(tag) for tag in value)
+        return value if value is not None else ''
+
+
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'header_image', 'content', 'tags', 'status']
         widgets = {
             'content': CKEditor5Widget(),
+            'tags': TagWidget(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-300 placeholder-slate-400 dark:placeholder-slate-500',
+                'placeholder': 'tecnología, web...'
+            }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Si estamos editando un post existente, formatear los tags correctamente
+        if self.instance and self.instance.pk:
+            # Obtener los nombres de los tags como string
+            tag_names = [tag.name for tag in self.instance.tags.all()]
+            self.initial['tags'] = ', '.join(tag_names)
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -117,8 +147,6 @@ COMPLETE_POST_PROMPT = """Eres un redactor experto de contenido técnico y de te
 4. **IMÁGENES Y ENLACES:**
    - Si encuentras enlaces útiles en el contenido original, incorpóralos como enlaces HTML
    - Sugiere dónde podrían ir imágenes usando comentarios HTML: <!-- IMAGEN SUGERIDA: descripción -->
-
-5. **TAGS AUTOMÁTICOS:** Al final del contenido, después de "---TAGS---", proporciona 5-7 tags separados por comas
 
 **FORMATO DE RESPUESTA:**
 Título SEO Optimizado
