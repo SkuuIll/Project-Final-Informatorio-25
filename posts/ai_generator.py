@@ -281,12 +281,13 @@ def extract_and_process_images(url: str, max_images: int = 5, prioritize_large: 
                 if width and height:
                     try:
                         w, h = int(width), int(height)
-                        if w >= 200 and h >= 150:  # Mínimo tamaño razonable
+                        if w >= 400 and h >= 400:  # Mínimo 400x400 píxeles
                             filtered_imgs.append(img)
                     except ValueError:
-                        filtered_imgs.append(img)  # Incluir si no se puede parsear
+                        # Si no se puede parsear, verificar después de descargar
+                        filtered_imgs.append(img)
                 else:
-                    # Si no hay dimensiones, incluir por defecto
+                    # Si no hay dimensiones, verificar después de descargar
                     filtered_imgs.append(img)
             
             # Si después del filtrado no hay suficientes, usar todas
@@ -338,6 +339,26 @@ def extract_and_process_images(url: str, max_images: int = 5, prioritize_large: 
                     filename = f"extracted_{uuid.uuid4().hex[:8]}.{file_extension}"
                     file_path = f"ai_posts/content/{filename}"
                     
+                    # Verificar dimensiones de la imagen descargada
+                    from PIL import Image as PILImage
+                    from io import BytesIO
+                    
+                    try:
+                        # Abrir imagen para verificar dimensiones
+                        img_buffer = BytesIO(img_response.content)
+                        with PILImage.open(img_buffer) as pil_img:
+                            img_width, img_height = pil_img.size
+                            
+                            # Verificar que cumple con el tamaño mínimo de 400x400
+                            if img_width < 400 or img_height < 400:
+                                logger.info(f"Imagen descartada por tamaño pequeño: {img_width}x{img_height} (mínimo 400x400)")
+                                continue
+                                
+                            logger.info(f"Imagen válida: {img_width}x{img_height}")
+                    except Exception as e:
+                        logger.warning(f"Error verificando dimensiones de imagen: {e}")
+                        continue
+                    
                     # Guardar imagen
                     from django.core.files.base import ContentFile
                     saved_path = default_storage.save(file_path, ContentFile(img_response.content))
@@ -349,7 +370,10 @@ def extract_and_process_images(url: str, max_images: int = 5, prioritize_large: 
                         'local_path': saved_path,
                         'alt_text': alt_text,
                         'title_text': title_text,
-                        'filename': filename
+                        'filename': filename,
+                        'width': img_width,
+                        'height': img_height,
+                        'dimensions': f"{img_width}x{img_height}"
                     })
                     
                     logger.info(f"Imagen extraída y guardada: {filename}")

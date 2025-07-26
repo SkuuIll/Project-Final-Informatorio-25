@@ -81,38 +81,69 @@ def image_gallery_view(request):
 
 @staff_member_required
 @require_http_methods(["POST"])
-@csrf_exempt
 def delete_image_ajax(request):
     """
     Vista AJAX para eliminar una imagen.
     """
     try:
+        # Log de la petición
+        logger.info(f"Delete image request from {request.user.username}")
+        logger.info(f"Request body: {request.body}")
+        
         data = json.loads(request.body)
         image_path = data.get('image_path')
         
         if not image_path:
+            logger.warning("No image path provided in delete request")
             return JsonResponse({
                 'success': False,
                 'error': 'No se proporcionó la ruta de la imagen'
             })
         
+        logger.info(f"Attempting to delete image: {image_path}")
+        
         # Validar que la imagen existe
         if not default_storage.exists(image_path):
+            logger.warning(f"Image does not exist: {image_path}")
             return JsonResponse({
                 'success': False,
                 'error': 'La imagen no existe'
             })
         
+        # Normalizar path para Linux (convertir \ a /)
+        image_path = image_path.replace('\\', '/')
+        logger.info(f"Normalized path for Linux: {image_path}")
+        
+        # Verificar permisos de archivo en Linux
+        try:
+            import stat
+            if hasattr(default_storage, 'path'):
+                full_path = default_storage.path(image_path)
+                if os.path.exists(full_path):
+                    file_stat = os.stat(full_path)
+                    logger.info(f"File permissions: {stat.filemode(file_stat.st_mode)}")
+                    
+                    # Verificar que el archivo es escribible
+                    if not os.access(full_path, os.W_OK):
+                        logger.error(f"No write permission for file: {full_path}")
+                        return JsonResponse({
+                            'success': False,
+                            'error': 'Sin permisos de escritura para eliminar el archivo'
+                        })
+        except Exception as perm_error:
+            logger.warning(f"Could not check file permissions: {perm_error}")
+        
         # Usar el MediaImageSelector para eliminar la imagen
         success, message = MediaImageSelector.delete_image(image_path)
         
         if not success:
+            logger.error(f"Failed to delete image {image_path}: {message}")
             return JsonResponse({
                 'success': False,
                 'error': message
             })
         
-        logger.info(f"Imagen eliminada por {request.user.username}: {image_path}")
+        logger.info(f"Imagen eliminada exitosamente por {request.user.username}: {image_path}")
         
         return JsonResponse({
             'success': True,
@@ -133,7 +164,6 @@ def delete_image_ajax(request):
 
 @staff_member_required
 @require_http_methods(["POST"])
-@csrf_exempt
 def bulk_delete_images_ajax(request):
     """
     Vista AJAX para eliminar múltiples imágenes.

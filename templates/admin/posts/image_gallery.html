@@ -766,10 +766,17 @@ function deleteImage(imagePath) {
         return;
     }
     
+    // Normalizar path para Linux (convertir \ a /)
+    imagePath = imagePath.replace(/\\/g, '/');
+    
+    console.log('Eliminando imagen:', imagePath);
+    
     fetch('{% url "posts:delete_image_ajax" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
             image_path: imagePath
@@ -802,13 +809,20 @@ function deleteImage(imagePath) {
 
 // Función para eliminación masiva
 function bulkDeleteImages(imagePaths) {
+    // Normalizar paths para Linux
+    const normalizedPaths = imagePaths.map(path => path.replace(/\\/g, '/'));
+    
+    console.log('Eliminación masiva:', normalizedPaths);
+    
     fetch('{% url "posts:bulk_delete_images_ajax" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
-            image_paths: imagePaths
+            image_paths: normalizedPaths
         })
     })
     .then(response => response.json())

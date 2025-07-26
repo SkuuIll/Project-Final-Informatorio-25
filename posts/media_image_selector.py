@@ -312,7 +312,7 @@ class MediaImageSelector:
     @classmethod
     def delete_image(cls, image_path: str) -> tuple[bool, str]:
         """
-        Delete an image file.
+        Delete an image file with Linux/Ubuntu compatibility.
         
         Args:
             image_path: Path to the image to delete
@@ -321,20 +321,73 @@ class MediaImageSelector:
             Tuple of (success, message)
         """
         try:
+            # Normalizar path para Linux
+            image_path = image_path.replace('\\', '/')
+            logger.info(f"Attempting to delete image: {image_path}")
+            
             if not default_storage.exists(image_path):
+                logger.warning(f"Image file does not exist: {image_path}")
                 return False, "Image file does not exist"
             
             # Validate it's an image file
             if not cls._is_image_file(image_path):
+                logger.warning(f"File is not an image: {image_path}")
                 return False, "File is not an image"
             
-            # Delete the file
-            default_storage.delete(image_path)
-            return True, "Image deleted successfully"
+            # Verificaciones adicionales para Linux/Ubuntu
+            try:
+                # Obtener ruta completa del archivo
+                if hasattr(default_storage, 'path'):
+                    full_path = default_storage.path(image_path)
+                    logger.info(f"Full file path: {full_path}")
+                    
+                    # Verificar que el archivo existe en el sistema de archivos
+                    if not os.path.exists(full_path):
+                        logger.error(f"File does not exist in filesystem: {full_path}")
+                        return False, "File does not exist in filesystem"
+                    
+                    # Verificar permisos de escritura
+                    if not os.access(full_path, os.W_OK):
+                        logger.error(f"No write permission for file: {full_path}")
+                        # Intentar cambiar permisos si es posible
+                        try:
+                            os.chmod(full_path, 0o666)
+                            logger.info(f"Changed file permissions for: {full_path}")
+                        except Exception as chmod_error:
+                            logger.error(f"Could not change permissions: {chmod_error}")
+                            return False, f"No write permission and cannot change permissions: {chmod_error}"
+                    
+                    # Verificar permisos del directorio padre
+                    parent_dir = os.path.dirname(full_path)
+                    if not os.access(parent_dir, os.W_OK):
+                        logger.error(f"No write permission for directory: {parent_dir}")
+                        return False, f"No write permission for directory: {parent_dir}"
+                        
+            except Exception as path_error:
+                logger.warning(f"Could not perform filesystem checks: {path_error}")
+            
+            # Intentar eliminar el archivo
+            try:
+                default_storage.delete(image_path)
+                logger.info(f"Successfully deleted image: {image_path}")
+                
+                # Verificar que realmente se eliminó
+                if default_storage.exists(image_path):
+                    logger.error(f"File still exists after deletion: {image_path}")
+                    return False, "File still exists after deletion attempt"
+                
+                return True, "Image deleted successfully"
+                
+            except PermissionError as perm_error:
+                logger.error(f"Permission error deleting {image_path}: {perm_error}")
+                return False, f"Permission denied: {perm_error}"
+            except OSError as os_error:
+                logger.error(f"OS error deleting {image_path}: {os_error}")
+                return False, f"System error: {os_error}"
             
         except Exception as e:
-            logger.error(f"Error deleting image {image_path}: {e}")
-            return False, f"Error deleting image: {str(e)}"
+            logger.error(f"Unexpected error deleting image {image_path}: {e}")
+            return False, f"Unexpected error: {str(e)}"
     
     @classmethod
     def bulk_delete_images(cls, image_paths: List[str]) -> Dict:
