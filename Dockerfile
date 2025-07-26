@@ -26,8 +26,11 @@ COPY . /app/
 # Crear directorios necesarios
 RUN mkdir -p /app/media /app/staticfiles /app/logs
 
+# Hacer ejecutables los scripts
+RUN chmod +x /app/gunicorn_config.py /app/start_server.sh /app/monitor_memory.py
+
 # Exponer puerto
 EXPOSE 8000
 
-# Comando por defecto
-CMD ["gunicorn", "blog.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Comando por defecto usando el script de inicio optimizado
+CMD ["/app/start_server.sh"]

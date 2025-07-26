@@ -29,11 +29,17 @@ services:
       - db
       - redis
     restart: unless-stopped
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             python manage.py initialize_tag_system --calculate-cooccurrence --create-history &&
-             gunicorn blog.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    environment:
+      - GUNICORN_RELOAD=false
+    command: ["/app/start_server.sh"]
 
   celery:
     build: .
@@ -46,7 +52,15 @@ services:
       - db
       - redis
     restart: unless-stopped
-    command: celery -A blog worker -l info
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    command: celery -A blog worker -l info --concurrency=2 --max-tasks-per-child=100
 
 volumes:
   postgres_data:
