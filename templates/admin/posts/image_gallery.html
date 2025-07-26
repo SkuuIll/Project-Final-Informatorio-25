@@ -1,0 +1,928 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Galería de Imágenes - {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .image-gallery-container {
+        padding: 20px;
+    }
+    
+    .gallery-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .gallery-stats {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-item {
+        background: white;
+        padding: 18px;
+        border-radius: 8px;
+        border: 2px solid #ecf0f1;
+        text-align: center;
+        min-width: 130px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .stat-item:hover {
+        border-color: #3498db;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .gallery-filters {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .filter-group label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        padding: 8px 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .filter-group select:focus,
+    .filter-group input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .gallery-actions {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .btn {
+        padding: 10px 18px;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+        border-color: #c0392b;
+    }
+    
+    .btn-danger:hover {
+        background: #c0392b;
+        border-color: #a93226;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+    
+    .btn-info {
+        background: #3498db;
+        color: white;
+        border-color: #2980b9;
+    }
+    
+    .btn-info:hover {
+        background: #2980b9;
+        border-color: #21618c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+    
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn:disabled:hover {
+        transform: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .image-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.2s;
+        position: relative;
+    }
+    
+    .image-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    
+    .image-card.selected {
+        border-color: #007cba;
+        box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+    }
+    
+    .image-preview {
+        position: relative;
+        height: 150px;
+        overflow: hidden;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s;
+    }
+    
+    .image-card:hover .image-preview img {
+        transform: scale(1.05);
+    }
+    
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.8) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 12px;
+    }
+    
+    .image-card:hover .image-overlay {
+        opacity: 1;
+    }
+    
+    .image-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    
+    .image-action-btn {
+        background: rgba(255,255,255,0.95);
+        border: 2px solid transparent;
+        border-radius: 6px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        min-width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .image-action-btn:hover {
+        background: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .image-action-btn.delete {
+        color: #e74c3c;
+        border-color: rgba(231, 76, 60, 0.3);
+    }
+    
+    .image-action-btn.delete:hover {
+        background: #e74c3c;
+        color: white;
+        border-color: #c0392b;
+    }
+    
+    .image-action-btn.info {
+        color: #3498db;
+        border-color: rgba(52, 152, 219, 0.3);
+    }
+    
+    .image-action-btn.info:hover {
+        background: #3498db;
+        color: white;
+        border-color: #2980b9;
+    }
+    
+    .image-info {
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+    
+    .image-info span {
+        background: rgba(0,0,0,0.6);
+        padding: 3px 6px;
+        border-radius: 4px;
+        backdrop-filter: blur(2px);
+    }
+    
+    .image-details {
+        padding: 15px;
+    }
+    
+    .image-name {
+        font-weight: 500;
+        margin-bottom: 8px;
+        word-break: break-all;
+        line-height: 1.3;
+    }
+    
+    .image-meta {
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .image-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .image-checkbox {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 15;
+        transform: scale(1.4);
+        cursor: pointer;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    
+    .image-checkbox:checked {
+        accent-color: #27ae60;
+    }
+    
+    .recent-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #27ae60;
+        color: white;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 6px rgba(39, 174, 96, 0.4);
+        z-index: 15;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 30px 0;
+    }
+    
+    .pagination a,
+    .pagination span {
+        padding: 10px 16px;
+        border: 2px solid #3498db;
+        text-decoration: none;
+        color: #3498db;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        min-width: 44px;
+        text-align: center;
+    }
+    
+    .pagination .current {
+        background: #3498db;
+        color: white;
+        border-color: #2980b9;
+        box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+    }
+    
+    .pagination a:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #7f8c8d;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 2px dashed #bdc3c7;
+        margin: 20px 0;
+    }
+    
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 25px;
+        color: #bdc3c7;
+    }
+    
+    .empty-state h3 {
+        color: #2c3e50;
+        font-size: 24px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .empty-state p {
+        font-size: 16px;
+        line-height: 1.5;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        backdrop-filter: blur(2px);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 3% auto;
+        padding: 25px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border: 1px solid #e0e0e0;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .modal-header h3 {
+        color: #2c3e50;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .close {
+        font-size: 28px;
+        cursor: pointer;
+        color: #7f8c8d;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        padding: 5px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .close:hover {
+        color: #e74c3c;
+        background-color: #f8f9fa;
+        transform: scale(1.1);
+    }
+    
+    .detail-image {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .detail-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .detail-value {
+        color: #666;
+        font-size: 13px;
+        word-break: break-all;
+    }
+    
+    @media (max-width: 768px) {
+        .gallery-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .gallery-stats {
+            flex-wrap: wrap;
+        }
+        
+        .images-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .detail-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="image-gallery-container">
+    <h1><i class="fas fa-images"></i> Galería de Imágenes</h1>
+    
+    <!-- Header con estadísticas y filtros -->
+    <div class="gallery-header">
+        <div class="gallery-stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ stats.total_images|default:0 }}</div>
+                <div class="stat-label">Total Imágenes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ stats.total_size_mb|default:0 }}</div>
+                <div class="stat-label">MB Utilizados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ stats.suitable_for_cover|default:0 }}</div>
+                <div class="stat-label">Aptas para Portada</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ folders|length }}</div>
+                <div class="stat-label">Carpetas</div>
+            </div>
+        </div>
+        
+        <form method="get" class="gallery-filters">
+            <div class="filter-group">
+                <label for="search">Buscar:</label>
+                <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Nombre de archivo...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="folder">Carpeta:</label>
+                <select id="folder" name="folder">
+                    <option value="">Todas las carpetas</option>
+                    {% for folder in folders %}
+                        <option value="{{ folder }}" {% if folder == current_folder %}selected{% endif %}>
+                            {{ folder|default:"Sin carpeta" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="sort">Ordenar por:</label>
+                <select id="sort" name="sort">
+                    <option value="date" {% if sort_by == "date" %}selected{% endif %}>Fecha</option>
+                    <option value="name" {% if sort_by == "name" %}selected{% endif %}>Nombre</option>
+                    <option value="size" {% if sort_by == "size" %}selected{% endif %}>Tamaño</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-info">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+        </form>
+    </div>
+    
+    <!-- Acciones masivas -->
+    <div class="gallery-actions">
+        <button id="select-all-btn" class="btn btn-info">
+            <i class="fas fa-check-square"></i> Seleccionar Todo
+        </button>
+        <button id="deselect-all-btn" class="btn btn-info">
+            <i class="fas fa-square"></i> Deseleccionar Todo
+        </button>
+        <button id="delete-selected-btn" class="btn btn-danger" disabled>
+            <i class="fas fa-trash"></i> Eliminar Seleccionadas (<span id="selected-count">0</span>)
+        </button>
+    </div>
+    
+    <!-- Grid de imágenes -->
+    {% if images %}
+        <div class="images-grid">
+            {% for image in images %}
+                <div class="image-card" data-image-path="{{ image.path }}">
+                    <input type="checkbox" class="image-checkbox" data-path="{{ image.path }}">
+                    
+                    {% if image.modified_time %}
+                        {% now "U" as current_timestamp %}
+                        {% if current_timestamp|add:"-86400"|floatformat:0 < image.modified_time|floatformat:0 %}
+                            <div class="recent-badge">Nuevo</div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="image-preview">
+                        <img src="{{ image.url }}" alt="{{ image.filename }}" loading="lazy"
+                             onerror="this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;\'><i class=\'fas fa-exclamation-triangle\'></i> Error</div>'">
+                        
+                        <div class="image-overlay">
+                            <div class="image-actions">
+                                <button class="image-action-btn info" onclick="showImageDetails('{{ image.path|escapejs }}')">
+                                    <i class="fas fa-info"></i>
+                                </button>
+                                <button class="image-action-btn delete" onclick="deleteImage('{{ image.path|escapejs }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="image-info">
+                                <span>{{ image.size_mb }}MB</span>
+                                {% if image.modified_time %}
+                                    <span>{{ image.modified_time|date:"d/m/Y" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="image-details">
+                        <div class="image-name">{{ image.filename }}</div>
+                        <div class="image-meta">
+                            <span><i class="fas fa-folder"></i> {{ image.folder }}</span>
+                            {% if image.dimensions %}
+                                <span><i class="fas fa-expand-arrows-alt"></i> {{ image.dimensions }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        {% if images.has_other_pages %}
+            <div class="pagination">
+                {% if images.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_folder %}&folder={{ current_folder }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">&laquo; Primera</a>
+                    <a href="?page={{ images.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_folder %}&folder={{ current_folder }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">&lsaquo; Anterior</a>
+                {% endif %}
+                
+                <span class="current">
+                    Página {{ images.number }} de {{ images.paginator.num_pages }}
+                </span>
+                
+                {% if images.has_next %}
+                    <a href="?page={{ images.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_folder %}&folder={{ current_folder }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Siguiente &rsaquo;</a>
+                    <a href="?page={{ images.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_folder %}&folder={{ current_folder }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Última &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-images"></i>
+            <h3>No se encontraron imágenes</h3>
+            <p>No hay imágenes que coincidan con los filtros seleccionados.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal para detalles de imagen -->
+<div id="image-details-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Detalles de la Imagen</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div id="modal-body">
+            <!-- Contenido cargado dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const deselectAllBtn = document.getElementById('deselect-all-btn');
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const modal = document.getElementById('image-details-modal');
+    const closeModal = document.querySelector('.close');
+    
+    // Función para actualizar contador de seleccionadas
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.image-checkbox:checked');
+        const count = selected.length;
+        selectedCountSpan.textContent = count;
+        deleteSelectedBtn.disabled = count === 0;
+        
+        // Actualizar estado visual de las tarjetas
+        document.querySelectorAll('.image-card').forEach(card => {
+            const checkbox = card.querySelector('.image-checkbox');
+            if (checkbox.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+    }
+    
+    // Event listeners para checkboxes
+    document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Seleccionar todas
+    selectAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    });
+    
+    // Deseleccionar todas
+    deselectAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    });
+    
+    // Eliminar seleccionadas
+    deleteSelectedBtn.addEventListener('click', function() {
+        const selected = document.querySelectorAll('.image-checkbox:checked');
+        const paths = Array.from(selected).map(cb => cb.dataset.path);
+        
+        if (paths.length === 0) return;
+        
+        if (confirm(`¿Estás seguro de que quieres eliminar ${paths.length} imagen(es)? Esta acción no se puede deshacer.`)) {
+            bulkDeleteImages(paths);
+        }
+    });
+    
+    // Modal
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Inicializar contador
+    updateSelectedCount();
+});
+
+// Función para eliminar una imagen individual
+function deleteImage(imagePath) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta imagen? Esta acción no se puede deshacer.')) {
+        return;
+    }
+    
+    fetch('{% url "posts:delete_image_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image_path: imagePath
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remover la tarjeta del DOM
+            const card = document.querySelector(`[data-image-path="${imagePath}"]`);
+            if (card) {
+                card.remove();
+            }
+            
+            // Mostrar mensaje de éxito
+            showMessage('Imagen eliminada correctamente', 'success');
+            
+            // Actualizar contador
+            document.getElementById('selected-count').textContent = 
+                document.querySelectorAll('.image-checkbox:checked').length;
+        } else {
+            showMessage('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Error eliminando la imagen', 'error');
+    });
+}
+
+// Función para eliminación masiva
+function bulkDeleteImages(imagePaths) {
+    fetch('{% url "posts:bulk_delete_images_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image_paths: imagePaths
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remover las tarjetas del DOM
+            imagePaths.forEach(path => {
+                const card = document.querySelector(`[data-image-path="${path}"]`);
+                if (card) {
+                    card.remove();
+                }
+            });
+            
+            showMessage(`${data.deleted_count} imágenes eliminadas correctamente`, 'success');
+            
+            if (data.errors.length > 0) {
+                console.warn('Errores durante la eliminación:', data.errors);
+            }
+        } else {
+            showMessage('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Error en la eliminación masiva', 'error');
+    });
+}
+
+// Función para mostrar detalles de imagen
+function showImageDetails(imagePath) {
+    const modal = document.getElementById('image-details-modal');
+    const modalBody = document.getElementById('modal-body');
+    
+    modalBody.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+    modal.style.display = 'block';
+    
+    fetch(`{% url "posts:image_details_ajax" "PLACEHOLDER" %}`.replace('PLACEHOLDER', encodeURIComponent(imagePath)))
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const details = data.details;
+            modalBody.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="${details.url}" alt="${details.filename}" class="detail-image">
+                </div>
+                
+                <div class="detail-info">
+                    <div class="detail-item">
+                        <div class="detail-label">Nombre del archivo</div>
+                        <div class="detail-value">${details.filename}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Carpeta</div>
+                        <div class="detail-value">${details.folder}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Tamaño</div>
+                        <div class="detail-value">${details.size_mb} MB (${details.size_bytes.toLocaleString()} bytes)</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Dimensiones</div>
+                        <div class="detail-value">${details.dimensions}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Fecha de creación</div>
+                        <div class="detail-value">${details.created_date}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Ruta completa</div>
+                        <div class="detail-value">${details.path}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            modalBody.innerHTML = `<div style="color: red; text-align: center;">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        modalBody.innerHTML = '<div style="color: red; text-align: center;">Error cargando los detalles</div>';
+    });
+}
+
+// Función para mostrar mensajes
+function showMessage(message, type) {
+    // Crear elemento de mensaje
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        messageDiv.style.backgroundColor = '#28a745';
+    } else {
+        messageDiv.style.backgroundColor = '#dc3545';
+    }
+    
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    // Remover después de 5 segundos
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

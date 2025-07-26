@@ -21,6 +21,12 @@ from .views import (
     upload_image_view,
     api_existing_images,
 )
+from .views.image_gallery import (
+    image_gallery_view,
+    delete_image_ajax,
+    bulk_delete_images_ajax,
+    image_details_ajax,
+)
 # Vistas de IA simplificadas - usar solo el admin por ahora
 # from .views.image_views import (
 #     image_gallery_view,
@@ -81,10 +87,9 @@ urlpatterns = [
     # path('admin/prompts/preview/', prompt_preview_view, name='prompt_preview'),
     # path('admin/prompts/ajax/<int:prompt_id>/', prompt_ajax_get, name='prompt_ajax_get'),
     
-    # URLs para gestión de imágenes (comentadas temporalmente)
-    # path('images/', image_gallery_view, name='image_gallery'),
-    # path('api/images/', api_get_images, name='api_get_images'),
-    # path('api/validate-image/', api_validate_image, name='api_validate_image'),
-    # path('image-selector-modal/', image_selector_modal, name='image_selector_modal'),
-    # path('image-preview/<path:image_path>/', image_preview, name='image_preview'),
+    # URLs para gestión de imágenes
+    path('image-gallery/', image_gallery_view, name='image_gallery'),
+    path('api/delete-image/', delete_image_ajax, name='delete_image_ajax'),
+    path('api/bulk-delete-images/', bulk_delete_images_ajax, name='bulk_delete_images_ajax'),
+    path('api/image-details/<path:image_path>/', image_details_ajax, name='image_details_ajax'),
 ]

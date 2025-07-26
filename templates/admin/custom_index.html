@@ -1,0 +1,70 @@
+{% extends "admin/index.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .image-gallery-shortcut {
+        background: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 10px 0;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .image-gallery-shortcut:hover {
+        background: #005a87;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .admin-shortcuts {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .admin-shortcuts h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .shortcuts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-shortcuts">
+    <h3><i class="fas fa-tools"></i> Herramientas de Administración</h3>
+    <div class="shortcuts-grid">
+        <a href="{% url 'posts:image_gallery' %}" class="image-gallery-shortcut" target="_blank">
+            <i class="fas fa-images"></i>
+            Galería de Imágenes
+        </a>
+        <a href="{% url 'admin:posts_post_changelist' %}" class="image-gallery-shortcut">
+            <i class="fas fa-newspaper"></i>
+            Gestionar Posts
+        </a>
+        <a href="{% url 'admin:posts_comment_changelist' %}" class="image-gallery-shortcut">
+            <i class="fas fa-comments"></i>
+            Gestionar Comentarios
+        </a>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}

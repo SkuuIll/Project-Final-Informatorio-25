@@ -9,6 +9,7 @@ from .models import Post, Comment, AIModel
 from .forms import AiPostGeneratorForm
 from .widgets import ImageSelectorWidget
 from .utils import safe_get_image_url, validate_image_file, log_file_error
+from .admin_extensions import ImageGalleryAdminMixin, add_image_gallery_to_admin
 # El import de ai_generator_optimized se hace dinámicamente en la vista
 
 logger = logging.getLogger(__name__)
@@ -83,10 +84,10 @@ class PostAdminForm(forms.ModelForm):
         return header_image
 
 @admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(ImageGalleryAdminMixin, admin.ModelAdmin):
     """Configuración del panel de administración para los Posts."""
     form = PostAdminForm
-    list_display = ("title", "author", "status", "created_at", "views", "is_sticky", "safe_header_image_display")
+    list_display = ("title", "author", "status", "created_at", "views", "is_sticky", "safe_header_image_display", "get_image_gallery_link")
     list_filter = ("status", "created_at", "author", "is_sticky")
     search_fields = ("title", "content")
     raw_id_fields = ("author",)
@@ -277,3 +278,6 @@ class CommentAdmin(admin.ModelAdmin):
         queryset.update(active=True)
 
     approve_comments.short_description = "Aprobar comentarios seleccionados"
+
+# Inicializar extensiones del admin
+add_image_gallery_to_admin()
