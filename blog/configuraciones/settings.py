@@ -302,22 +302,12 @@ def configure_cache():
         try:
             return {
                 'default': {
-                    'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                    'BACKEND': 'django_redis.cache.RedisCache',
                     'LOCATION': redis_url,
                     'KEY_PREFIX': 'devblog',
                     'TIMEOUT': 300,
                     'OPTIONS': {
                         'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                        'PARSER_CLASS': 'redis.connection.HiredisParser',
-                        'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
-                        'CONNECTION_POOL_CLASS_KWARGS': {
-                            'max_connections': 20,
-                            'retry_on_timeout': True,
-                        },
-                        'REDIS_CLIENT_KWARGS': {
-                            'socket_connect_timeout': 5,
-                            'socket_timeout': 5,
-                        }
                     }
                 }
             }
