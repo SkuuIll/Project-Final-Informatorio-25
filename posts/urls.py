@@ -19,9 +19,12 @@ from .views import (
     TagListView,
     PostArchiveView,
     upload_image_view,
+    api_existing_images,
+)
+from .ai_views import (
     ai_post_generator_view,
     ai_post_generator_simple_view,
-    api_existing_images,
+    AIPostGeneratorStreamView,
 )
 # from .views.image_views import (
 #     image_gallery_view,
@@ -70,6 +73,7 @@ urlpatterns = [
     
     path('generate-ai-post/', ai_post_generator_view, name='ai_post_generator'),
     path('generate-ai-post-simple/', ai_post_generator_simple_view, name='ai_post_generator_simple'),
+    path('generate-ai-post-stream/', AIPostGeneratorStreamView.as_view(), name='ai_post_generator_stream'),
     path('admin/api/existing-images/', api_existing_images, name='api_existing_images'),
     
     # URLs para gestión de prompts (comentadas temporalmente)
