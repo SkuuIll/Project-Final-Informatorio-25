@@ -415,7 +415,7 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.profile.can_post
 
     def form_valid(self, form):
-        from .services import TagManagerService
+        from ..services import TagManagerService
         
         form.instance.author = self.request.user
         self.object = form.save(commit=False)
@@ -447,7 +447,7 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == post.author
 
     def form_valid(self, form):
-        from .services import TagManagerService
+        from ..services import TagManagerService
         
         self.object = form.save(commit=False)
         self.object.save()
@@ -831,7 +831,7 @@ def _create_ai_post(title, content, tags_list, author, cover_image_url=None):
 
 def _generate_ai_content(url, rewrite_prompt, tag_prompt, form_data=None):
     """Helper function to generate AI content from URL"""
-    from .prompt_manager import PromptManager
+    from ..prompt_manager import PromptManager
     
     # Extract content from URL
     url_data = extract_content_from_url(url)
@@ -1033,8 +1033,8 @@ def ai_post_generator_simple_view(request):
 @login_required
 def ai_post_generator_view(request):
     """Vista para el generador de posts con IA."""
-    from .forms import AiPostGeneratorForm
-    from .ai_generator import generate_complete_post
+    from ..forms import AiPostGeneratorForm
+    from ..ai_generator import generate_complete_post
     
     if not _check_post_permission(request.user):
         messages.error(request, 'No tienes permisos para crear posts.')
