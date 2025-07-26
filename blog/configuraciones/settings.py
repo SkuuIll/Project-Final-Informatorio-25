@@ -307,11 +307,16 @@ def configure_cache():
                     'KEY_PREFIX': 'devblog',
                     'TIMEOUT': 300,
                     'OPTIONS': {
-                        'CONNECTION_POOL_KWARGS': {
+                        'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                        'PARSER_CLASS': 'redis.connection.HiredisParser',
+                        'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
+                        'CONNECTION_POOL_CLASS_KWARGS': {
+                            'max_connections': 20,
                             'retry_on_timeout': True,
+                        },
+                        'REDIS_CLIENT_KWARGS': {
                             'socket_connect_timeout': 5,
                             'socket_timeout': 5,
-                            'max_connections': 20,
                         }
                     }
                 }
