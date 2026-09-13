@@ -3,7 +3,7 @@
 # ================================
 Django==5.2.4                    # Framework web principal de Python
 asgiref==3.9.1                   # Especificación ASGI para Django
-sqlparse==0.5.3                  # Parser SQL para Django
+sqlparse==0.6.0                  # Parser SQL para Django
 tzdata==2025.2                   # Datos de zona horaria
 
 # ================================
