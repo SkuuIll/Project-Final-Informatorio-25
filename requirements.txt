@@ -43,7 +43,7 @@ requests==2.32.3                 # Cliente HTTP para peticiones web
 django-turnstile==0.1.2          # Integración con Cloudflare Turnstile (CAPTCHA)
 django-axes==6.3.0               # Protección contra ataques de fuerza bruta
 django-ratelimit==4.1.0          # Limitación de velocidad de peticiones
-cryptography==45.0.5             # Biblioteca de criptografía
+cryptography==50.0.0             # Biblioteca de criptografía
 pyOpenSSL==25.1.0                # Soporte SSL/TLS
 
 # ================================
