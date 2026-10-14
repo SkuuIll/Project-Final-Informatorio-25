@@ -64,7 +64,7 @@ psycopg2-binary==2.9.9           # Driver PostgreSQL (incluye binarios compilado
 channels==4.2.2                  # Soporte para WebSockets en Django
 daphne==4.1.0                    # Servidor ASGI para Django Channels
 autobahn==24.4.2                 # Framework WebSocket/WAMP
-Twisted==25.5.0                  # Framework de red asíncrono
+Twisted==26.4.0rc2                  # Framework de red asíncrono
 txaio==25.6.1                    # Utilidades para programación asíncrona
 
 # ================================
