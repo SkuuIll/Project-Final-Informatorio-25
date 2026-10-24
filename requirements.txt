@@ -118,6 +118,6 @@ pyasn1==0.6.1                    # Codificación/decodificación ASN.1
 pyasn1_modules==0.4.2            # Módulos ASN.1 adicionales
 pycparser==2.22                  # Parser de C en Python
 service-identity==24.2.0         # Verificación de identidad de servicios
-setuptools==80.9.0               # Herramientas de construcción de paquetes
+setuptools==84.1.0               # Herramientas de construcción de paquetes
 typing_extensions==4.14.1        # Extensiones de tipado para Python
 zope.interface==7.2               # Definición de interfaces
