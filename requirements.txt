@@ -9,7 +9,7 @@ tzdata==2025.2                   # Datos de zona horaria
 # ================================
 # DJANGO EXTENSIONS - Funcionalidades adicionales
 # ================================
-djangorestframework==3.16.0      # Framework para APIs REST
+djangorestframework==3.18.2      # Framework para APIs REST
 django-extensions==4.1            # Comandos y utilidades adicionales para Django
 django-widget-tweaks==1.5.0      # Personalización de widgets de formularios
 
