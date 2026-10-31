@@ -114,7 +114,7 @@ hyperlink==21.0.0                # Manipulación de URLs
 idna==3.10                        # Soporte para nombres de dominio internacionales
 incremental==24.7.2              # Versionado automático
 packaging==25.0                  # Utilidades de empaquetado
-pyasn1==0.6.1                    # Codificación/decodificación ASN.1
+pyasn1==0.6.5                    # Codificación/decodificación ASN.1
 pyasn1_modules==0.4.2            # Módulos ASN.1 adicionales
 pycparser==2.22                  # Parser de C en Python
 service-identity==24.2.0         # Verificación de identidad de servicios
